@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/.vs/
+**/TestResults/
+**/node_modules/
+**/packages/
+**/artifacts/
+*.user
+*.suo
