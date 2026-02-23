@@ -6,7 +6,8 @@ using WebAPI.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.WebHost.UseUrls("http://0.0.0.0:5000");
+
 if (!builder.Environment.IsDevelopment())
     builder.WebHost.UseSentry(options =>
     {
@@ -18,7 +19,6 @@ if (!builder.Environment.IsDevelopment())
     });
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -34,7 +34,7 @@ builder.Services.AddScoped<WebAPI.DAL.AzureTableService>();
 builder.Services.AddScoped<WebAPI.DAL.AzureBlobService>();
 builder.Services.AddScoped<WebAppApiService>();
 
-builder.Services.AddScoped<ApiUserService>(); ;
+builder.Services.AddScoped<ApiUserService>();
 
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IMessagePublisher, SignalRMessagePublisher>();
@@ -50,8 +50,10 @@ void SignalRMessagePublisherOnSendToWebAppEv(string messageKey, object messageDa
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
-// Add the API key middleware to the pipeline
+if (!builder.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseMiddleware<ApiKeyMiddleware>();
 
 app.UseAuthorization();

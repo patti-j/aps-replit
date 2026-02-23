@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <Title>WebAppDB</Title>
     <Description>This is the DB layer of the WebApps solution, for PlanetTogether company.</Description>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
