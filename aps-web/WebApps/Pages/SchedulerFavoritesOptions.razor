@@ -1,0 +1,160 @@
+﻿@using DevExpress.Blazor
+@using ReportsWebApp.DB.Models
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.DB.Services.SchedulerHelpers
+@inject ICosmosDbService<GanttFavoriteData> cosmosDbService
+@inject ISchedulerFavoritesService favoritesService
+@inject IRoleService RoleService
+@inject IUserService userService
+@inject IGanttService GanttService
+@inject IToastNotificationService toastService
+@inject AuthenticationStateProvider authStateProvider
+
+<DxPopup @bind-Visible="@ShowPopup" Width="400px" Height="auto" CloseOnOutsideClick="false" CloseOnEscape="false">
+    <HeaderTemplate>
+        <ServerContextHeader BigTitle=false Title="Save to Favorites" OnClose="@CloseDialog" OnSave="SaveToFavorites" ShowSaveButton="!m_nameIsTaken"/>
+    </HeaderTemplate>
+    <Content>    
+        <LoadingOverlay IsLoading="@isLoading" Message="@loadingMessage">                    
+            <Content>
+                <DxFormLayout>
+                    <DxFormLayoutItem Caption=@($"Save configuration for: {Scenario}") CaptionPosition="CaptionPosition.Vertical" ColSpanMd="12">
+                        <DxTextBox Text="@FavoriteName" NullText="Enter a name for this favorite..." TextChanged="@(args => OnTextChanged(args))" BindValueMode="BindValueMode.OnInput"/>
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Visible="m_nameIsTaken" ColSpanMd="12">
+                        <p style="color: red">• A Favorite with this name already exists.</p>
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem ColSpanMd="12">
+                        <DxTagBox Data="@Groups" TextFieldName="Name" FilteringMode="DataGridFilteringMode.Contains" Values="@SelectedGroupIds"
+                        ValuesChanged="@((IEnumerable<Role> e) => UpdateSaveButtonState(e))"
+                        NullText="Choose one or more groups..." />
+                    </DxFormLayoutItem>
+                </DxFormLayout>
+            </Content>
+        </LoadingOverlay>
+    </Content>
+</DxPopup>
+
+@code {
+    private bool ShowListView;
+    private User User;
+    private string FavoriteName;
+    private List<Role> Groups = new List<Role>();
+    private IEnumerable<Role> SelectedGroupIds = new List<Role>();
+    private bool isLoading = false;
+    private string loadingMessage = "Loading, please wait...";
+    private bool m_nameIsTaken = false;
+    private List<string> ExistingFavNames = new ();
+
+    [Parameter] public Scenario Scenario { get; set; }
+    [Parameter] public bool ShowPopup { get; set; }
+    [Parameter] public EventCallback<bool> ShowPopupChanged { get; set; }
+    [Parameter] public SchedulerInterop SchedulerInterop { get; set; }
+    [Inject]
+    IAppInsightsLogger logger { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await userService.GetCurrentUserAsync(authStateProvider);
+        if (User.Exists()) Groups = await RoleService.GetRoles(User.CompanyId);
+        ExistingFavNames = (await favoritesService.GetAllFavoritesAsync()).Where(f => f.CompanyId == User.CompanyId).Select(f => f.Name).ToList();
+    }
+
+    private void OnTextChanged(String favoriteName)
+    {
+        FavoriteName = favoriteName;
+        UpdateSaveButtonState(SelectedGroupIds);
+    }
+
+    private void UpdateSaveButtonState(IEnumerable<Role> selectedGroups)
+    {
+        if (ExistingFavNames.Any(str => str == FavoriteName))
+        {
+            m_nameIsTaken = true;
+        }
+        else
+        {
+            m_nameIsTaken = false;
+        }
+        SelectedGroupIds = selectedGroups;
+    }
+
+    private void ToggleView() => ShowListView = !ShowListView;
+
+    private async Task SaveToFavorites()
+    {
+        ShowLoadingState(true, "Saving your favorite... Please wait.");
+
+        if (string.IsNullOrWhiteSpace(FavoriteName))
+        {
+            ShowToast("Error", "Please provide a name for the favorite.", ToastRenderStyle.Danger);
+            ShowLoadingState(false, "Error");
+            return;
+        }
+
+        ShowToast("Saving...", "Saving your favorite... Please wait.", ToastRenderStyle.Info);
+
+        try
+        {
+            GanttService.ActiveProject.ColumnVisibilities = await SchedulerInterop.GetColumnVisibilityAsync();
+            ExistingFavNames = (await favoritesService.GetAllFavoritesAsync()).Where(f => f.CompanyId == User.CompanyId).Select(f => f.Name).ToList();
+            if (ExistingFavNames.Any(str => str == FavoriteName))
+            {
+                ShowToast("Error", "Something went wrong while saving. Please try again.", ToastRenderStyle.Danger);
+                return;
+            }
+            var guid = Guid.NewGuid();
+            var favoriteDetails = new SchedulerFavorite
+                {
+                    Name = FavoriteName,
+                    UserId = User.Id,
+                    CreatedBy = User.Email,
+                    CompanyId = User.CompanyId,
+                    ScenarioName = Scenario.Name,
+                    PlanningArea = Scenario.PlanningAreaName,
+                    CosmosDbRecordId = guid,
+                };
+            favoriteDetails.Roles.AddRange(SelectedGroupIds);
+
+            GanttService.SaveCurrentGanttConfigToNewFavorite(favoriteDetails);
+            
+
+            ShowToast("Success", "Your favorite has been saved successfully!", ToastRenderStyle.Success);
+            await CloseDialog();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, User.Email);
+            ShowToast("Error", "Something went wrong while saving. Please try again. Error details: " + ex.Message, ToastRenderStyle.Danger);
+        }
+        finally
+        {
+            ShowLoadingState(false, "Done");
+        }
+    }
+
+    private async Task CloseDialog()
+    {
+        ShowPopup = false;
+        ShowPopupChanged.InvokeAsync(); // Ensure the component updates its state before continuing.
+    }
+
+    private void ShowLoadingState(bool state, string message)
+    {
+        isLoading = state;
+        loadingMessage = message;
+        StateHasChanged();
+    }
+
+    private void ShowToast(string title, string message, ToastRenderStyle style)
+    {
+        toastService.ShowToast(new ToastOptions
+            {
+                ProviderName = "MainLayout",
+                Title = title,
+                Text = message,
+                ThemeMode = ToastThemeMode.Saturated,
+                RenderStyle = style,
+            });
+    }
+}

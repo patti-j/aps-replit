@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+  <PropertyGroup>
+    <AssemblyName>PT.CustomInterface</AssemblyName>
+    <RootNamespace>PT.Database</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+  <ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\Transmissions\Transmissions.csproj" />
+    <ProjectReference Include="..\ERPLibrary\ERPLibrary.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+      <Link>AssemblyInfoShared.cs</Link>
+    </Compile>
+    <Compile Update="PtDbDataSet.cs">
+      <DependentUpon>PtDbDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="PtDbDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PtDbDataSet.xsd</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="PtDbDataSet.xsc">
+      <DependentUpon>PtDbDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="PtDbDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>PtDbDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="PtDbDataSet.xss">
+      <DependentUpon>PtDbDataSet.xsd</DependentUpon>
+    </None>
+  </ItemGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,389 @@
+﻿@page "/permissionGroupEditor"
+@using ReportsWebApp.DB.Services.Interfaces
+
+@if (viewPermission && PermissionRows.Any() && Visible)
+{
+    <div class="tree-container">
+        <DxTreeList Data="@PermissionRows"
+                    @ref="TreeList"
+                    ChildrenFieldName="Children"
+                    AllowSelectRowByClick="true"
+                    PageSize="1000"
+                    SelectedDataItemsChanged="OnSelectedDataItemChange"
+                    TextWrapEnabled="true"
+                    CustomizeElement="OnRenderElement">
+            <Columns>
+                <DxTreeListDataColumn Width="80px" FieldName="Checked" Caption=" "></DxTreeListDataColumn>
+                <DxTreeListDataColumn Width="200px" FieldName="Name" Caption="Permission"/>
+                <DxTreeListDataColumn FieldName="Description" Caption="Description"/>
+            </Columns>
+            <TotalSummary>
+                <DxTreeListSummaryItem FieldName="Name" SummaryType="TreeListSummaryItemType.Count"/>
+            </TotalSummary>
+
+        </DxTreeList>
+        @if (User.IsAuthorizedFor(Permission.PTAdmin))
+        {
+            <label style="font-size: 14px; display: block;">
+                <br/>
+                <b>Certain permissions are only visible by you as a PTAdmin:</b><br/>
+                <span style="color:#5fc4ff77"><b>Blue</b></span> permissions are currently feature flagged and under development.<br/>
+                <span style="color:#c71c2277"><b>Red</b></span> permissions provide elevated permissions that should only be assigned to internal PlanetTogether users.
+            </label>
+        }
+    </div>
+    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+}
+
+@code {
+
+    private User User { get; set; }
+    ITreeList TreeList { get; set; }
+    private ConfirmationDialog Dialog { get; set; }
+    public List<Category> Categories { get; set; } = new List<Category>();
+    public List<Role> Groups { get; set; } = new List<Role>();
+    public List<User> Users { get; set; } = new List<User>();
+    private bool viewPermission = false;
+    private List<PermissionRow> PermissionRows { get; set; } = new();
+    private List<PermissionRow> SelectedData { get; set; } = new();
+    private List<Permission> Permissions { get; set; } = new();
+    private List<PAUserPermission> PAPermissions { get; set; } = new();
+    private List<string> ComboOptions = new List<string>() { "None", "View Only", "Schedule", "Administer", "Custom" };
+
+    [Parameter]
+    public Func<(List<Permission>, List<PAUserPermission>), Task> OnChange { get; set; }
+    [Parameter]
+    public Role Role { get; set; }
+    [Parameter]
+    public bool IsEditingDesktopPerms { get; set; } = false;
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+    private bool permissionsSet = false;
+
+    [Inject]
+    IUserService userService { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    IRoleService RoleService { get; set; }
+    [Inject]
+    IPlanningAreaLoginService paService { get; set; }
+    [Inject] IAuthorizationService m_authService { get; set; }
+    public string SelectedPreset { get; set; }
+
+
+    private static List<string> NonePreset = new ();
+    private static List<string> ViewOnlyPreset = new ()
+    {
+        UserPermissionKeys.RunReports, UserPermissionKeys.ViewErrorLog, UserPermissionKeys.LocalBoardWorkspaceManagement, 
+        UserPermissionKeys.BoardMetrics, UserPermissionKeys.BoardAnalytics, UserPermissionKeys.BoardKPIs, UserPermissionKeys.BoardCustomers,
+        UserPermissionKeys.BoardWorkspaceManagement, UserPermissionKeys.BoardMaterials, UserPermissionKeys.BoardJobs, UserPermissionKeys.BoardInventoryPlan,
+        UserPermissionKeys.BoardTemplates, UserPermissionKeys.BoardActivities, UserPermissionKeys.BoardCapacityPlanning, UserPermissionKeys.BoardPurchaseOrders,
+        UserPermissionKeys.BoardSalesOrders, UserPermissionKeys.BoardBufferManagement, UserPermissionKeys.BoardGantt
+    };
+
+    private static List<string> SchedulePreset = ViewOnlyPreset.Concat(new List<string>()
+    {
+        UserPermissionKeys.Scheduling, UserPermissionKeys.CreateNewScenarios, UserPermissionKeys.ImportData, UserPermissionKeys.SplitOp,
+        UserPermissionKeys.SplitJob, UserPermissionKeys.SplitMO, UserPermissionKeys.SplitJoin, UserPermissionKeys.ReserveCTP,
+        UserPermissionKeys.Planning, UserPermissionKeys.AdvanceClock, UserPermissionKeys.MaintainForecasts, UserPermissionKeys.DownloadScenarios,
+        UserPermissionKeys.MaintainJobs, UserPermissionKeys.MaintainInventory, UserPermissionKeys.MaintainResources, UserPermissionKeys.MaintainPurchaseOrders,
+        UserPermissionKeys.MaintainSalesOrders, UserPermissionKeys.MaintainManufacturingOrders, UserPermissionKeys.RefreshMultipleScenarios, 
+        UserPermissionKeys.BoardPublishToAnalytics, UserPermissionKeys.Publish, UserPermissionKeys.UndoRedo, UserPermissionKeys.UndoErpActions,
+        UserPermissionKeys.ShowUnavailableUndoActions, UserPermissionKeys.SchedulePlant, UserPermissionKeys.ViewJobsInPlant, UserPermissionKeys.ViewInventoryInPlant,
+        UserPermissionKeys.MaintainOvertime, UserPermissionKeys.MaintainCapacity, UserPermissionKeys.CompressMainBarButton, UserPermissionKeys.MrpOptimizeMainBarButton,
+        UserPermissionKeys.OptimizeScheduleMainBarButton, UserPermissionKeys.BoardUsers, UserPermissionKeys.BoardImportMapping, UserPermissionKeys.BoardSequencePlanning,
+        UserPermissionKeys.SharedBoardWorkspaceManagement, UserPermissionKeys.MaintainCustomers
+    }).ToList();
+
+    private static List<string> AdministerPreset = SchedulePreset.Concat(new List<string>()
+    {
+        UserPermissionKeys.BoardDatabaseManager, UserPermissionKeys.BoardSystemOptions, UserPermissionKeys.BoardScenarioData, UserPermissionKeys.ControlAddIns
+    }).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.EditUsers, NavigationManager)) return;
+        viewPermission = true;
+
+        if (User.Exists())
+        {   
+            Groups = await RoleService.GetRoles(User.CompanyId);
+            // Only get PTAdmin only permissions if the user is PTAdmin
+            if (!IsEditingDesktopPerms)
+            {
+                Permissions = AuthUtils.GetAvailablePermissions(User.IsPTAdmin(), User.Company.Id == 1, User.Company.CompanyType.IsOnPremAuthorized());
+                List<Permission> ptAdminOnlyPermissions = AuthUtils.PTAdminOnlyPermissions;
+                int id = 0;
+                foreach (Permission.EPermissionCategory permissionCategory in Enum.GetValuesAsUnderlyingType<Permission.EPermissionCategory>())
+                {
+                    var groupRow = new PermissionRow(++id, permissionCategory.GetDescription(), "");
+                    var anySelected = false;
+                    foreach (var permission in Permissions.Where(x => x.Category == permissionCategory))
+                    {
+                        bool isPTAdminPermission = ptAdminOnlyPermissions.Any(ptPerm => permission.Key.Equals(ptPerm.Key, StringComparison.OrdinalIgnoreCase));
+                        PermissionRow permissionRow = new PermissionRow(++id, permission.Name, permission.Description, isPTAdminOnly: isPTAdminPermission, isFeatureFlagged: false, permission: permission, parent: groupRow);
+
+                        if (Role.Permissions.Any(x => x == permission.Key))
+                        {
+                            permissionRow.Selected = true;
+                            SelectedData.Add(permissionRow);
+                            anySelected = true;
+                        }
+
+                        groupRow.Children.Add(permissionRow);
+                    }
+
+                    // Select parent if any child rows are selected
+                    if (anySelected)
+                    {
+                        groupRow.Selected = true;
+                        SelectedData.Add(groupRow);
+                    }
+
+                    if (groupRow.Children.Any())
+                    {
+                        PermissionRows.Add(groupRow);
+                    }
+                }
+
+                StateHasChanged();
+            }
+            else
+            {
+                PAPermissions = PermissionsGroupConstants.DefaultPermissions.Copy();
+                int id = 0;
+                foreach (string permissionCategory in PermissionsGroupConstants.DefaultGroups)
+                {
+                    var groupRow = new PermissionRow(++id, permissionCategory, "");
+                    var anySelected = false;
+                    foreach (var permission in PAPermissions.Where(x => x.GroupKey == permissionCategory))
+                    {
+                        PermissionRow permissionRow = new PermissionRow(++id, permission.Caption, permission.Description, isPTAdminOnly: false, isFeatureFlagged: false, paPermission: permission, parent: groupRow);
+
+                        if (Role.DesktopPermissions.Any(x => x == permission.PermissionKey))
+                        {
+                            permissionRow.Selected = true;
+                            SelectedData.Add(permissionRow);
+                            anySelected = true;
+                        }
+
+                        groupRow.Children.Add(permissionRow);
+                    }
+
+                    // Select parent if any child rows are selected
+                    if (anySelected)
+                    {
+                        groupRow.Selected = true;
+                        SelectedData.Add(groupRow);
+                    }
+
+                    if (groupRow.Children.Any())
+                    {
+                        PermissionRows.Add(groupRow);
+                    }
+                }
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (viewPermission && TreeList != null && !permissionsSet)
+        {
+            TreeList.BeginUpdate();
+            TreeList.SelectedDataItems = new List<PermissionRow>();
+            permissionsSet = true;
+            TreeList.EndUpdate();
+        }
+    }
+
+    private async Task OnSelectedDataItemChange(IReadOnlyList<object> newSelection)
+    {
+        var selectedPermissions = PermissionRows.SelectMany(x => x.Children).Where(x => x is { Permission: not null, Selected: true }).ToList();
+
+        if (newSelection is IGridSelectionChanges changes)
+        {
+            var newSelectedItems = changes.SelectedDataItems.Cast<PermissionRow>();
+            var deselectedItems = changes.DeselectedDataItems.Cast<PermissionRow>();
+
+            // Override default selection behavior
+            if (newSelection.Count() == 1 && (newSelection.First() as PermissionRow).Checked != true)
+            {
+                deselectedItems = new List<PermissionRow>();
+            }
+            if (newSelection.Count() == 1 && (newSelection.First() as PermissionRow).Checked == true)
+            {
+                newSelectedItems = new List<PermissionRow>();
+                var items = new List<PermissionRow>();
+                items.Add(newSelection.First() as PermissionRow);
+                items.AddRange((newSelection.First() as PermissionRow).Children);
+                deselectedItems = items;
+            }
+
+            // Syncronize Parent Selected State to Children
+            foreach (var item in newSelectedItems)
+            {
+                item.Selected = true;
+                if (!item.Children.IsNullOrEmpty())
+                {
+                    // Select children when parent is selected
+                    if (item.Children.Any(x => !x.Selected))
+                    {
+                        var toSelect = item.Children.Where(x => !x.Selected).ToList();
+                        foreach (var sel in toSelect)
+                        {
+                            sel.Selected = true;
+                        }
+                    }
+                }
+
+                // Select parent when child is selected
+                if (item.Parent != null && !item.Parent.Selected)
+                {
+                    item.Parent.Selected = false;
+                }
+            }
+
+            foreach (var item in deselectedItems)
+            {
+                item.Selected = false;
+                if (!item.Children.IsNullOrEmpty())
+                {
+                    if (item.Children.Any(x => x.Selected))
+                    {
+                        // Deselect children when parent is deselected
+                        var toDeSelect = item.Children.Where(x => x.Selected).ToList();
+                        foreach (var sel in toDeSelect)
+                        {
+                            sel.Selected = false;
+                        }
+                    }
+                }
+
+                // Deselect parent if all children have been deselected
+                if (item.Parent != null)
+                {
+                    if (item.Parent.Children.All(x => !x.Selected))
+                    {
+                        item.Parent.Selected = false;
+                    }
+                }
+            }
+            
+            var permissions = PermissionRows.SelectMany(x => x.Children).Where(x => x is { Permission: not null, Selected: true });
+            var papermissions = PermissionRows.SelectMany(x => x.Children).Where(x => x is { PAPermission: not null, Selected: true });
+            
+            // Warn the user if any selected permissions have warnings
+            var diff = selectedPermissions.Synchronize(permissions);
+            var warnings = diff.added.Where(x => x.Permission.WarningMessage != null).ToList();
+            if (warnings.Any())
+            {
+                if (!await Dialog.ConfirmOperation("Are you sure?", $"Are you sure you want to assign these permissions to this group?", warnings.Select(x => x.Permission.WarningMessage), false, yesButtonText: "Authorize", noButtonText: "Cancel"))
+                {
+                    // Reset warned items back to deselected
+                    warnings.ForEach(x => x.Selected = false);
+                    permissions = PermissionRows.SelectMany(x => x.Children).Where(x => x is { Permission: not null, Selected: true });
+                }
+            }
+            OnChange((Permissions.Where(x => permissions.Any(y => y.Permission.Key == x.Key)).ToList(),
+                PAPermissions.Where(x => papermissions.Any(y => y.PAPermission.PermissionKey == x.PermissionKey)).ToList()));
+
+            // Deselect all items so that the grid doesn't try to deselect them when another item is selected
+            TreeList.BeginUpdate();
+            TreeList.SelectedDataItems = new List<PermissionRow>();
+            TreeList.EndUpdate();
+        }
+    }
+
+    private void OnRenderElement(TreeListCustomizeElementEventArgs e)
+    {
+        object row = e.TreeList.GetDataItem(e.VisibleIndex);
+        if (row is PermissionRow permRow)
+        {
+            if (permRow.IsPTAdminOnly)
+            {
+                {
+                    e.CssClass += " pt-admin-item";
+                }
+            } 
+            else if (permRow.IsFeatureFlagged)
+            {
+                {
+                    e.CssClass += " feature-flag-item";
+                }
+            }
+        }
+    }
+
+    private class PermissionRow
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public List<PermissionRow> Children { get; set; }
+        public PermissionRow? Parent { get; set; }
+        public Permission? Permission { get; set; }
+        public PAUserPermission? PAPermission { get; set; }
+        public bool Selected { get; set; }
+        public bool IsPTAdminOnly { get; set; }
+        public bool IsFeatureFlagged { get; set; }
+        /// <summary>
+        /// Whether the checkbox should show as checked, unchecked, or partially checked
+        /// </summary>
+        public bool? Checked
+        {
+            get
+            {
+                // If this has children, it is a category. Its checked status is based on children
+                if (Children.Any())
+                {
+                    // Checked if all children are checked
+                    if (Children.All(x => x.Checked == true))
+                    {
+                        return true;
+                    }
+                    // Unchecked if all children are unchecked
+                    if (Children.All(x => x.Checked == false))
+                    {
+                        return false;
+                    }
+                    // Partially checked if some children are partially checked, or a mix of checked and unchecked
+                    return null;
+                }
+                // If it has no children, it is a permission. Return whether it's selected
+                return Selected;
+            }
+        }
+
+        public PermissionRow(int id,
+            string name,
+            string description,
+            bool isFeatureFlagged = false,
+            bool isPTAdminOnly = false,
+            List<PermissionRow> children = null,
+            Permission? permission = null,
+            PAUserPermission? paPermission = null,
+            PermissionRow? parent = null
+        )
+        {
+            Id = id;
+            Name = name;
+            Description = description;
+            IsFeatureFlagged = isFeatureFlagged;
+            IsPTAdminOnly = isPTAdminOnly;
+            Children = children ?? new List<PermissionRow>();
+            Permission = permission;
+            PAPermission = paPermission;
+            Parent = parent;
+        }
+    }
+
+    private void SelectedPresetChanged(string a_preset)
+    {
+        
+    }
+
+}

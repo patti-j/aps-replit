@@ -1,0 +1,320 @@
+﻿@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using ReportsWebApp.DB.Models
+@using ReportsWebApp.Helpers
+<!-- sorry EU...-->
+@inject Cookie Cookie 
+@inject IHttpContextAccessor HttpContextAccessor
+
+<div class="sticky custom-header">
+    <label class="d-flex">
+        @if (!BigTitle)
+        {
+            <h5 class="m-0" style="align-content: center;">@Title</h5>
+        }
+        else
+        {
+            <h4 class="m-0">@Title</h4>
+        }
+
+        <h5 class="mr-3 text-muted" style="
+            line-height: 20px;
+            margin-left: 16px;
+            font-size: @(BigTitle ? "10px" : "16px");
+            align-content: center;
+            ">
+            @Subtitle
+        </h5>
+        @if (ShowServerPill)
+        {
+            @if (Servers != null)
+            {
+                <DxComboBox Data="@Servers" Value="@SelectedServer" CssClass="combobox-container ml-3 mt-2"
+                            ValueChanged="@((CompanyServer s) => SelectedServerChanged(s))" NullText="Select a server..."
+                            TextFieldName="Name" SearchMode="ListSearchMode.AutoSearch" @key=SelectedServerKey>
+                    <Buttons>
+                        <DxEditorButton IconCssClass="fas fa-check-double"
+                                        Tooltip="Select All Servers"
+                                        Click="@OnSelectAllServers" />
+                    </Buttons>
+                </DxComboBox>
+            }
+            else
+            {
+                <!-- Badge for Server with an icon -->
+                <div class="badge-container mx-3">
+                    <span class="badge-style pill-tone-2">
+                        <i class="fas fa-server badge-icon"></i>
+                        <strong> Server: </strong> @SelectedServer?.Name
+                    </span>
+                </div>
+            }
+        }
+        @if (ShowCompanyPill)
+        {
+            @if (Servers != null)
+            {
+                <DxComboBox Data="@Companies" Value="@SelectedCompany" CssClass="combobox-container ml-3 mt-2"
+                            ValueChanged="@((Company s) => SelectedCompanyChanged(s))" NullText="Select a company..."
+                            TextFieldName="Name" SearchMode="ListSearchMode.AutoSearch" @key=SelectedCompanyKey>
+                    <Buttons>
+                        <DxEditorButton IconCssClass="fas fa-check-double"
+                                        Tooltip="Select All Servers"
+                                        Click="@OnSelectAllCompanies" />
+                    </Buttons>
+                </DxComboBox>
+            }
+            else
+            {
+                <!-- Badge for Server with an icon -->
+                <div class="badge-container mx-3">
+                    <span class="badge-style pill-tone-2">
+                        <i class="fas fa-server badge-icon"></i>
+                        <strong> Server: </strong> @SelectedServer?.Name
+                    </span>
+                </div>
+            }
+        }
+        @if (ShowEnvironmentPills)
+        {
+            <div class="combobox-container ml-3">
+                    <!-- Badge for Planning Area with an icon -->
+                    <div class="badge-container">
+                        <span class="badge-style pill-tone-1">
+                            <i class="fas fa-map-marker-alt badge-icon"></i>
+                            <strong> Planning Area: </strong> @Subtitle1
+                        </span>
+                    </div>
+                    <!-- Badge for Scenario with an icon -->
+                    <div class="badge-container">
+                        <span class="badge-style pill-tone-2">
+                            <i class="fas fa-clipboard-list badge-icon"></i>
+                            <strong> Scenario: </strong> @Subtitle2
+                        </span>
+                    </div>
+                    <!-- Badge for Environment with an icon -->
+                    <div class="badge-container">
+                        <span class="badge-style pill-tone-3">
+                            <i class="fas fa-server badge-icon"></i>
+                            <strong> Environment: </strong> @Subtitle3
+                        </span>
+                    </div>
+            </div>
+
+        }
+    </label>
+
+    <div>
+        @if (ShowChangeButton)
+        {
+            <DxButton id="change-planning-area" Attributes="@(new Dictionary<string, object> { ["title"] = " Change Planning Area " })" RenderStyle="ButtonRenderStyle.Info" CssClass="btn-icon mr-2" IconCssClass="fas fa-exchange-alt" Click="@OnChange" />
+        }
+        @if (ShowSaveButton)
+        {
+            <DxButton Attributes="@(new Dictionary<string, object> { ["title"] = " Save " })" RenderStyle="ButtonRenderStyle.Info" CssClass="btn-icon mr-2" IconCssClass="fa fa-floppy-disk" Click="@OnSave" />
+        }
+        @if (ShowSaveAsCopyButton)
+        {
+            <DxButton Attributes="@(new Dictionary<string, object> { ["title"] = " Save as Copy " })" RenderStyle="ButtonRenderStyle.Info" CssClass="btn-icon mr-2" IconCssClass="fa fa-copy" Click="@OnSaveAsCopy" />
+        }
+        @if (ShowSendButton)
+        {
+            <DxButton Attributes="@(new Dictionary<string, object> { ["title"] = " Send Request" })" RenderStyle="ButtonRenderStyle.Info" CssClass="btn-icon mr-2" IconCssClass="fa fa-send" Click="@OnSend" />
+        }
+        @if (ShowQuestionButton)
+        {
+            <DxButton id="question-area" Attributes="@(new Dictionary<string, object> { ["title"] = " Show Hints " })" RenderStyle="ButtonRenderStyle.Info" CssClass="btn-icon mr-2" IconCssClass="fa-solid fa-question" Click="@OnQuestion" />
+        }
+        @if (ShowRevertButton)
+        {
+            <DxButton Attributes="@(new Dictionary<string, object> { ["title"] = " Revert Changes " })"
+                      RenderStyle="ButtonRenderStyle.Warning"
+                      CssClass="btn-icon mr-2"
+                      IconCssClass="fas fa-rotate-left"
+                      Click="@OnRevert" />
+        }
+        @if (ShowCloseButton)
+        {
+            <DxButton Attributes="@(new Dictionary<string, object> { ["title"] = " Close " })" RenderStyle="ButtonRenderStyle.Info" CssClass="btn-icon" IconCssClass="fa fa-xmark" Click="@HandleCloseClick" />
+        }
+        @if (ShowReturnButton)
+        {
+            <DxButton Attributes="@(new Dictionary<string, object> { ["title"] = " Return " })" RenderStyle="ButtonRenderStyle.Info" CssClass="btn-icon" IconCssClass="fa fa-arrow-left" Click="@OnReturn" />
+        }
+        @if (ShowRefreshButton)
+        {
+            <DxButton Attributes="@(new Dictionary<string, object> { ["title"] = " Refresh " })" RenderStyle="ButtonRenderStyle.Info" CssClass="btn-icon" IconCssClass="fa fa-rotate-right" Click="@RefreshClicked"/>
+        }
+    </div>
+</div>
+
+<DxPopup @bind-Visible="isConfirmationVisible" ShowCloseButton="false" ShowFooter="true" Width="300px">
+    <HeaderTemplate>
+        <h5 class="popup-header">Confirmation</h5>
+    </HeaderTemplate>
+    <BodyTemplate>
+        <p class="popup-body">You have unsaved changes. Are you sure you want to close?</p>
+    </BodyTemplate>
+    <FooterTemplate>
+        <div class="d-flex p-3">
+            <DxButton Text="Yes" RenderStyle="ButtonRenderStyle.Primary" Click="@OnConfirmClose" />
+            <div style="width: 10px"></div>
+            <DxButton Text="No" RenderStyle="ButtonRenderStyle.Secondary" Click="@OnCancelClose" />
+        </div>
+    </FooterTemplate>
+</DxPopup>
+
+@code {
+    // List of options for ComboBoxes
+    [Parameter] public IEnumerable<CompanyServer> Servers { get; set; }
+    [Parameter] public CompanyServer SelectedServer { get; set; }
+    [Parameter] public IEnumerable<Company> Companies { get; set; }
+    [Parameter] public Company SelectedCompany { get; set; }
+    Guid SelectedServerKey { get; set; } = Guid.NewGuid();
+    Guid SelectedCompanyKey { get; set; } = Guid.NewGuid();
+
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Subtitle { get; set; }
+    [Parameter] public string Subtitle1 { get; set; }
+    [Parameter] public string Subtitle2 { get; set; }
+    [Parameter] public string Subtitle3 { get; set; }
+    [Parameter] public bool IsReadOnly { get; set; } = true; // New ReadOnly Parameter
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnSaveAsCopy { get; set; }
+    [Parameter] public EventCallback OnChange { get; set; }
+    [Parameter] public EventCallback OnQuestion { get; set; }
+    [Parameter] public EventCallback OnSend { get; set; }
+    [Parameter] public EventCallback OnReturn { get; set; }
+    [Parameter] public EventCallback OnSelectAllServers { get; set; }
+    [Parameter] public EventCallback OnRevert { get; set; }
+    [Parameter] public EventCallback OnRefresh { get; set; }
+    [Parameter] public bool ShowRevertButton { get; set; } = false;
+    [Parameter] public EventCallback OnSelectAllCompanies { get; set; }
+    [Parameter] public EventCallback<CompanyServer> OnSelectServer { get; set; }
+    [Parameter] public EventCallback<Company> OnSelectCompany { get; set; }
+    [Parameter] public bool ShowServerPill { get; set; } = false;
+    [Parameter] public bool ShowCompanyPill { get; set; } = false;
+    [Parameter] public bool ShowEnvironmentPills { get; set; } = false;
+    [Parameter] public bool ShowSaveButton { get; set; } = true;
+    [Parameter] public bool ShowSaveAsCopyButton { get; set; } = false;
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public bool ShowReturnButton { get; set; } = false;
+    [Parameter] public bool ShowChangeButton { get; set; } = false;
+    [Parameter] public bool ShowQuestionButton { get; set; } = false;
+    [Parameter] public bool ShowSendButton { get; set; } = false;
+    [Parameter] public bool ConfirmOnClose { get; set; } = false;
+    [Parameter] public bool BigTitle { get; set; } = true;
+    [Parameter] public bool ShowRefreshButton { get; set; } = false;
+    
+    private bool isConfirmationVisible = false;
+    private bool filtersSetFromStorage = false;
+    private int storedServerId = 0;
+    private int storedCompanyId = 0;
+
+    protected async override Task OnInitializedAsync()
+    {
+        string? storedServerIdRequest = HttpContextAccessor?.HttpContext?.Request.Cookies["SelectedServer"];
+        if (!string.IsNullOrEmpty(storedServerIdRequest)) storedServerId = int.Parse(storedServerIdRequest);
+        var storedCompanyIdRequest = HttpContextAccessor?.HttpContext?.Request.Cookies["SelectedCompany"];
+        if (!string.IsNullOrEmpty(storedCompanyIdRequest)) storedCompanyId = int.Parse(storedCompanyIdRequest);
+        if (!filtersSetFromStorage && Servers?.Any() == true && Companies?.Any() == true)
+        {
+            filtersSetFromStorage = true;
+            // If a value was stored in session storage, the value is different from the selected server, and the value exists in the list of available servers
+            if (storedServerId != 0 && storedServerId != SelectedServer.Id && Servers.Any(x => x.Id == storedServerId))
+            {
+                SelectedServer = Servers.First(x => x.Id == storedServerId);
+                await OnSelectServer.InvokeAsync(SelectedServer);
+            }
+            // If a value was stored in session storage, the value is different from the selected server, and the value exists in the list of available servers
+            if (storedCompanyId != 0 && storedCompanyId != SelectedCompany.Id && Companies.Any(x => x.Id == storedCompanyId))
+            {
+                SelectedCompany = Companies.First(x => x.Id == storedCompanyId);
+                await OnSelectCompany.InvokeAsync(SelectedCompany);
+            }
+        }
+    }
+
+    private async Task SelectedServerChanged(CompanyServer server)
+    {
+        SelectedServer = server;
+        //This leaks the server id to the user, not a huge deal since our apis (should be!) authenticated.
+        //Even if the user can't mess with apis using the id this is still generally considered bad since
+        //we use auto-incrementing id's as this leaks (roughly) the number of servers which exist.
+        //Again, not a huge deal, but it is generally considered bad to do this.
+        //Perhaps we should consider using random ids instead of auto-incremented. TODO: Consider not using auto-increment id in DB
+        await Cookie.Set("SelectedServer", server.Id.ToString());
+        await OnSelectServer.InvokeAsync(SelectedServer);
+    }
+
+    private async Task SelectedCompanyChanged(Company company)
+    {
+        SelectedCompany = company;
+        await Cookie.Set("SelectedCompany", company.Id.ToString());
+        await OnSelectCompany.InvokeAsync(SelectedCompany);
+    }
+
+    // Lifecycle method to handle parameter updates
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await ResetSelectedFromCookies();
+    }
+
+    public async Task ResetSelectedFromCookies()
+    {
+        string storedServerIdRequest = (await Cookie.Get("SelectedServer"));
+        if (!string.IsNullOrEmpty(storedServerIdRequest)) storedServerId = int.Parse(storedServerIdRequest);
+        var storedCompanyIdRequest = await Cookie.Get("SelectedCompany");
+        if (!string.IsNullOrEmpty(storedCompanyIdRequest)) storedCompanyId = int.Parse(storedCompanyIdRequest);
+        if (!filtersSetFromStorage && Servers?.Any() == true && Companies?.Any() == true)
+        {
+            filtersSetFromStorage = true;
+            // If a value was stored in session storage, the value is different from the selected server, and the value exists in the list of available servers
+            if (storedServerId != 0 && storedServerId != SelectedServer.Id && Servers.Any(x => x.Id == storedServerId))
+            {
+                SelectedServer = Servers.First(x => x.Id == storedServerId);
+                await OnSelectServer.InvokeAsync(SelectedServer);
+            }
+            // If a value was stored in session storage, the value is different from the selected server, and the value exists in the list of available servers
+            if (storedCompanyId != 0 && storedCompanyId != SelectedCompany.Id && Companies.Any(x => x.Id == storedCompanyId))
+            {
+                SelectedCompany = Companies.First(x => x.Id == storedCompanyId);
+                await OnSelectCompany.InvokeAsync(SelectedCompany);
+            }
+        }
+    }
+
+    private async Task HandleCloseClick()
+    {
+        if (ConfirmOnClose)
+        {
+            isConfirmationVisible = true;
+        }
+        else
+        {
+            await OnClose.InvokeAsync(null);
+        }
+    }
+
+    private async Task OnConfirmClose()
+    {
+        isConfirmationVisible = false;
+        await OnClose.InvokeAsync(null);
+    }
+
+    private void OnCancelClose()
+    {
+        isConfirmationVisible = false;
+    }
+
+    private async Task RefreshClicked()
+    {
+        var tempSCompany = SelectedCompany;
+        var tempSServer = SelectedServer;
+        await OnRefresh.InvokeAsync();
+        SelectedCompany = tempSCompany;
+        SelectedServer = tempSServer;
+    }
+
+}

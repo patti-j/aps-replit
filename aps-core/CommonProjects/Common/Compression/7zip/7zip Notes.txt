@@ -1,0 +1,3 @@
+﻿The files under the 7zip folder are from the 7zip SDK. The source SDK can be found from www.7-zip.org.
+These files are the actual compression methods, there is no external files or programs used to compress or decompress.
+The only code file being maintained by PT is Compress\SevenZipHelper.cs which calls the actual encode and decode functions.

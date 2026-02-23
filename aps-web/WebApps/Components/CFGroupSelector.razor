@@ -1,0 +1,97 @@
+﻿@using ReportsWebApp.DB.Services.Interfaces
+
+<DxGrid Data="@Data"
+        @ref="Grid"
+        AllowSelectRowByClick="!IsReadonly"
+        SelectionMode="GridSelectionMode.Multiple"
+        ShowFilterRow="true"
+        PageSize="1000"
+        CssClass="bulk-grid"
+        SelectAllCheckboxMode="GridSelectAllCheckboxMode.AllPages"
+        SelectedDataItems="IsReadonly ? new List<CustomField>() : (IReadOnlyList<CustomField>)SelectedData"
+        SelectedDataItemsChanged="(IReadOnlyList<object> x) => OnSelectedItemsChange(x.Cast<CustomField>())">
+    <Columns>
+        @if (!IsReadonly)
+        {
+            <DxGridSelectionColumn Width="50px"></DxGridSelectionColumn>
+        }
+        <DxGridDataColumn FieldName="@nameof(CustomField.Name)"
+                            Caption="Name"/>
+        <DxGridDataColumn FieldName="@nameof(CustomField.ExternalId)"
+                            Caption="External Id"/>
+        <DxGridDataColumn FieldName="@nameof(CustomField.Type)"
+                          Caption="Type" />
+        <DxGridDataColumn FieldName="@nameof(CustomField.Object)"
+                            Caption="Object"/>
+    </Columns>
+</DxGrid>
+
+@code {
+
+    private User User { get; set; }
+    public DxGrid Grid { get; set; }
+
+    [Parameter]
+    public List<CustomField>? Data { get; set; }
+    [Parameter]
+    public IEnumerable<CustomField> SelectedData { get; set; }
+    [Parameter]
+    public Func<List<CustomField>, Task> OnChange { get; set; }
+    [Parameter]
+    public CFGroup Group { get; set; }
+    private bool selectedDataApplied = false;
+    [Parameter]
+    public bool IsReadonly { get; set; } = false;
+
+    [Inject]
+    IUserService userService { get; set; }
+    [Inject]
+    IPlanningAreaLoginService paService { get; set; }
+    [Inject]
+    ICustomFieldService cfService { get; set; }
+    [Inject] IAuthorizationService m_authService { get; set; }
+
+    private void OnSelectedItemsChange(IEnumerable<CustomField> cfs)
+    {
+        OnChange(cfs.ToList());
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await userService.GetCurrentUserAsync(AuthenticationStateProvider);
+
+
+        if (User.Exists())
+        {
+            if (Data == null)
+            {
+                Data = await cfService.GetCFsForCompanyAsync(User.CompanyId);
+            }
+            SelectedData = Group?.CustomFields;
+        }
+        
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Grid != null && !selectedDataApplied)
+        {
+            Grid.BeginUpdate();
+            
+            selectedDataApplied = true;
+            Grid.EndUpdate();
+        }
+        
+        HTUtils.Utils.UpdateGridStyling(Grid);
+    }
+
+    // private void OnSelectedDataItemChange(IReadOnlyList<object> newSelection)
+    // {
+    //     if (newSelection is IGridSelectionChanges changes)
+    //     {
+    //         SelectedData = ListBox.SelectedDataItems.Cast<PADetails>().ToList();
+    //         OnChange(SelectedData);
+    //     }
+
+    // }
+}

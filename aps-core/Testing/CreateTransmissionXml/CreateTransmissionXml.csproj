@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Update="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Update="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\ImportAndPublishing\ERPLibrary\ERPLibrary.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\ERPTransmissions\ERPTransmissions.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\Transmissions\Transmissions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="XML\AlternatePath.xml" />
+    <Content Include="XML\Capability.xml" />
+    <Content Include="XML\CapacityIntervalDef.xml" />
+    <Content Include="XML\Cell.xml" />
+    <Content Include="XML\Department.xml" />
+    <Content Include="XML\Forecast.xml" />
+    <Content Include="XML\Item.xml" />
+    <Content Include="XML\Job.xml" />
+    <Content Include="XML\ManufacturingOrder.xml" />
+    <Content Include="XML\MaterialRequirement.xml" />
+    <Content Include="XML\plant.xml" />
+    <Content Include="XML\Product.xml" />
+    <Content Include="XML\ProductRule.xml" />
+    <Content Include="XML\PT.ERPLibrary.xml" />
+    <Content Include="XML\PT.ERPTransmissions.PlantT+Plant.xml" />
+    <Content Include="XML\PT.ERPTransmissions.xml" />
+    <Content Include="XML\PT.SchedulerDefinitions.xml" />
+    <Content Include="XML\PT.Transmissions.xml" />
+    <Content Include="XML\PurchaseToStock.xml" />
+    <Content Include="XML\RecurringCapacityIntervalDef.xml" />
+    <Content Include="XML\Resource.xml" />
+    <Content Include="XML\ResourceOperation.xml" />
+    <Content Include="XML\SalesOrder.xml" />
+    <Content Include="XML\SalesOrderLine.xml" />
+    <Content Include="XML\SalesOrderLineDistribution.xml" />
+    <Content Include="XML\TransferOrder.xml" />
+    <Content Include="XML\TransferOrderDistribution.xml" />
+    <Content Include="XML\User.xml" />
+    <Content Include="XML\VesselType.xml" />
+    <Content Include="XML\Warehouse.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

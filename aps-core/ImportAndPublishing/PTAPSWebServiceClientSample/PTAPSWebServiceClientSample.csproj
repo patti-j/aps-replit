@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.csproj" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.ServiceModel" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Connected Services\APSWebServiceRef\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Connected Services\APSWebServiceRef\APSWebService.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Connected Services\APSWebServiceRef\APSWebService1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Connected Services\APSWebServiceRef\APSWebService2.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Connected Services\APSWebServiceRef\APSWebService3.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Connected Services\APSWebServiceRef\APSWebService4.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Connected Services\APSWebServiceRef\PTAPSWebServiceClientSample.APSWebServiceRef.ApsWebServiceResponseBase.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Connected Services\APSWebServiceRef\PTAPSWebServiceClientSample.APSWebServiceRef.CopyScenarioResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Connected Services\APSWebServiceRef\PTAPSWebServiceClientSample.APSWebServiceRef.CtpResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Connected Services\APSWebServiceRef\PTAPSWebServiceClientSample.APSWebServiceRef.DeleteScenarioResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Connected Services\APSWebServiceRef\PTAPSWebServiceClientSample.APSWebServiceRef.GetScenariosResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Connected Services\APSWebServiceRef\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Connected Services\APSWebServiceRef\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

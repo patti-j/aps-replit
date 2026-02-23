@@ -1,0 +1,29 @@
+#-------------------------------------------------------------------------------#
+#               Qodana analysis is configured by qodana.yaml file               #
+#             https://www.jetbrains.com/help/qodana/qodana-yaml.html            #
+#-------------------------------------------------------------------------------#
+version: "1.0"
+
+# Specify the linter to use for .NET projects
+# For .NET Framework and .NET Core/5+ projects, use qodana-dotnet
+linter: qodana-dotnet
+withinDocker: false
+
+# Project configuration
+# Point to your solution file
+dotnet:
+  solution: APSCore.sln
+
+# Inspection profile configuration
+# You can use a custom profile or the default qodana.recommended
+profile:
+  #name: qodana.recommended
+  name: qodana.starter
+
+# Fail threshold - set to 0 initially for testing
+# You can adjust this later based on your quality gate requirements
+failThreshold: 0
+
+#This is an alert that a windows call is in a project that doesn't target a windows platform. However this seems to be a false positive in Qodana as it finds it even in projects that target windows.
+exclude:
+  - name: CA1416

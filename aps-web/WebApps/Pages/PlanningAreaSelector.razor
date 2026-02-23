@@ -1,0 +1,82 @@
+﻿@using DevExpress.Blazor
+@using ReportsWebApp.Resources.Components
+@inject IPlanningAreaDataService PlanningAreaDataService
+@inject IUserService UserService
+
+<DxDropDown @bind-IsOpen="@ShowSelector"
+            MinWidth="max(25vw, 150px)"
+            PositionMode="DropDownPositionMode.Bottom"
+            PositionTarget="#change-planning-area"
+            RestrictionTarget="#Navigation-DropDown-Customization"
+            CloseMode="DropDownCloseMode.Close"
+            PreventCloseOnPositionTargetClick="true"
+            HeaderVisible="true"
+            HeaderText="Planning Areas Selector"
+            FooterVisible="false">
+    <HeaderTemplate>
+        <ServerContextHeader Title="Planning Areas Selector" BigTitle=false
+                           ShowSaveAsCopyButton=false ShowSaveButton=false ShowCloseButton=false ShowChangeButton=false />
+    </HeaderTemplate>
+    <BodyContentTemplate>
+        <div class="align-items-center d-flex justify-content-end w-100">
+            <small class="mx-2"> Search more: </small>
+            <DxComboBox Data="@PlanningAreas"
+                        Value="SelectedPlanningArea"
+                        SearchMode="ListSearchMode.AutoSearch"
+                        SearchFilterCondition="ListSearchFilterCondition.Contains"
+                        ValueChanged="@((PADetails pADetails) => HandlePlanningAreaChanged(pADetails))">
+                <Columns>
+                    <DxListEditorColumn FieldName="Name" Caption="Planning Area" />
+                    <DxListEditorColumn FieldName="Version" Caption="Version" />
+                </Columns>
+            </DxComboBox>
+        </div>
+        @foreach(PADetails pADetails in PlanningAreas)
+        {     
+            <div class="my-2 w-100">
+                <PaContainer FullWidth=true EnableMainButton=@(pADetails.Id != SelectedPlanningArea.Id) HideUsersOnline="true" TextButton=@(pADetails.Id == SelectedPlanningArea.Id ? "Current" : "Select") ShouldDisplayLogin="false" UsersOnline="-1" Click="@(context => HandlePlanningAreaChanged(pADetails))"
+                             SoftwareVersion="@(pADetails.Version)" InstanceName="@(pADetails.Name)" />
+            </div>
+        }
+    </BodyContentTemplate>
+</DxDropDown>
+
+@code {
+    [Parameter] public EventCallback PlanningAreaSelected { get; set; }
+    [Parameter] public bool ShowSelector { get; set; }
+    [Parameter] public EventCallback<bool> ShowSelectorChanged { get; set; }
+
+    private List<PADetails> PlanningAreas { get; set; } = new();
+    private PADetails SelectedPlanningArea { get; set; }
+    private User user;
+    private int companyId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load planning areas from the service
+        companyId = await GetCurrentUserCompanyIdAsync();
+        PlanningAreas = await PlanningAreaDataService.GetPlanningAreasByCompanyIdAsync(companyId);
+
+        // Set the default selected Planning Area
+        if (PlanningAreas.Any())
+        {
+            SelectedPlanningArea = await PlanningAreaDataService.GetSelectedPlanningAreaByCompanyIdAndUserIdAsync(companyId, user.Id);
+        }
+    }
+
+    private async Task HandlePlanningAreaChanged(PADetails pADetails)
+    {
+        SelectedPlanningArea = pADetails;
+        if (SelectedPlanningArea != null)
+        {
+            await PlanningAreaDataService.SelectPlanningAreaAsync(SelectedPlanningArea, companyId, user.Id);
+            await PlanningAreaSelected.InvokeAsync();
+        }
+    }
+
+    private async Task<int> GetCurrentUserCompanyIdAsync()
+    {
+        user = await UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+        return user.CompanyId;
+    }
+}

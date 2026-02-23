@@ -1,0 +1,10 @@
+[
+  {
+    "importDate": "2024-02-05T10:30:00",
+    "InventoryId": 12345,
+    "PurchaseToStockId": 67890,
+    "AdjustmentDate": "2024-02-05T15:45:00",
+    "AdjustmentQty": 10.5,
+    "AdjustmentReason": "Damaged Goods"
+  }
+]

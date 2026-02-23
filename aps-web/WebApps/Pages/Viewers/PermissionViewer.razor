@@ -1,0 +1,199 @@
+@page "/permissionViewer"
+@using ReportsWebApp.DB.Services.Interfaces
+@if (viewPermission)
+{
+    <div>
+        <h3>Permission Viewer</h3>
+        <h5>View Permissions assigned to a User or Users assigned to a Permission</h5>
+        <DxTabs ActiveTabIndexChanged="TabChanged">
+            <DxTab Text="Permissions by User"></DxTab>
+            <DxTab Text="Users by Permission"></DxTab>
+        </DxTabs>
+        <DxFormLayout CssClass="bulk-tab-form">
+            <DxFormLayoutItem>
+                @switch (m_page)
+                {
+                    case 0:
+                    {
+                        <DxGrid ShowFilterRow="true" Data="@MapPermissionsToUser"
+                                EditMode="GridEditMode.EditRow"
+                                PageSize="10"
+                                CssClass="ch-480"
+                                PagerPosition="GridPagerPosition.TopAndBottom"
+                                PageSizeSelectorVisible="true"
+                                PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+                                PageSizeSelectorAllRowsItemVisible="false"
+                                PagerSwitchToInputBoxButtonCount="10"
+                                PagerVisibleNumericButtonCount="10"
+                                AllowSelectRowByClick="false"
+                                ColumnResizeMode="GridColumnResizeMode.ColumnsContainer"
+                                @ref="m_grid1">
+                            <Columns>
+                                <DxGridDataColumn FieldName="UserString" Caption="User" ReadOnly="true"></DxGridDataColumn>
+                                <DxGridDataColumn FieldName="PermissionsString" Caption="Permissions" ReadOnly="true"></DxGridDataColumn>
+                            </Columns>
+                            </DxGrid>
+                        break;
+                    }
+                    case 1:
+                    {
+                <DxGrid ShowFilterRow="true" Data="@MapUsersToPermissions"
+                        EditMode="GridEditMode.EditRow"
+                        PageSize="10"
+                        CssClass="ch-480"
+                        PagerPosition="GridPagerPosition.TopAndBottom"
+                        PageSizeSelectorVisible="true"
+                        PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+                        PageSizeSelectorAllRowsItemVisible="false"
+                        PagerSwitchToInputBoxButtonCount="10"
+                        PagerVisibleNumericButtonCount="10"
+                        AllowSelectRowByClick="false"
+                        ColumnResizeMode="GridColumnResizeMode.ColumnsContainer"
+                        @ref="m_grid2">
+                    <Columns>
+                        <DxGridDataColumn FieldName="PermissionString" Caption="Permission" ReadOnly="true"></DxGridDataColumn>
+                        <DxGridDataColumn FieldName="UsersString" Caption="Users" ReadOnly="true"></DxGridDataColumn>
+                    </Columns>
+                </DxGrid>
+                        break;
+                    }
+                }
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </div>
+}
+
+@code {
+    private User User { get; set; }
+    private Company Company;
+    private bool viewPermission = false;
+    private int m_page = 0;
+
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    ICompanyService companyService { get; set; }
+    [Inject]
+    IPlanningAreaLoginService paService { get; set; }
+
+    private List<PermissionsToUser> MapPermissionsToUser = new ();
+    private List<UsersToPermission> MapUsersToPermissions = new ();
+    private DxGrid m_grid1;
+    private DxGrid m_grid2;
+
+    private class PermissionsToUser
+    {
+        public User User { get; set; }
+
+        public string UserString
+        {
+            get
+            {
+                string txt = "";
+                if (User.Name != null)
+                {
+                    txt += User.Name;
+                }
+
+                if (User.LastName != null)
+                {
+                    txt += $" {User.LastName}";
+                }
+
+                txt = txt.Trim();
+
+                if (string.IsNullOrEmpty(txt))
+                {
+                    txt = !string.IsNullOrEmpty(User.Email) ? User.Email : "Unknown"; //User doesnt have a name, last name, or an email
+                }
+
+                return txt;
+            }
+        }
+
+        public List<Permission> Permissions { get; set; } = new();
+        public string PermissionsString => string.Join(", ", Permissions.Select(p => p.Name).ToList());
+    }
+
+    private class UsersToPermission
+    {
+        public Permission Permission { get; set; }
+        public string PermissionString => Permission.Name;
+        public List<User> Users = new();
+        public string UsersString => string.Join(", ", Users.Select(u =>
+        {
+            string txt = "";
+            if (u.Name != null)
+            {
+                txt += u.Name;
+            }
+
+            if (u.LastName != null)
+            {
+                txt += $" {u.LastName}";
+            }
+
+            txt = txt.Trim();
+
+            if (string.IsNullOrEmpty(txt))
+            {
+                txt = !string.IsNullOrEmpty(u.Email) ? u.Email : "Unknown";
+            }
+
+            return txt;
+        }));
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.ViewUsers, NavigationManager, true)) return;
+        viewPermission = true;
+
+        Company = User.Company;
+        var users = await m_userService.GetUsersAsync(null, Company.Id);
+        List<Permission> allPermissions = AuthUtils.AllPermissions;
+        foreach (User user in users)
+        {
+            PermissionsToUser ptu = new ();
+            ptu.User = user;
+            var pKeys = user.Roles.SelectMany(g => g.Permissions).Distinct().ToList();
+            ptu.Permissions = pKeys.Select( pk => allPermissions.FirstOrDefault(p => p.Key == pk))
+                                   .Where(p => p != null).ToList()!;
+            
+            MapPermissionsToUser.Add(ptu);
+            
+            foreach (Permission permission in ptu.Permissions)
+            {
+                if (!MapUsersToPermissions.Any(p => p.Permission.Key == permission.Key))
+                {
+                    var utp = new UsersToPermission();
+                    utp.Permission = permission;
+                    utp.Users.Add(user);
+                    MapUsersToPermissions.Add(utp);
+                }
+                else
+                {
+                    UsersToPermission utp = MapUsersToPermissions.First( p => p.Permission.Key == permission.Key);
+                    if (!utp.Users.Any(u => u.Id == user.Id))
+                    {
+                        utp.Users.Add(user);
+                    }
+                }
+            }
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(m_grid1);
+        HTUtils.Utils.UpdateGridStyling(m_grid2);
+        base.OnAfterRender(firstRender);
+    }
+
+    private void TabChanged(int a_tabIndex)
+    {
+        m_page = a_tabIndex;
+    }
+
+}

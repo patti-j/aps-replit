@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Import shared properties and targets. Including framework version -->
+	<Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+	  <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Builders\Paths.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs" Link="AssemblyInfoShared.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="BuildPaths.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PT.AzureSignTool" Version="12.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+  </ItemGroup>
+</Project>

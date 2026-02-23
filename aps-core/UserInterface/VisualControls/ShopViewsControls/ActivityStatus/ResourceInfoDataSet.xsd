@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ResourceInfoDataSet" targetNamespace="http://tempuri.org/ResourceInfoDataSet.xsd" xmlns:mstns="http://tempuri.org/ResourceInfoDataSet.xsd" xmlns="http://tempuri.org/ResourceInfoDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="ResourceInfoDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="ResourceInfoDataSet" msprop:Generator_UserDSName="ResourceInfoDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="CleanoutAndOfflineIntervals" msprop:Generator_TableClassName="CleanoutAndOfflineIntervalsDataTable" msprop:Generator_TableVarName="tableCleanoutAndOfflineIntervals" msprop:Generator_RowChangedName="CleanoutAndOfflineIntervalsRowChanged" msprop:Generator_TablePropName="CleanoutAndOfflineIntervals" msprop:Generator_RowDeletingName="CleanoutAndOfflineIntervalsRowDeleting" msprop:Generator_RowChangingName="CleanoutAndOfflineIntervalsRowChanging" msprop:Generator_RowEvHandlerName="CleanoutAndOfflineIntervalsRowChangeEventHandler" msprop:Generator_RowDeletedName="CleanoutAndOfflineIntervalsRowDeleted" msprop:Generator_RowClassName="CleanoutAndOfflineIntervalsRow" msprop:Generator_UserTableName="CleanoutAndOfflineIntervals" msprop:Generator_RowEvArgName="CleanoutAndOfflineIntervalsRowChangeEvent">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Interval_x0020_Type" msprop:Generator_ColumnVarNameInTable="columnInterval_Type" msprop:Generator_ColumnPropNameInRow="Interval_Type" msprop:Generator_ColumnPropNameInTable="Interval_TypeColumn" msprop:Generator_UserColumnName="Interval Type" type="xs:string" minOccurs="0" />
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" minOccurs="0" />
+              <xs:element name="Description" msprop:Generator_ColumnVarNameInTable="columnDescription" msprop:Generator_ColumnPropNameInRow="Description" msprop:Generator_ColumnPropNameInTable="DescriptionColumn" msprop:Generator_UserColumnName="Description" type="xs:string" minOccurs="0" />
+              <xs:element name="Start" msprop:Generator_ColumnVarNameInTable="columnStart" msprop:Generator_ColumnPropNameInRow="Start" msprop:Generator_ColumnPropNameInTable="StartColumn" msprop:Generator_UserColumnName="Start" type="xs:dateTime" minOccurs="0" />
+              <xs:element name="End" msprop:Generator_ColumnVarNameInTable="columnEnd" msprop:Generator_ColumnPropNameInRow="End" msprop:Generator_ColumnPropNameInTable="EndColumn" msprop:Generator_UserColumnName="End" type="xs:dateTime" minOccurs="0" />
+              <xs:element name="Duration_x0020_Hours" msprop:Generator_ColumnVarNameInTable="columnDuration_Hours" msprop:Generator_ColumnPropNameInRow="Duration_Hours" msprop:Generator_ColumnPropNameInTable="Duration_HoursColumn" msprop:Generator_UserColumnName="Duration Hours" type="xs:double" minOccurs="0" />
+              <xs:element name="Recurrence" msprop:Generator_ColumnVarNameInTable="columnRecurrence" msprop:Generator_ColumnPropNameInRow="Recurrence" msprop:Generator_ColumnPropNameInTable="RecurrenceColumn" msprop:Generator_UserColumnName="Recurrence" type="xs:string" minOccurs="0" />
+              <xs:element name="Notes" msprop:Generator_ColumnVarNameInTable="columnNotes" msprop:Generator_ColumnPropNameInRow="Notes" msprop:Generator_ColumnPropNameInTable="NotesColumn" msprop:Generator_UserColumnName="Notes" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Import shared properties and targets. Including framework version -->
+	<Import Project="..\..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+	<PropertyGroup>
+	  <AssemblyName>PT.ServerManagerAPIProxy</AssemblyName>
+	  <RootNamespace>PT.ServerManagerAPIProxy</RootNamespace>
+	</PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\..\CommonProjects\ServerManagerSharedLib\ServerManagerSharedLib.csproj" />
+    <ProjectReference Include="..\..\Definitions\APIDefintion\APIDefinitions.csproj" />
+  </ItemGroup>
+	<PropertyGroup>
+		<DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+	</PropertyGroup>
+</Project>

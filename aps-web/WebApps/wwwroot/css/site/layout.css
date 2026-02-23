@@ -1,0 +1,70 @@
+﻿/* Layout and Structural Styles */
+.main,
+.page,
+.content {
+    height: 100%;
+    max-height: 100vh;
+    background: var(--bs-body-bg);
+}
+
+.container-panel {
+    overflow-y: auto;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+}
+
+.content {
+    padding: 2px 0 12px;
+}
+
+/* Custom Scrollbar Styles */
+.container-panel::-webkit-scrollbar {
+    width: 8px; /* Scrollbar width */
+}
+
+.container-panel::-webkit-scrollbar-track {
+    background-color: #f1f1f1; /* Scrollbar track background */
+    border-radius: 10px;
+}
+
+.container-panel::-webkit-scrollbar-thumb {
+    background-color: #888; /* Scrollbar thumb color */
+    border-radius: 10px;
+}
+
+    .container-panel::-webkit-scrollbar-thumb:hover {
+        background-color: #555; /* Scrollbar thumb color on hover */
+    }
+
+.spa-main {
+    margin-bottom: 90vh;
+}
+
+.container-panel > .container {
+    position: absolute;
+    top: 0;
+    left: 195px;
+}
+
+/* Pointer Cursor for Checkboxes */
+.dxbl-checkbox input {
+    cursor: pointer;
+}
+
+/* Remove Borders in Specific Layout */
+.no-borders > dxbl-form-layout > .dxbl-row > dxbl-form-layout-group > dxbl-group-control,
+.no-borders > dxbl-form-layout > .dxbl-row > dxbl-form-layout-group > dxbl-group-control > .custom-header {
+    border: 0 !important;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .dxbs-menu .dx-menu-title {
+        display: none;
+    }
+
+    .logo-name {
+        width: 105px;
+    }
+}

@@ -1,0 +1,15 @@
+[
+  {
+    "importDate": "2024-01-11T12:34:56",
+    "CapacityIntervalId": 12345,
+    "Name": "Sample Capacity Interval",
+    "ExternalId": "CI-001",
+    "Description": "This is a sample capacity interval description.",
+    "Notes": "Some notes about the capacity interval.",
+    "DurationHrs": 2.5,
+    "EndDateTime": "2024-01-11T15:00:00",
+    "IntervalType": "Production",
+    "NbrOfPeople": 5.0,
+    "StartDateTime": "2024-01-11T10:00:00"
+  }
+]

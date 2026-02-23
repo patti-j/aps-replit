@@ -1,0 +1,80 @@
+﻿@using ReportsWebApp.DB.Models
+
+
+<DxAccordionItem Text="Service Configuration" Expanded=false>
+    <HeaderTextTemplate>
+        <i class="fas fas fa-stethoscope m-2"></i> Diagnostics
+    </HeaderTextTemplate>
+    <ContentTemplate Context="accordionContext">
+        <DxFormLayout CssClass="w-100 p-3">
+            <DxFormLayoutItem Caption="Enable Additional Checksum Logging" ColSpanMd="12">
+                <DxCheckBox @bind-Checked="EnableChecksumDiagnostics">
+                    <div>
+                        Increases instance's logging of scenario state to assist with diagnosing desynchronization errors.
+                        Should be enabled only once desyncs have occurred and disabled after diagnosis.
+                    </div>
+                </DxCheckBox>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Enable Logging to Sentry" ColSpanMd="12">
+                <DxCheckBox @bind-Checked="EnableSentryDiagnostics">
+                    <div>
+                        Enables additional logging of internal software errors for easier development awareness and response.
+                    </div>
+                </DxCheckBox>
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </ContentTemplate>
+</DxAccordionItem>
+
+@code {
+    [Parameter]
+    public PADetails Model { get; set; }
+    
+    [Parameter]
+    public EventCallback<PADetails> ModelChanged { get; set; }
+
+    public bool EnableDiagnostics
+    {
+        get => Model.PlanningArea.Settings.DiagnosticsEnabled;
+        set
+        {
+            Model.PlanningArea.Settings.DiagnosticsEnabled = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public bool EnableApiDiagnostics
+    {
+        get => Model.PlanningArea.Settings.ApiSettings.Diagnostics;
+        set
+        {
+            Model.PlanningArea.Settings.ApiSettings.Diagnostics = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public bool EnableChecksumDiagnostics
+    {
+        get => Model.PlanningArea.Settings.SystemServiceSettings.EnableChecksumDiagnostics.Equals(1);
+        set
+        {
+            Model.PlanningArea.Settings.SystemServiceSettings.EnableChecksumDiagnostics = value ? 1 : 0;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public bool EnableSentryDiagnostics
+    {
+        get => Model.PlanningArea.Settings.UseSentry;
+        set
+        {
+            Model.PlanningArea.Settings.UseSentry = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+
+    }
+}

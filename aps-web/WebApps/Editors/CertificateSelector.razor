@@ -1,0 +1,61 @@
+﻿@* CertificateSelector.razor *@
+@inject ScopedAppStateService ScopedAppStateService
+
+<DxPopup @bind-Visible="ShowPopup" MinWidth="470px" Width="870px" Height="auto" HeaderText="Select Certificate" ShowFooter="true" Closed="OnClosePopup">
+    <BodyContentTemplate Context="popupContext">
+        <DxRadioGroup Items="Certificates"
+                      @bind-Value="SelectedCertificateThumbprint"
+                      ItemTemplate="RenderCertificateItem"
+                      ValueFieldName="Thumbprint"
+                      Layout="RadioGroupLayout.Vertical"
+                      CssClass="p-2" />
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <DxButton RenderStyle="ButtonRenderStyle.Danger" Text="Cancel" Click="OnCancel" />
+        <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Accept" Click="OnAccept" Enabled="@(SelectedCertificateThumbprint != null)" />
+    </FooterContentTemplate>
+</DxPopup>
+@code {
+    [Parameter] public bool ShowPopup { get; set; }
+    [Parameter] public EventCallback<bool> ShowPopupChanged { get; set; }
+    [Parameter] public EventCallback<string> OnCertificateSelected { get; set; }
+    [Parameter] public CompanyServer Server { get; set; }
+
+    private List<ServerCertificate> Certificates { get; set; } = new();
+    private string SelectedCertificateThumbprint { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ShowPopup && Certificates.Count == 0)
+        {
+            Certificates = Server.ServerCertificates;
+            SelectedCertificateThumbprint = Server.Thumbprint;
+        }
+    }
+
+    private async Task OnAccept()
+    {
+        await OnCertificateSelected.InvokeAsync(SelectedCertificateThumbprint);
+        await ShowPopupChanged.InvokeAsync(false);
+        Certificates = new ();
+    }
+
+    private async Task OnCancel()
+    {
+        SelectedCertificateThumbprint = null;
+        await ShowPopupChanged.InvokeAsync(false);
+        Certificates = new();
+    }
+
+    private RenderFragment<ServerCertificate> RenderCertificateItem => certificate => builder =>
+    {
+        builder.OpenComponent(0, typeof(CertificateItem));
+        builder.AddAttribute(1, "Certificate", certificate);
+        builder.CloseComponent();
+    };
+
+    private async Task OnClosePopup()
+    {
+        await ShowPopupChanged.InvokeAsync(false);
+    }
+}

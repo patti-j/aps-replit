@@ -1,0 +1,21 @@
+﻿@page "/usernotfound"
+@inject NavigationManager NavigationManager
+<h3>User not found</h3>
+<div>The user you logged in as was not found in our system. Please log in as a different user or contact your administrator.</div>
+<br />
+<div>
+    <DxButton RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained"
+              Text="Change User" Click="Logoff" />
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public string? redirectUri { get; set; }
+
+    private void Logoff()
+    {
+        // Redirect to the logout page
+        NavigationManager.NavigateTo($"/logout{(string.IsNullOrEmpty(redirectUri) ? "" : $"?redirectUri={redirectUri}")}", true);
+    }
+}

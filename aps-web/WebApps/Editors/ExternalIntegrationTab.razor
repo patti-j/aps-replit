@@ -1,0 +1,49 @@
+@using ReportsWebApp.DB.Models
+@inject ServiceContainer _serviceContainer
+
+<DxAccordionItem Text="External Integration" Expanded=true>
+    <HeaderTextTemplate>
+        <i class="fas fas fa-database m-2"></i> External Integration
+    </HeaderTextTemplate>
+    <ContentTemplate Context="accordionContext">
+        <DxFormLayout CssClass="w-100 p-3">
+            <DxFormLayoutItem Caption="External Integration:">
+                <DxComboBox TData="ExternalIntegration" TValue="ExternalIntegration" AllowUserInput="true" Data="@(AvailableIntegrations.Concat(new ExternalIntegration[] {new ExternalIntegration() { Name = "None", Id = -1 }}))" TextFieldName="Name" Value="SelectedIntegration" ValueChanged="@ComboChanged" NullText="None"/>
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </ContentTemplate>
+</DxAccordionItem>
+
+@code {
+
+    [Parameter]
+    public List<ExternalIntegration> AvailableIntegrations { get; set; }
+
+    [Parameter]
+    public ExternalIntegration? SelectedIntegration { get; set; } = null;
+    
+    [Parameter]
+    public PADetails PlanningArea { get; set; }
+    
+    [Parameter]
+    public EventCallback<PADetails> ModelChanged { get; set; }
+    
+    protected override Task OnInitializedAsync()
+    {
+        if (PlanningArea != null)
+        {
+            if (PlanningArea.ExternalIntegrationId.HasValue)
+            {
+                SelectedIntegration = _serviceContainer.ExternalIntegrationService.GetExternalIntegration(PlanningArea.ExternalIntegrationId.Value);
+            }
+        }
+        return base.OnInitializedAsync();
+    }
+
+    private void ComboChanged(ExternalIntegration? a_obj)
+    {
+        SelectedIntegration = a_obj?.Id == -1 ? null : a_obj;
+        ModelChanged.InvokeAsync(null);
+    }
+
+}

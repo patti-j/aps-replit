@@ -1,0 +1,20 @@
+[
+  {
+    "importDate": "2024-02-05T10:30:00Z",
+    "JobId": 12345,
+    "ManufacturingOrderId": 67890,
+    "OperationId": 789,
+    "ProductId": 456,
+    "CompletedQty": 100.5,
+    "TotalOutputQty": 150.0,
+    "ItemId": 987,
+    "WarehouseId": 543,
+    "ExternalId": "ABC123",
+    "InventoryAvailableTiming": "Immediate",
+    "StoreInTank": true,
+    "SetWarehouseDuringMRP": false,
+    "MaterialPostProcessingHrs": 2.5,
+    "FixedQty": true,
+    "LotCode": "LOT123"
+  }
+]

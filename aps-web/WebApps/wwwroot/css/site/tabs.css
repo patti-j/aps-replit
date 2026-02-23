@@ -1,0 +1,35 @@
+﻿/* Sticky navigation tabs container and individual tab styling */
+.sticky-nav-tabs-container {
+    display: flex;
+    position: sticky;
+    left: 0px;
+    top: 10px;
+    border-top-right-radius: 10px;
+    overflow: hidden;
+    flex-direction: column;
+    width: 180px;
+    transition: top 0.05s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    background-color: var(--bs-body-bg) !important;
+    border-bottom-right-radius: 10px;
+}
+
+.sticky-nav-tab {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    flex: 1;
+    text-decoration: none;
+    background: var(--bs-body-bg);
+    padding: 0.5rem 1rem;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+    .sticky-nav-tab:hover {
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    .sticky-nav-tab.active {
+        background: #2FA4E7;
+        color: white;
+    }

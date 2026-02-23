@@ -1,0 +1,328 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using ReportsWebApp.Helpers
+@inject NavMenuUpdateService NavMenuUpdateService
+@inject NavigationManager Navigation
+@inject ICustomFieldService m_cfService
+@inject IUserService m_userService
+
+@if (CFs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid ShowFilterRow="true" Data="@CFs" 
+            EditModelSaving="OnEditModelSaving"
+            UnboundColumnData="Grid_CustomUnboundColumnData"
+            EditStart="OnEditStart"
+            EditMode="GridEditMode.PopupEditForm" @ref="MyGrid"
+            PageSize="10"
+            CssClass="ch-480"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            AllowSelectRowByClick="@DeleteMode"
+            SelectAllCheckboxMode="GridSelectAllCheckboxMode.Mixed"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+        <Columns>
+            @if (DeleteMode)
+            {
+                <DxGridSelectionColumn Width="50px"></DxGridSelectionColumn>
+            }
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                <HeaderTemplate>
+                    <DxButton IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1" Text="Add" Click="() => MyGrid.StartEditNewRowAsync()" />
+                </HeaderTemplate>
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = context.DataItem;
+                    }
+                    <ActionDropdown DataItem="dataItem as CustomField" Actions="_actions" />
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+            <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" />
+            <DxGridDataColumn FieldName="Name" Caption="Name" MinWidth="100" />
+            <DxGridDataColumn FieldName="ExternalId" Caption="External Id" MinWidth="100" />
+            <DxGridDataColumn FieldName="Type" Caption="Type" MinWidth="100" />
+            <DxGridDataColumn FieldName="Object" Caption="Object" MinWidth="100" />
+            <DxGridDataColumn FieldName="ShowInGrids" Caption="Show in UI" MinWidth="100" />
+
+        </Columns>
+        <EditFormTemplate Context="EditFormContext">
+            @{
+                var cf = (CustomField)EditFormContext.EditModel;
+                cf.Company = User.Company;
+            }
+            <DxFormLayout CssClass="w-100">
+                <DxFormLayoutItem ColSpanMd="12">
+                    <ValidationSummary></ValidationSummary>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Name:" ColSpanMd="12">
+                    <DxTextBox @bind-Text="@cf.Name" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="External Id:" ColSpanMd="12">
+                    <DxTextBox @bind-Text="@cf.ExternalId" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Type:" ColSpanMd="12">
+                    <DxComboBox TextFieldName="Text"
+                        ValueFieldName="Value"
+                        Data="TypeComboList"
+                        @bind-Value="@cf.Type"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Object:" ColSpanMd="12">
+                    <DxComboBox TextFieldName="Text"
+                                ValueFieldName="Value"
+                                Data="ObjectComboList"
+                                @bind-Value="@cf.Object"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Show In UI:" ColSpanMd="12">
+                    <DxCheckBox @bind-Checked="@cf.ShowInGrids" />
+                </DxFormLayoutItem>
+            </DxFormLayout>
+        </EditFormTemplate>
+        <CustomValidators>
+            <CustomValidator DataItemValidating="ValidateData"></CustomValidator>
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+        </CustomValidators>
+        <ToolbarTemplate>
+            <DxToolbar>
+                <DxToolbarItem Text="Export to Excel" Click="ExportXlsx_Click" BeginGroup="true" />
+                <DxToolbarItem Text="Export to CSV" Click="ExportCsv_Click" BeginGroup="true" />
+                @if (!DeleteMode)
+                {
+                    <DxToolbarItem Context="itemCtx" Alignment="ToolbarItemAlignment.Right" BeginGroup="true">
+                        <Template>
+                            <DxButton Context="btnCtx" RenderStyle="ButtonRenderStyle.Danger" Click="() => DeleteMode = true">Delete Mode</DxButton>
+                        </Template>
+                    </DxToolbarItem>
+                } else
+                {
+                    if (MyGrid.SelectedDataItems.Count == 0)
+                    {
+                        <DxToolbarItem Context="itemCtx" Alignment="ToolbarItemAlignment.Right" BeginGroup="true">
+                            <Template>
+                                <DxButton Context="btnCtx" RenderStyle="ButtonRenderStyle.Danger" Click="() => DeleteMode = false">Cancel</DxButton>
+                            </Template>
+                        </DxToolbarItem>
+                    } else
+                    {
+                        <DxToolbarItem Context="itemCtx" Alignment="ToolbarItemAlignment.Right" BeginGroup="true">
+                            <Template>
+                                <DxButton Context="btnCtx" RenderStyle="ButtonRenderStyle.Danger" Click="DeleteSelectedCFs">Delete Selected</DxButton>
+                            </Template>
+                        </DxToolbarItem>
+                    }
+                }
+
+            </DxToolbar>
+        </ToolbarTemplate>
+    </DxGrid>
+    <DxPopup @bind-Visible="@PopupVisible"
+             HeaderText="Concurrency Exception"
+             BodyText="This record was updated or delted while you were editing. Please retry"
+             ShowFooter="true"
+             @ref="Popup">
+        <FooterContentTemplate>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Close" Click="CloseClick" />
+        </FooterContentTemplate>
+    </DxPopup>
+}
+<ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Danger"></ConfirmationDialog>
+
+@code {
+    [Parameter]
+    public Func<Task> RefreshComponent { get; set; }
+    [Parameter]
+    public List<CustomField> CFs { get; set; }
+
+    public DxGrid MyGrid { get; set; }
+    DxPopup Popup;
+    bool PopupVisible { get; set; } = false;
+
+    private User? User { get; set; }
+    private ConfirmationDialog Dialog { get; set; }
+    private List<PADetails> SelectedPAs { get; set; }
+    private record ComboTypeItem(string Text, CustomFieldType Value);
+    private IEnumerable<ComboTypeItem> TypeComboList => Enumerable.Range(0, Enum.GetValues(typeof(CustomFieldType)).Length).Select(item => new ComboTypeItem(Enum.GetName(typeof(CustomFieldType), item), (CustomFieldType)item));
+    private record ComboObjectItem(string Text, CustomFieldObject Value);
+    private IEnumerable<ComboObjectItem> ObjectComboList => Enumerable.Range(0, Enum.GetValues(typeof(CustomFieldObject)).Length).Select(item => new ComboObjectItem(Enum.GetName(typeof(CustomFieldObject), item), (CustomFieldObject)item));
+    private bool ExportSelectedRowsOnly { get; set; } = false;
+    private bool DeleteMode { get; set; } = false;
+    private IEnumerable<ActionItem<CustomField>> _actions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _actions = new List<ActionItem<CustomField>>
+        {
+            new ActionItem<CustomField>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-info-circle",
+                Action = async (item) => await MyGrid.StartEditDataItemAsync(item)
+            },
+            new ActionItem<CustomField>
+            {
+                ActionText = "Copy",
+                IconCssClass = "fa fa-copy",
+                Action = async (item) => CopyDataItem(item)
+            },
+            new ActionItem<CustomField>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fa fa-trash",
+                Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog),
+
+            }
+        };
+        
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (CFs == null)
+        {
+            CFs = await m_cfService.GetCFsForCompanyAsync(User.CompanyId);
+        }
+    }
+
+    async Task CloseClick(MouseEventArgs args)
+    {
+        await RefreshComponent();
+        await Popup.CloseAsync();
+    }
+
+    private async Task OnChange(List<PADetails> pas)
+    {
+        SelectedPAs = pas;
+    }
+
+    protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        var editModel = (e.EditModel as CustomField);
+        if (editModel != null)
+        {
+            var dataItem = editModel.Id == 0 ? new CustomField() : CFs.Find(cf => cf.Id == editModel.Id);
+
+            dataItem.Name = editModel.Name;
+            dataItem.ExternalId = editModel.ExternalId;
+            dataItem.CreatedBy = User.Email;
+            dataItem.CreationDate = DateTime.UtcNow;
+            dataItem.CompanyId = editModel.Company.Id;
+            dataItem.Type = editModel.Type;
+            dataItem.Object = editModel.Object;
+            dataItem.ShowInGantt = editModel.ShowInGantt;
+            dataItem.ShowInGrids = editModel.ShowInGrids;
+            dataItem.CanPublish = editModel.CanPublish;
+
+            var savedEntity = await m_cfService.AddOrUpdateCFAsync(dataItem);
+
+            if (editModel.Id == 0)
+            {
+                CFs.Add(savedEntity);
+            } else
+            {
+                CFs.Replace(savedEntity);
+            }
+
+        }
+    }
+
+    async Task ExportXlsx_Click()
+    {
+        await MyGrid.ExportToXlsxAsync("CustomFields", new GridXlExportOptions()
+            {
+                ExportSelectedRowsOnly = ExportSelectedRowsOnly,
+            });
+    }
+    async Task ExportCsv_Click()
+    {
+        await MyGrid.ExportToCsvAsync("CustomFields", new GridCsvExportOptions()
+            {
+                ExportSelectedRowsOnly = ExportSelectedRowsOnly
+            });
+    }
+
+    private void OnEditStart(GridEditStartEventArgs args)
+    {
+        var group = (CustomField)args.DataItem ?? new CustomField();
+    }
+
+    private async Task DeleteCF(CustomField cf)
+    {
+        await m_cfService.DeleteCFAsync(cf);
+        CFs.Remove(cf);
+    }
+
+    private async Task DeleteCFs(List<CustomField> cfs)
+    {
+        foreach (var cf in cfs)
+        {
+            await DeleteCF(cf);
+        }
+    }
+
+    private async Task DeleteSelectedCFs()
+    {
+        if (!await Dialog.ConfirmOperation("Warning", $"You are about to delete {MyGrid.SelectedDataItems.Count()} Custom Fields. This operation cannot be undone. Do you want to continue?"))
+        {
+            return;
+        }
+        await DeleteCFs(MyGrid.SelectedDataItems.Cast<CustomField>().ToList());
+        MyGrid.BeginUpdate();
+        await MyGrid.DeselectAllAsync();
+        MyGrid.SelectedDataItems = new List<object>();
+        MyGrid.EndUpdate();
+        DeleteMode = false;
+        StateHasChanged();
+    }
+
+    protected async Task DeleteItem(object a_item)
+    {
+        var editModel = (a_item as CustomField);
+        if (editModel != null)
+        {
+            await DeleteCF(editModel);
+        }
+        StateHasChanged();
+    }
+
+    void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+        if (e.FieldName == "Planning Areas")
+        {
+            var id = Convert.ToDecimal(e.GetRowValue("Id"));
+
+            var dataItem = CFs.Find(g => g.Id == id);
+            if (dataItem != null)
+            {
+
+            }
+        }
+    }
+
+    async Task CopyDataItem(CustomField? cf)
+    {
+        if (cf != null && MyGrid != null)
+        {
+            var editItem = new CustomField
+            {
+                Id = 0,
+                Name = cf.Name,
+                ExternalId = cf.ExternalId + "-copy",
+                Type = cf.Type,
+                Object = cf.Object,
+                ShowInGrids = cf.ShowInGrids,
+            };
+            await MyGrid.StartEditDataItemAsync(editItem);
+        }
+    }
+
+    private void ValidateData(ValidationMessageStoreEventArgs e)
+    {
+        var cf = (CustomField)e.EditModel;
+        if (CFs.Any(x => x.ExternalId == cf.ExternalId && x.Id != cf.Id))
+        {
+            e.AddError(nameof(CustomField.ExternalId), "External ID must be unique");
+        }
+    }
+}

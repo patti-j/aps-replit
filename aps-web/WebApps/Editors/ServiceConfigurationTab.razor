@@ -1,0 +1,169 @@
+﻿@using ReportsWebApp.DB.Models
+
+<DxAccordionItem Text="Service Configuration" Expanded=false>
+    <HeaderTextTemplate>
+        <i class="fas fas fa-cogs m-2"></i> Service Configuration
+    </HeaderTextTemplate>
+    <ContentTemplate Context="accordionContext">
+        <DxFormLayout CssClass="w-100 p-3">
+            <DxFormLayoutItem Caption="Server Port" ColSpanLg="4">
+                <DxSpinEdit @bind-Value="ServerPort" />
+            </DxFormLayoutItem>
+@*             <DxFormLayoutItem Caption="Service Status" ColSpanLg="4">
+                <DxTextBox ReadOnly="true" Text="@serviceStatus" CssClass="@statusColor" />
+            </DxFormLayoutItem>
+ *@            <DxFormLayoutItem Caption="Automatically start service after server reboots" ColSpanLg="6">
+                <DxCheckBox @bind-Checked="AutomaticallyStartServices" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Start Service Timeout (in seconds)" ColSpanLg="6">
+                <DxSpinEdit @bind-Value="StartServiceTimeoutSeconds" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Serial Code" ColSpanLg="6">
+                <DxTextBox @bind-Text="FormattedSerialCode" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Environment Type" ColSpanLg="6">
+                <DxComboBox Data="@EnvironmentTypes" TextFieldName="DisplayText" ValueFieldName="Type" @bind-Value="@EnvironmentType" />
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </ContentTemplate>
+</DxAccordionItem>
+
+
+<DxAccordionItem Text="System Service Logon As" Expanded=false>
+    <HeaderTextTemplate>
+        <i class="fas fas fa-user m-2"></i> System Service Logon As
+    </HeaderTextTemplate>
+    <ContentTemplate Context="accordionContext">
+        <DxFormLayout CssClass="w-100 p-3">
+            <DxFormLayoutItem Caption="Username" ColSpanLg="6">
+                <DxTextBox @bind-Text="LogonUserName" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Password" ColSpanLg="6">
+                <DxTextBox @bind-Text="LogonPassword" Password="true" />
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </ContentTemplate>
+</DxAccordionItem>
+@code {
+    [Parameter]
+    public PADetails Model { get; set; }
+
+    [Parameter]
+    public EventCallback<PADetails> ModelChanged { get; set; }  // Add this for two-way binding
+
+    public int ServerPort
+    {
+        get => Model.PlanningArea.Settings.SystemServiceSettings.Port;
+        set
+        {
+            Model.PlanningArea.Settings.SystemServiceSettings.Port = value;
+            ModelChanged.InvokeAsync(Model);  // Trigger the event when the model changes
+        }
+    }
+
+    public bool AutomaticallyStartServices
+    {
+        get => Model.PlanningArea.PublicInfo.AutoStart;
+        set
+        {
+            Model.PlanningArea.PublicInfo.AutoStart = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public int StartServiceTimeoutSeconds
+    {
+        get => Model.PlanningArea.Settings.StartServicesTimeoutSeconds;
+        set
+        {
+            Model.PlanningArea.Settings.StartServicesTimeoutSeconds = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string FormattedSerialCode
+    {
+        get => CommonUtils.FormatSerialCodeAddSeparators(Model.PlanningArea.LicenseInfo.SerialCode);
+        set
+        {
+            Model.PlanningArea.LicenseInfo.SerialCode = CommonUtils.RemoveSerialCodeSeparators(value);
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public EnvironmentType EnvironmentType
+    {
+        get => Model.PlanningArea.PublicInfo.EnvironmentType;
+        set
+        {
+            Model.PlanningArea.PublicInfo.EnvironmentType = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string LogonUserName
+    {
+        get => Model.PlanningArea.Settings.InterfaceServiceSettings.LogonUserName;
+        set
+        {
+            Model.PlanningArea.Settings.InterfaceServiceSettings.LogonUserName = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string LogonPassword
+    {
+        get => Model.PlanningArea.Settings.InterfaceServiceSettings.LogonPassword;
+        set
+        {
+            Model.PlanningArea.Settings.InterfaceServiceSettings.LogonPassword = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    private List<EnvironmentTypeWrapper> EnvironmentTypes;
+    private string serviceStatus = "Checking...";
+    private string statusColor = "text-danger";
+    private string buttonText = "Start";
+    private string buttonClass = "btn-success";
+
+    private class EnvironmentTypeWrapper
+    {
+        public EnvironmentType Type { get; set; }
+        public string DisplayText { get; set; }
+    }
+
+    protected override void OnInitialized()
+    {
+        EnvironmentTypes = Enum.GetValues(typeof(EnvironmentType))
+            .OfType<EnvironmentType>()
+            .Select(t => new EnvironmentTypeWrapper()
+            {
+                Type = t,
+                DisplayText = t.ToString()
+            }).ToList();
+    }
+
+    private async Task UpdateServiceStatus()
+    {
+        // Implementation to update service status goes here
+    }
+
+    private async Task ToggleService()
+    {
+        if (serviceStatus == "Running")
+        {
+            // Implementation to stop service goes here
+        }
+        else
+        {
+            // Implementation to start service goes here
+        }
+        await UpdateServiceStatus();
+    }
+
+    private void ShowLogs()
+    {
+        // Implementation to show logs
+    }
+}

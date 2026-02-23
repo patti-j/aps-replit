@@ -1,0 +1,840 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+  <PropertyGroup>
+    <RootNamespace>PT.UIData</RootNamespace>
+    <AssemblyName>PT.UIData</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Optimize>true</Optimize>
+	  <DebugType>none</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="ResourceSelectionList.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+      <Link>Properties\AssemblyInfoShared.cs</Link>
+    </Compile>
+    <Compile Update="AllowedHelperResourcesDataSet.cs">
+      <DependentUpon>AllowedHelperResourcesDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="AllowedHelperResourcesDataSet.Designer.cs">
+      <DependentUpon>AllowedHelperResourcesDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="BottleneckMaterialsDataSet.cs">
+      <DependentUpon>BottleneckMaterialsDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="BottleneckMaterialsDataSet.Designer.cs">
+      <DependentUpon>BottleneckMaterialsDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="BufferChartDataSet.cs">
+      <DependentUpon>BufferChartDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="BufferChartDataSet.Designer.cs">
+      <DependentUpon>BufferChartDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="CapabilitySelectionList.Designer.cs">
+      <DependentUpon>CapabilitySelectionList.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="CapacityPlanDrillDownDataSet.Designer.cs">
+      <DependentUpon>CapacityPlanDrillDownDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="CapacityPlanGroupDataSet.Designer.cs">
+      <DependentUpon>CapacityPlanGroupDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="CapacityPlanResourcesDataSet.Designer.cs">
+      <DependentUpon>CapacityPlanResourcesDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="CapacityPlanResourcesOnlyDataSet.Designer.cs">
+      <DependentUpon>CapacityPlanResourcesOnlyDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ChangeOrdersDataSet.Designer.cs">
+      <DependentUpon>ChangeOrdersDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="CompareScenariosDataSet.Designer.cs">
+      <DependentUpon>CompareScenariosDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ConnectionsDataSet.Designer.cs">
+      <DependentUpon>ConnectionsDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="CtpDataSet.Designer.cs">
+      <DependentUpon>CtpDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="CtpWarehousesDataset.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CtpWarehousesDataset.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="DemandsDataSet.Designer.cs">
+      <DependentUpon>DemandsDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ForecastGridDataSource.cs">
+      <DependentUpon>ForecastGridDataSource.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ForecastGridDataSource.Designer.cs">
+      <DependentUpon>ForecastGridDataSource.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="HistoryDataSet.cs">
+      <DependentUpon>HistoryDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="HistoryDataSet.Designer.cs">
+      <DependentUpon>HistoryDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="InternalAddInsDataSet.Designer.cs">
+      <DependentUpon>InternalAddInsDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="InventoryAdjustmentsDataSet.Designer.cs">
+      <DependentUpon>InventoryAdjustmentsDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="InventoryDataSet.cs">
+      <DependentUpon>InventoryDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="InventoryDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>InventoryDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="InventorySelectionDataSet.cs">
+      <DependentUpon>InventorySelectionDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="InventorySelectionDataSet.Designer.cs">
+      <DependentUpon>InventorySelectionDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="InventoryTransferRuleDataSet.Designer.cs">
+      <DependentUpon>InventoryTransferRuleDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="InvPlanJobDrillDownDataSet.Designer.cs">
+      <DependentUpon>InvPlanJobDrillDownDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ItemSelectionDataSet.cs">
+      <DependentUpon>ItemSelectionDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ItemSelectionDataSet.Designer.cs">
+      <DependentUpon>ItemSelectionDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="JobAlertsDataSet.cs">
+      <DependentUpon>JobAlertsDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="JobAlertsDataSet.Designer.cs">
+      <DependentUpon>JobAlertsDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="JobBottlenecksDataset.Designer.cs">
+      <DependentUpon>JobBottlenecksDataset.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="LookupDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>LookupDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="MaterialsDataSet2.Designer.cs">
+      <DependentUpon>MaterialsDataSet2.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="MOBatchDefDataset.Designer.cs">
+      <DependentUpon>MOBatchDefDataset.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ProductRulesDataSet.Designer.cs">
+      <DependentUpon>ProductRulesDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="OperationAttributes.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OperationAttributes.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="PublishSelectionsDataSet.cs">
+      <DependentUpon>PublishSelectionsDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="PublishSelectionsDataSet.Designer.cs">
+      <DependentUpon>PublishSelectionsDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="PurchaseToStockDataSet.cs">
+      <DependentUpon>PurchaseToStockDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="PurchaseToStockDataSet.Designer.cs">
+      <DependentUpon>PurchaseToStockDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ResourceCapabilitiesDataSet.Designer.cs">
+      <DependentUpon>ResourceCapabilitiesDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ResourceConnectorsDataSet.Designer.cs">
+      <DependentUpon>ResourceConnectorsDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ResourceOpDataSet.cs">
+      <DependentUpon>ResourceOpDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ResourceOpDataSet.Designer.cs">
+      <DependentUpon>ResourceOpDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ResourcePerformance.Designer.cs">
+      <DependentUpon>ResourcePerformance.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ResourceSelectionByPlantOrDeptDataSet.Designer.cs">
+      <DependentUpon>ResourceSelectionByPlantOrDeptDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ResourceSelectionList.cs">
+      <DependentUpon>ResourceSelectionList.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ResourceSelectionList.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ResourceSelectionList.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="SalesOrdersDataSet.cs">
+      <DependentUpon>SalesOrdersDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="SalesOrdersDataSet.Designer.cs">
+      <DependentUpon>SalesOrdersDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ScenariosKpiChartDataSet.Designer.cs">
+      <DependentUpon>ScenariosKpiChartDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ShopViewDS.cs">
+      <DependentUpon>ShopViewDS.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ShopViewDS.Designer.cs">
+      <DependentUpon>ShopViewDS.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ShopViewUsersDataset.Designer.cs">
+      <DependentUpon>ShopViewUsersDataset.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="StorageDataSet.Designer.cs">
+      <DependentUpon>StorageDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="WarehouseSelectionDataSet.Designer.cs">
+      <DependentUpon>WarehouseSelectionDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="WhereUsedDataSet.Designer.cs">
+      <DependentUpon>WhereUsedDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ConnectionsDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ConnectionsDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="CapabilitySelectionList.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>CapabilitySelectionList.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="BottleneckMaterialsDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>BottleneckMaterialsDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="ResourceSelectionList.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ResourceSelectionList.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Update="AllowedHelperResourcesDataSet.xsc">
+      <DependentUpon>AllowedHelperResourcesDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="AllowedHelperResourcesDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>AllowedHelperResourcesDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="AllowedHelperResourcesDataSet.xss">
+      <DependentUpon>AllowedHelperResourcesDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="BottleneckMaterialsDataSet.xsc">
+      <DependentUpon>BottleneckMaterialsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="BottleneckMaterialsDataSet.xss">
+      <DependentUpon>BottleneckMaterialsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="BottleneckMaterialsDataSet.xsx">
+      <DependentUpon>BottleneckMaterialsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="BufferChartDataSet.xsc">
+      <DependentUpon>BufferChartDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="BufferChartDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>BufferChartDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="BufferChartDataSet.xss">
+      <DependentUpon>BufferChartDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CapabilitySelectionList.xsc">
+      <DependentUpon>CapabilitySelectionList.xsd</DependentUpon>
+    </None>
+    <None Update="CapabilitySelectionList.xss">
+      <DependentUpon>CapabilitySelectionList.xsd</DependentUpon>
+    </None>
+    <None Update="CapabilitySelectionList.xsx">
+      <DependentUpon>CapabilitySelectionList.xsd</DependentUpon>
+    </None>
+    <Content Include="ChangeOrdersDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ChangeOrdersDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="CapacityPlanResourcesOnlyDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>CapacityPlanResourcesOnlyDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="CapacityPlanResourcesDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>CapacityPlanResourcesDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="CapacityPlanDrillDownDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>CapacityPlanDrillDownDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Update="CapacityPlanDrillDownDataSet.xsc">
+      <DependentUpon>CapacityPlanDrillDownDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CapacityPlanDrillDownDataSet.xss">
+      <DependentUpon>CapacityPlanDrillDownDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CapacityPlanDrillDownDataSet.xsx">
+      <DependentUpon>CapacityPlanDrillDownDataSet.xsd</DependentUpon>
+    </None>
+    <Content Include="CapacityPlanGroupDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>CapacityPlanGroupDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Update="CapacityPlanGroupDataSet.xsc">
+      <DependentUpon>CapacityPlanGroupDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CapacityPlanGroupDataSet.xss">
+      <DependentUpon>CapacityPlanGroupDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CapacityPlanGroupDataSet.xsx">
+      <DependentUpon>CapacityPlanGroupDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CapacityPlanResourcesDataSet.xsc">
+      <DependentUpon>CapacityPlanResourcesDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CapacityPlanResourcesDataSet.xss">
+      <DependentUpon>CapacityPlanResourcesDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CapacityPlanResourcesDataSet.xsx">
+      <DependentUpon>CapacityPlanResourcesDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CapacityPlanResourcesOnlyDataSet.xsc">
+      <DependentUpon>CapacityPlanResourcesOnlyDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CapacityPlanResourcesOnlyDataSet.xss">
+      <DependentUpon>CapacityPlanResourcesOnlyDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CapacityPlanResourcesOnlyDataSet.xsx">
+      <DependentUpon>CapacityPlanResourcesOnlyDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ChangeOrdersDataSet.xsc">
+      <DependentUpon>ChangeOrdersDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ChangeOrdersDataSet.xss">
+      <DependentUpon>ChangeOrdersDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ChangeOrdersDataSet.xsx">
+      <DependentUpon>ChangeOrdersDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CompareScenariosDataSet.xsc">
+      <DependentUpon>CompareScenariosDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CompareScenariosDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>CompareScenariosDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="CompareScenariosDataSet.xss">
+      <DependentUpon>CompareScenariosDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ConnectionsDataSet.xsc">
+      <DependentUpon>ConnectionsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ConnectionsDataSet.xss">
+      <DependentUpon>ConnectionsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ConnectionsDataSet.xsx">
+      <DependentUpon>ConnectionsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CtpDataSet.xsc">
+      <DependentUpon>CtpDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CtpDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>CtpDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="CtpDataSet.xss">
+      <DependentUpon>CtpDataSet.xsd</DependentUpon>
+    </None>
+	  <None Update="CtpWarehousesDataset.xsc">
+		  <DependentUpon>CtpWarehousesDataset.xsd</DependentUpon>
+	  </None>
+	  <None Update="CtpWarehousesDataset.xsd">
+		  <Generator>MSDataSetGenerator</Generator>
+		  <LastGenOutput>CtpWarehousesDataset.Designer.cs</LastGenOutput>
+		  <SubType>Designer</SubType>
+	  </None>
+	  <None Update="CtpWarehousesDataset.xss">
+		  <DependentUpon>CtpWarehousesDataset.xsd</DependentUpon>
+	  </None>
+    <None Update="DemandsDataSet.xsc">
+      <DependentUpon>DemandsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="DemandsDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>DemandsDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="DemandsDataSet.xss">
+      <DependentUpon>DemandsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ForecastGridDataSource.xsc">
+      <DependentUpon>ForecastGridDataSource.xsd</DependentUpon>
+    </None>
+    <None Update="ForecastGridDataSource.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ForecastGridDataSource.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="ForecastGridDataSource.xss">
+      <DependentUpon>ForecastGridDataSource.xsd</DependentUpon>
+    </None>
+    <None Update="HistoryDataSet.xsc">
+      <DependentUpon>HistoryDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="HistoryDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>HistoryDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="HistoryDataSet.xss">
+      <DependentUpon>HistoryDataSet.xsd</DependentUpon>
+    </None>
+    <Content Include="JobAlertsDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>JobAlertsDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Update="InternalAddInsDataSet.xsc">
+      <DependentUpon>InternalAddInsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="InternalAddInsDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>InternalAddInsDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="InternalAddInsDataSet.xss">
+      <DependentUpon>InternalAddInsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="InventoryAdjustmentsDataSet.xsc">
+      <DependentUpon>InventoryAdjustmentsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="InventoryAdjustmentsDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>InventoryAdjustmentsDataSet.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>UI</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="InventoryAdjustmentsDataSet.xss">
+      <DependentUpon>InventoryAdjustmentsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="InventoryDataSet.xsc">
+      <DependentUpon>InventoryDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="InventoryDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>InventoryDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="InventoryDataSet.xss">
+      <DependentUpon>InventoryDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="InventorySelectionDataSet.xsc">
+      <DependentUpon>InventorySelectionDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="InventorySelectionDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>InventorySelectionDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="InventorySelectionDataSet.xss">
+      <DependentUpon>InventorySelectionDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="InventoryTransferRuleDataSet.xsc">
+      <DependentUpon>InventoryTransferRuleDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="InventoryTransferRuleDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>InventoryTransferRuleDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="InventoryTransferRuleDataSet.xss">
+      <DependentUpon>InventoryTransferRuleDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="InvPlanJobDrillDownDataSet.xsc">
+      <DependentUpon>InvPlanJobDrillDownDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="InvPlanJobDrillDownDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>InvPlanJobDrillDownDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="InvPlanJobDrillDownDataSet.xss">
+      <DependentUpon>InvPlanJobDrillDownDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ItemSelectionDataSet.xsc">
+      <DependentUpon>ItemSelectionDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ItemSelectionDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ItemSelectionDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="ItemSelectionDataSet.xss">
+      <DependentUpon>ItemSelectionDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="JobAlertsDataSet.xsc">
+      <DependentUpon>JobAlertsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="JobAlertsDataSet.xss">
+      <DependentUpon>JobAlertsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="JobAlertsDataSet.xsx">
+      <DependentUpon>JobAlertsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="JobBottlenecksDataset.xsc">
+      <DependentUpon>JobBottlenecksDataset.xsd</DependentUpon>
+    </None>
+    <None Update="JobBottlenecksDataset.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>JobBottlenecksDataset.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="JobBottlenecksDataset.xss">
+      <DependentUpon>JobBottlenecksDataset.xsd</DependentUpon>
+    </None>
+    <None Update="LookupDataSet.xsc">
+      <DependentUpon>LookupDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="LookupDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>LookupDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="LookupDataSet.xss">
+      <DependentUpon>LookupDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="LookupDataSet.xsx">
+      <DependentUpon>LookupDataSet.xsd</DependentUpon>
+    </None>
+    <Content Include="MaterialsDataSet2.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>MaterialsDataSet2.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Update="MaterialsDataSet2.xsc">
+      <DependentUpon>MaterialsDataSet2.xsd</DependentUpon>
+    </None>
+    <None Update="MaterialsDataSet2.xss">
+      <DependentUpon>MaterialsDataSet2.xsd</DependentUpon>
+    </None>
+    <None Update="MaterialsDataSet2.xsx">
+      <DependentUpon>MaterialsDataSet2.xsd</DependentUpon>
+    </None>
+    <None Update="MOBatchDefDataset.xsc">
+      <DependentUpon>MOBatchDefDataset.xsd</DependentUpon>
+    </None>
+    <None Update="MOBatchDefDataset.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>MOBatchDefDataset.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="MOBatchDefDataset.xss">
+      <DependentUpon>MOBatchDefDataset.xsd</DependentUpon>
+    </None>
+    <None Update="ProductRulesDataSet.xsc">
+      <DependentUpon>ProductRulesDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ProductRulesDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ProductRulesDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="ProductRulesDataSet.xss">
+      <DependentUpon>ProductRulesDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="OperationAttributes.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>OperationAttributes.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="PublishSelectionsDataSet.xsc">
+      <DependentUpon>PublishSelectionsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="PublishSelectionsDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>PublishSelectionsDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="PublishSelectionsDataSet.xss">
+      <DependentUpon>PublishSelectionsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="PurchaseToStockDataSet.xsc">
+      <DependentUpon>PurchaseToStockDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="PurchaseToStockDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>PurchaseToStockDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="PurchaseToStockDataSet.xss">
+      <DependentUpon>PurchaseToStockDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceCapabilitiesDataSet.xsc">
+      <DependentUpon>ResourceCapabilitiesDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceCapabilitiesDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ResourceCapabilitiesDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="ResourceCapabilitiesDataSet.xss">
+      <DependentUpon>ResourceCapabilitiesDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceConnectorsDataSet.xsc">
+      <DependentUpon>ResourceConnectorsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceConnectorsDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ResourceConnectorsDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="ResourceConnectorsDataSet.xss">
+      <DependentUpon>ResourceConnectorsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceOpDataSet.xsc">
+      <DependentUpon>ResourceOpDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceOpDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ResourceOpDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="ResourceOpDataSet.xss">
+      <DependentUpon>ResourceOpDataSet.xsd</DependentUpon>
+    </None>
+    <Content Include="ResourcePerformance.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ResourcePerformance.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Update="ResourcePerformance.xsc">
+      <DependentUpon>ResourcePerformance.xsd</DependentUpon>
+    </None>
+    <None Update="ResourcePerformance.xss">
+      <DependentUpon>ResourcePerformance.xsd</DependentUpon>
+    </None>
+    <None Update="ResourcePerformance.xsx">
+      <DependentUpon>ResourcePerformance.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceSelectionByPlantOrDeptDataSet.xsc">
+      <DependentUpon>ResourceSelectionByPlantOrDeptDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceSelectionByPlantOrDeptDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ResourceSelectionByPlantOrDeptDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="ResourceSelectionByPlantOrDeptDataSet.xss">
+      <DependentUpon>ResourceSelectionByPlantOrDeptDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceSelectionList.xsc">
+      <DependentUpon>ResourceSelectionList.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceSelectionList.xss">
+      <DependentUpon>ResourceSelectionList.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceSelectionList.xsx">
+      <DependentUpon>ResourceSelectionList.xsd</DependentUpon>
+    </None>
+    <Content Include="ShopViewUsersDataset.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ShopViewUsersDataset.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="ShopViewDS.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ShopViewDS.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Update="SalesOrdersDataSet.xsc">
+      <DependentUpon>SalesOrdersDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="SalesOrdersDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>SalesOrdersDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="SalesOrdersDataSet.xss">
+      <DependentUpon>SalesOrdersDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ScenariosKpiChartDataSet.xsc">
+      <DependentUpon>ScenariosKpiChartDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ScenariosKpiChartDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ScenariosKpiChartDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="ScenariosKpiChartDataSet.xss">
+      <DependentUpon>ScenariosKpiChartDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ShopViewDS.xsc">
+      <DependentUpon>ShopViewDS.xsd</DependentUpon>
+    </None>
+    <None Update="ShopViewDS.xss">
+      <DependentUpon>ShopViewDS.xsd</DependentUpon>
+    </None>
+    <None Update="ShopViewDS.xsx">
+      <DependentUpon>ShopViewDS.xsd</DependentUpon>
+    </None>
+    <None Update="ShopViewUsersDataset.xsc">
+      <DependentUpon>ShopViewUsersDataset.xsd</DependentUpon>
+    </None>
+    <None Update="ShopViewUsersDataset.xss">
+      <DependentUpon>ShopViewUsersDataset.xsd</DependentUpon>
+    </None>
+    <None Update="ShopViewUsersDataset.xsx">
+      <DependentUpon>ShopViewUsersDataset.xsd</DependentUpon>
+    </None>
+    <None Update="StorageDataSet.xsc">
+      <DependentUpon>StorageDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="StorageDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>StorageDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="StorageDataSet.xss">
+      <DependentUpon>StorageDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="WarehouseSelectionDataSet.xsc">
+      <DependentUpon>WarehouseSelectionDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="WarehouseSelectionDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>WarehouseSelectionDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="WarehouseSelectionDataSet.xss">
+      <DependentUpon>WarehouseSelectionDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="WhereUsedDataSet.xsc">
+      <DependentUpon>WhereUsedDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="WhereUsedDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>WhereUsedDataSet.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>PTUserInterfaceCustomization</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="WhereUsedDataSet.xss">
+      <DependentUpon>WhereUsedDataSet.xsd</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

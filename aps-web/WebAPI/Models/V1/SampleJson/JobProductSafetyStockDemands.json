@@ -1,0 +1,11 @@
+[
+  {
+    "importDate": "2024-02-05T12:30:00Z",
+    "JobProductId": 12345,
+    "JobOperationId": 67890,
+    "InventoryId": 54321,
+    "RequiredDate": "2024-02-15T08:00:00Z",
+    "RequiredQty": 50.5,
+    "Notes": "Sample notes for JobProductSafetyStockDemand"
+  }
+]

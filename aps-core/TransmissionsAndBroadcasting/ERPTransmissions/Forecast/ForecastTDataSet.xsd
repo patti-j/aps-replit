@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ForecastTDataSet" targetNamespace="http://tempuri.org/ForecastTDataSet.xsd" xmlns:mstns="http://tempuri.org/ForecastTDataSet.xsd" xmlns="http://tempuri.org/ForecastTDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="ForecastTDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="ForecastTDataSet" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="ForecastTDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="ForecastShipments" msprop:Generator_RowEvHandlerName="ForecastShipmentsRowChangeEventHandler" msprop:Generator_RowDeletedName="ForecastShipmentsRowDeleted" msprop:Generator_RowDeletingName="ForecastShipmentsRowDeleting" msprop:Generator_RowEvArgName="ForecastShipmentsRowChangeEvent" msprop:Generator_TablePropName="ForecastShipments" msprop:Generator_RowChangedName="ForecastShipmentsRowChanged" msprop:Generator_UserTableName="ForecastShipments" msprop:Generator_RowChangingName="ForecastShipmentsRowChanging" msprop:Generator_RowClassName="ForecastShipmentsRow" msprop:Generator_TableClassName="ForecastShipmentsDataTable" msprop:Generator_TableVarName="tableForecastShipments">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="ForecastExternalId" msprop:Generator_ColumnPropNameInTable="ForecastExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ForecastExternalId" msprop:Generator_UserColumnName="ForecastExternalId" msprop:Generator_ColumnVarNameInTable="columnForecastExternalId" type="xs:string" minOccurs="0" />
+              <xs:element name="WarehouseExternalId" msprop:Generator_UserColumnName="WarehouseExternalId" msprop:Generator_ColumnPropNameInTable="WarehouseExternalIdColumn" msprop:Generator_ColumnPropNameInRow="WarehouseExternalId" msprop:Generator_ColumnVarNameInTable="columnWarehouseExternalId" type="xs:string" minOccurs="0" />
+              <xs:element name="RequiredQty" msprop:Generator_ColumnPropNameInTable="RequiredQtyColumn" msprop:Generator_ColumnPropNameInRow="RequiredQty" msprop:Generator_UserColumnName="RequiredQty" msprop:Generator_ColumnVarNameInTable="columnRequiredQty" type="xs:decimal" minOccurs="0" />
+              <xs:element name="RequiredDate" msprop:Generator_ColumnPropNameInTable="RequiredDateColumn" msprop:Generator_ColumnPropNameInRow="RequiredDate" msprop:Generator_UserColumnName="RequiredDate" msprop:Generator_ColumnVarNameInTable="columnRequiredDate" type="xs:dateTime" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Forecasts" msprop:Generator_RowEvHandlerName="ForecastsRowChangeEventHandler" msprop:Generator_RowDeletedName="ForecastsRowDeleted" msprop:Generator_RowDeletingName="ForecastsRowDeleting" msprop:Generator_RowEvArgName="ForecastsRowChangeEvent" msprop:Generator_TablePropName="Forecasts" msprop:Generator_RowChangedName="ForecastsRowChanged" msprop:Generator_UserTableName="Forecasts" msprop:Generator_RowChangingName="ForecastsRowChanging" msprop:Generator_RowClassName="ForecastsRow" msprop:Generator_TableClassName="ForecastsDataTable" msprop:Generator_TableVarName="tableForecasts">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="ItemExternalId" msprop:Generator_ColumnPropNameInTable="ItemExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ItemExternalId" msprop:Generator_UserColumnName="ItemExternalId" msprop:Generator_ColumnVarNameInTable="columnItemExternalId" type="xs:string" />
+              <xs:element name="WarehouseExternalId" msprop:Generator_ColumnPropNameInTable="WarehouseExternalIdColumn" msprop:Generator_ColumnPropNameInRow="WarehouseExternalId" msprop:Generator_UserColumnName="WarehouseExternalId" msprop:Generator_ColumnVarNameInTable="columnWarehouseExternalId" type="xs:string" />
+              <xs:element name="ForecastVersion" msprop:Generator_ColumnPropNameInTable="ForecastVersionColumn" msprop:Generator_ColumnPropNameInRow="ForecastVersion" msprop:Generator_UserColumnName="ForecastVersion" msprop:Generator_ColumnVarNameInTable="columnForecastVersion" type="xs:string" />
+              <xs:element name="ExternalId" msprop:Generator_ColumnPropNameInTable="ExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ExternalId" msprop:Generator_UserColumnName="ExternalId" msprop:Generator_ColumnVarNameInTable="columnExternalId" type="xs:string" />
+              <xs:element name="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_UserColumnName="Name" msprop:Generator_ColumnVarNameInTable="columnName" type="xs:string" />
+              <xs:element name="Description" msprop:Generator_ColumnPropNameInTable="DescriptionColumn" msprop:Generator_ColumnPropNameInRow="Description" msprop:Generator_UserColumnName="Description" msprop:Generator_ColumnVarNameInTable="columnDescription" type="xs:string" minOccurs="0" />
+              <xs:element name="Notes" msprop:Generator_ColumnPropNameInTable="NotesColumn" msprop:Generator_ColumnPropNameInRow="Notes" msprop:Generator_UserColumnName="Notes" msprop:Generator_ColumnVarNameInTable="columnNotes" type="xs:string" minOccurs="0" />
+              <xs:element name="CustomerExternalId" msprop:Generator_ColumnPropNameInTable="CustomerExternalIdColumn" msprop:Generator_ColumnPropNameInRow="CustomerExternalId" msprop:Generator_UserColumnName="CustomerExternalId" msprop:Generator_ColumnVarNameInTable="columnCustomerExternalId" type="xs:string" minOccurs="0" />
+              <xs:element name="Planner" msprop:Generator_ColumnPropNameInTable="PlannerColumn" msprop:Generator_ColumnPropNameInRow="Planner" msprop:Generator_UserColumnName="Planner" msprop:Generator_ColumnVarNameInTable="columnPlanner" type="xs:string" minOccurs="0" />
+              <xs:element name="SalesOffice" msprop:Generator_ColumnPropNameInTable="SalesOfficeColumn" msprop:Generator_ColumnPropNameInRow="SalesOffice" msprop:Generator_UserColumnName="SalesOffice" msprop:Generator_ColumnVarNameInTable="columnSalesOffice" type="xs:string" minOccurs="0" />
+              <xs:element name="SalesPerson" msprop:Generator_ColumnPropNameInTable="SalesPersonColumn" msprop:Generator_ColumnPropNameInRow="SalesPerson" msprop:Generator_UserColumnName="SalesPerson" msprop:Generator_ColumnVarNameInTable="columnSalesPerson" type="xs:string" minOccurs="0" />
+              <xs:element name="Priority" msprop:Generator_ColumnPropNameInTable="PriorityColumn" msprop:Generator_ColumnPropNameInRow="Priority" msprop:Generator_UserColumnName="Priority" msprop:Generator_ColumnVarNameInTable="columnPriority" type="xs:int" minOccurs="0" />
+              <xs:element name="UserFields" msprop:Generator_ColumnPropNameInTable="UserFieldsColumn" msprop:Generator_ColumnPropNameInRow="UserFields" msprop:Generator_UserColumnName="UserFields" msprop:Generator_ColumnVarNameInTable="columnUserFields" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="ForecastsKey1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:Forecasts" />
+      <xs:field xpath="mstns:WarehouseExternalId" />
+      <xs:field xpath="mstns:ExternalId" />
+    </xs:unique>
+  </xs:element>
+  <xs:annotation>
+    <xs:appinfo>
+      <msdata:Relationship name="Forecasts_ForecastShipments" msdata:parent="Forecasts" msdata:child="ForecastShipments" msdata:parentkey="ExternalId WarehouseExternalId" msdata:childkey="ForecastExternalId WarehouseExternalId" msprop:Generator_UserParentTable="Forecasts" msprop:Generator_UserChildTable="ForecastShipments" msprop:Generator_RelationVarName="relationForecasts_ForecastShipments" msprop:Generator_ChildPropName="GetForecastShipmentsRows" msprop:Generator_ParentPropName="ForecastsRowParent" msprop:Generator_UserRelationName="Forecasts_ForecastShipments" />
+    </xs:appinfo>
+  </xs:annotation>
+</xs:schema>

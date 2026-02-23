@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Import shared properties and targets. Including framework version -->
+	<Import Project="..\..\..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+	<ItemGroup>
+    <ProjectReference Include="..\..\..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\..\Definitions\APIDefintion\APIDefinitions.csproj" />
+    <ProjectReference Include="..\..\..\Definitions\InterfaceServiceDefinitions\ImportDefinitions.csproj" />
+    <ProjectReference Include="..\..\SystemServiceDefinitions\SystemServiceDefinitions.csproj" />
+  </ItemGroup>
+	<PropertyGroup>
+		<DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+		<AssemblyName>PT.$(MSBuildProjectName)</AssemblyName>
+		<RootNamespace>PT.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+	</PropertyGroup>
+</Project>

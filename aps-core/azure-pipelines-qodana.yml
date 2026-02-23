@@ -1,0 +1,105 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+  branches:
+    include: 
+      - dev
+    exclude:
+      - 12.2.1-Neptune
+      - 12.3.0-hydrogen
+  paths:
+    include:
+      - SolutionMiscFiles/AssemblyInfoShared.cs
+
+# Using the classic schedules instead since this cron schedule triggers the other branches too
+# schedules:
+#   - cron : '30 5 * * 2-6'
+#     displayName : Nightly Build and Internal Deployment
+#     branches: 
+#      include:
+#        - dev
+#      exclude:
+#        - 12.1.4
+#        - 12.2.1-Neptune
+#        - 12.2.0
+#        - dev-testing-pipeline
+
+parameters:
+  #Agent name allows us to match a capability on a local agent, effectively targeting a specific build machine
+- name: 'DeveloperName'
+  displayName: 'Specify target dev whose agent to use, or Any'
+  type: string
+  default: 'Any'
+
+- name: 'CoreBranch'
+  displayName: 'Specify core repo branch to use'
+  type: string
+  default: 'dev'
+
+- name: 'PackagesBranch'
+  displayName: 'Specify package repo branch to use'
+  type: string
+  default: 'dev'
+
+- name: 'ExtensionsBranch'
+  displayName: 'Specify extension repo branch to use'
+  type: string
+  default: 'dev'
+
+- name: 'destination'
+  displayName: 'Select which storage container to deploy the build to'
+  type: string
+  default: 'none'
+  values:
+    - 'none'
+    - 'scheduled'
+    - 'builds'
+
+variables:
+  solution: '**/APSCore.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release' #'Debug' 'Release'
+  CoreSolutionFolderName: 'aps-core' #The relative path to the core solution when referenced by aps-packages projects
+  PackagesSolutionFolderName: 'aps-packages'
+  ExtensionsSolutionFolderName: 'aps-extensions'
+  ExtensionsSolution: 'APSExtensions.sln' 
+  #assumption is that the origin path is starting from where this yaml is located
+  currentDate: $[ format('{0:yyyy}_{0:MM}_{0:dd}_{0:HH}_{0:mm}', pipeline.startTime) ]
+
+  Major: '12'
+  Minor: '3'
+  Patch: '0'
+  Macule: '12'
+  
+#use We have to create a Job so we can use logic to validate the parameters
+jobs:
+- job: BuildJob
+
+  pool:
+    vmImage: windows-latest
+
+  steps:
+  - checkout: git://APS/aps-core@${{ parameters.CoreBranch }} #use git://APS/aps-core@branch to specify a specific branch, otherwise uses default
+    persistCredentials: true
+  - checkout: git://APS/aps-packages@${{ parameters.PackagesBranch }}
+    persistCredentials: true
+  - checkout: git://APS/aps-extensions@${{ parameters.ExtensionsBranch }}
+    persistCredentials: true
+
+  #Declare build variables not stored in source control
+  - task: Cache@2
+    inputs:
+      key: '"$(Build.Repository.Name)" | "$(Build.SourceBranchName)" | "$(Build.SourceVersion)"'
+      path: '$(Agent.TempDirectory)/qodana/cache'
+      restoreKeys: |
+        "$(Build.Repository.Name)" | "$(Build.SourceBranchName)"
+        "$(Build.Repository.Name)"
+  - task: QodanaScan@2025
+    inputs:
+      uploadResult: true
+      args: '--property=qodana.net.solution=$(Build.SourcesDirectory)\aps-core\APSCore.sln'
+    env:
+      QODANA_TOKEN: $(QODANA_TOKEN)

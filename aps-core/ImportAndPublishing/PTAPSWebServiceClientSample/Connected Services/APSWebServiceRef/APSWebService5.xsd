@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://tempuri.org/" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="https://ptdev2:8788/APSWebService?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" />
+  <xs:import schemaLocation="https://ptdev2:8788/APSWebService?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" />
+  <xs:element name="AdvanceClock">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_request" nillable="true" type="q1:AdvanceClockRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AdvanceClockResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="AdvanceClockResult" nillable="true" type="q2:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AdvanceClockStringDate">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_request" nillable="true" type="q3:AdvanceClockStringDateRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AdvanceClockStringDateResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="AdvanceClockStringDateResult" nillable="true" type="q4:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AdvanceClockTicks">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q5="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_request" nillable="true" type="q5:AdvanceClockTicksRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AdvanceClockTicksResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q6="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="AdvanceClockTicksResult" nillable="true" type="q6:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Import">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q7="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_request" nillable="true" type="q7:ImportRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ImportResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q8="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="ImportResult" nillable="true" type="q8:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Optimize">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q9="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_request" nillable="true" type="q9:OptimizeRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="OptimizeResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q10="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="OptimizeResult" nillable="true" type="q10:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Publish">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q11="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_request" nillable="true" type="q11:PublishRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="PublishResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q12="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="PublishResult" nillable="true" type="q12:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CTP">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q13="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_ctpRequest" nillable="true" type="q13:CtpRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CTPResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q14="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="CTPResult" nillable="true" type="q14:CtpResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CopyScenario">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q15="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_copyScenarioRequest" nillable="true" type="q15:CopyScenarioRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CopyScenarioResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q16="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="CopyScenarioResult" nillable="true" type="q16:CopyScenarioResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetScenarios">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q17="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_getScenariosRequest" nillable="true" type="q17:GetScenariosRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetScenariosResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q18="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="GetScenariosResult" nillable="true" type="q18:GetScenariosResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="DeleteScenario">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q19="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_deleteScenarioRequest" nillable="true" type="q19:DeleteScenarioRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="DeleteScenarioResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q20="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="DeleteScenarioResult" nillable="true" type="q20:DeleteScenarioResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Hold">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q21="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_holdRequest" nillable="true" type="q21:HoldRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="HoldResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q22="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="HoldResult" nillable="true" type="q22:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Lock">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q23="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_lockRequest" nillable="true" type="q23:LockRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="LockResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q24="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="LockResult" nillable="true" type="q24:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Anchor">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q25="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_anchorRequest" nillable="true" type="q25:AnchorRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AnchorResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q26="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="AnchorResult" nillable="true" type="q26:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Unschedule">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q27="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_anchorRequest" nillable="true" type="q27:UnscheduleRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="UnscheduleResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q28="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="UnscheduleResult" nillable="true" type="q28:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Move">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q29="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_moveRequest" nillable="true" type="q29:MoveRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="MoveResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q30="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="MoveResult" nillable="true" type="q30:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Chat">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q31="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_chatRequest" nillable="true" type="q31:ChatRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ChatResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q32="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="ChatResult" nillable="true" type="q32:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="UndoByTransmissionNbr">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q33="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_undoRequest" nillable="true" type="q33:UndoByTransmissionNbrRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="UndoByTransmissionNbrResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q34="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="UndoByTransmissionNbrResult" nillable="true" type="q34:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="UndoActions">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q35="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_moveRequest" nillable="true" type="q35:UndoActionsRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="UndoActionsResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q36="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="UndoActionsResult" nillable="true" type="q36:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="UndoLastUserAction">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q37="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_moveRequest" nillable="true" type="q37:UndoLastUserActionRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="UndoLastUserActionResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q38="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="UndoLastUserActionResult" nillable="true" type="q38:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ActivityStatusUpdate">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q39="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_request" nillable="true" type="q39:ActivityStatusUpdateRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ActivityStatusUpdateResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q40="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="ActivityStatusUpdateResult" nillable="true" type="q40:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ActivityQuantitiesUpdate">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q41="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_request" nillable="true" type="q41:ActivityQuantitiesUpdateRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ActivityQuantitiesUpdateResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q42="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="ActivityQuantitiesUpdateResult" nillable="true" type="q42:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ActivityDatesUpdate">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q43="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_request" nillable="true" type="q43:ActivityDatesUpdateRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ActivityDatesUpdateResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q44="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="ActivityDatesUpdateResult" nillable="true" type="q44:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="KpiSnapshotOfLiveScenario">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q45="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_request" nillable="true" type="q45:KpiSnapshotOfLiveScenarioRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="KpiSnapshotOfLiveScenarioResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q46="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="KpiSnapshotOfLiveScenarioResult" nillable="true" type="q46:ApsWebServiceResponseBase" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddADGroupUsers">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q47="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_request" nillable="true" type="q47:InsertGroupUsersRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddADGroupUsersResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q48="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="AddADGroupUsersResult" nillable="true" type="q48:ApsAddRemoveUserResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="DeleteADGroupUsers">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q49="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="a_request" nillable="true" type="q49:DeleteGroupUsersRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="DeleteADGroupUsersResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q50="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" minOccurs="0" name="DeleteADGroupUsersResult" nillable="true" type="q50:ApsAddRemoveUserResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+  <PropertyGroup>
+    <AssemblyName>PT.Transmissions2</AssemblyName>
+    <RootNamespace>PT.Transmissions2</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Update="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Update="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Update="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Update="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+    <ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\ImportAndPublishing\ERPLibrary\ERPLibrary.csproj" />
+    <ProjectReference Include="..\ERPTransmissions\ERPTransmissions.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+    <ProjectReference Include="..\Transmissions\Transmissions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

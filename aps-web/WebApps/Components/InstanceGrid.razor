@@ -1,0 +1,220 @@
+﻿@page "/components/instanceid"
+@using ReportsWebApp.Controllers.Models
+@inject NavMenuUpdateService NavMenuUpdateService
+@inject IJSRuntime JsRuntime
+@inject IUserService m_userService
+@inject ICompanyDbService m_instanceService
+@inject IConfiguration _configuration
+@inject IToastNotificationService _toastService
+
+<h3>Import History</h3>
+
+@if (Instances == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+	<DxGrid ShowFilterRow="true" 
+	        Data="@Instances" 
+	        EditModelSaving="OnEditModelSaving" 
+            EditMode="GridEditMode.PopupEditForm"
+	        @ref="MyGrid"
+	        EditStart="OnEditStart"
+	        PageSize="10"
+	        CssClass="ch-480"
+	        PagerPosition="GridPagerPosition.TopAndBottom"
+	        PageSizeSelectorVisible="true"
+	        PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+	        PageSizeSelectorAllRowsItemVisible="false"
+	        PagerSwitchToInputBoxButtonCount="10"
+	        PagerVisibleNumericButtonCount="10"
+	        ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+		<Columns>
+			<DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" />
+			<DxGridDataColumn FieldName="Environment" UnboundType="GridUnboundColumnType.String" MinWidth="200" />
+            <DxGridDataColumn FieldName="Name" Caption="Planning Area Name" MinWidth="200" />
+			<DxGridCommandColumn ClearFilterButtonVisible="false">
+				<HeaderTemplate>
+					View Import History
+				</HeaderTemplate>
+				<CellDisplayTemplate>
+					@{
+						var dataItem = (CompanyDb)context.DataItem;
+						<DxButton IconCssClass="fa fa-info-circle" CssClass="btn-icon" Click="() => ShowPopup(dataItem)" />
+					}
+				</CellDisplayTemplate>
+			</DxGridCommandColumn>
+		</Columns>
+		<EditFormTemplate Context="EditFormContext">
+			@{
+				var instance = (CompanyDb)EditFormContext.EditModel;
+				instance.Company = User.Company;
+			}
+			<DxFormLayout CssClass="w-100">
+				<DxFormLayoutItem Caption="Planning Area Name:" ColSpanMd="12">
+					<DxTextBox @bind-Text="@instance.Name" />
+				</DxFormLayoutItem>
+				<DxFormLayoutItem Caption="Environment:" ColSpanMd="12">
+					<DxTextBox @bind-Text="@instance.Environment" />
+				</DxFormLayoutItem>
+			</DxFormLayout>
+		</EditFormTemplate>
+	</DxGrid>
+	<DxPopup @bind-Visible="@displayPopup">
+        <div class="history-modal">
+		    <h4>Import History</h4>
+            @foreach(var item in currentHistory.Skip(historyPage * historyItemsPerPage).Take(historyItemsPerPage))
+            {
+                <div class="history-row">
+                    <div class="history-file">File: <a href="" @onclick="() => DownloadImportFile (item.TransactionId, item.FileName)" @onclick:preventDefault>@item.FileName</a></div>
+                    <div class="history-user">Initiated by: @item.ImportUser</div>
+                    @if(item.TransactionId != null) {
+                        <div class="history-id">Transaction ID: @item.TransactionId</div>
+                    }
+                    @if (item.Details == "success")
+                    {
+                        <div class="history-detail"><i class="fa fa-check-circle color-green-main"></i>Import was successful</div>
+                    }
+                    else if (string.IsNullOrEmpty(item.Details))
+                    {
+                        <div class="history-detail"><i class="fa fa-question-circle color-yellow-main"></i>Import status is unknown</div>
+                    }
+                    else
+                    {
+                        <div class="history-detail"><i class="fa fa-times-circle color-red-main"></i>@item.Details</div>
+                    }
+                    <span class="history-date">@item.ImportDate</span>
+                </div>
+            }
+            @if (currentHistory == null || currentHistory.Count == 0)
+            {
+                <span>No Data to Display</span>
+            }
+            <div class="history-paginator">
+                <span class="history-back"><DxButton IconCssClass="fa fa-backward" Click="() => historyPage = Math.Max(historyPage - 1, 0)"></DxButton></span>
+                <span class="history-page">Page @(historyPage + 1) / @(historyMaxPage)</span>
+                <span class="history-next"><DxButton IconCssClass="fa fa-forward" Click="() => historyPage = Math.Min(historyPage + 1, historyMaxPage - 1)"></DxButton></span>
+            </div>
+        </div>
+    </DxPopup>
+}
+
+@code {
+    IGrid? MyGrid { get; set; }
+
+    [Parameter]
+    public List<CompanyDb> Instances { get; set; }
+    [Parameter]
+    public Func<CompanyDb, Task<Category>> OnSave { get; set; }
+    [Parameter]
+    public bool EditInstances { get; set; }
+
+    private User User { get; set; }
+    private CompanyDb? currentInstance { get; set; } = null;
+    private List<ImportHistoryItem>? currentHistory { get; set; } = null;
+    private int historyPage = 0;
+    private int historyItemsPerPage = 5;
+    private int historyMaxPage => Math.Max((int)Math.Ceiling((double)((currentHistory?.Count ?? 0) / (double)historyItemsPerPage)), 1);
+
+    private bool displayPopup { get; set; } = false;
+    private string downloadLink;
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+	    HTUtils.Utils.UpdateGridStyling(MyGrid);
+	    base.OnAfterRender(firstRender);
+    }
+
+    private void OnEditStart(GridEditStartEventArgs args)
+    {
+    }
+    protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        var editModel = (e.EditModel as CompanyDb);
+        if (editModel != null)
+        {
+            var dataItem = e.IsNew ? new CompanyDb() : Instances.Find(category => category.Id == editModel.Id);
+            if (dataItem != null)
+            {
+                dataItem.Name = editModel.Name;
+                dataItem.CompanyId = User.CompanyId;
+
+                //We save for obtaining the id
+                if (e.IsNew)
+                {
+                    Category savedCategory = await OnSave(dataItem);
+                    dataItem.Id = savedCategory.Id;
+                }
+                //we clear and add the new selected entities
+
+                NavMenuUpdateService.TriggerUpdate();
+            }
+        }
+    }
+
+    private async Task DownloadImportFile(string transactionId, string fileName)
+    {
+        var fileShareConnectionString = _configuration["AzureSMBStorageConnectionString"];
+        string shareName = _configuration["AzureSMBStorageName"];
+        string directoryName = _configuration["AzureSMBStorageInDirectory"];
+        AzureSMBStorageManager storageManager = new AzureSMBStorageManager(fileShareConnectionString, shareName, directoryName);
+        var stream = await storageManager.ReadFileFromAzureSMBStorage(transactionId, fileName);
+
+        await JsRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, stream);
+    }
+
+    protected async Task DeleteItem(object a_item)
+    {
+        var editModel = (a_item as CompanyDb);
+        if (editModel != null)
+        {
+            // var dataItem = Categories.Find(group => group.Id == editModel.Id);
+            await m_instanceService.DeleteAsync(editModel.Id);
+            Instances.Remove(editModel);
+            NavMenuUpdateService.TriggerUpdate();
+            StateHasChanged();
+        }
+    }
+
+    // void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    // {
+    //     if (e.FieldName == "Groups selected")
+    //     {
+    //         var id = Convert.ToDecimal(e.GetRowValue("Id"));
+
+    //         var dataItem = Categories.Find(delegate (Category c)
+    //             {
+    //                 return c.Id == id;
+    //             });
+    //         if (dataItem != null)
+    //         {
+    //             if (dataItem.Groups.Count > 0)
+    //             {
+    //                 List<string> w = dataItem.Groups.Select(x => x.Name).ToList();
+    //                 e.Value = CommonUtils.ListToString(w);
+    //             }
+    //         }
+    //     }
+    // }
+    private void ShowPopup(CompanyDb dataItem)
+    {
+        currentInstance = dataItem;
+        currentHistory = m_instanceService.GetImportHistory(currentInstance);
+        if (currentHistory == null)
+        {
+            _toastService.ShowToast("Unauthorized", "The connection to the Import Database was rejected. The connection details may be configured incorrectly.", ToastRenderStyle.Danger);
+        }
+        else
+        {
+            historyPage = 0;
+            displayPopup = true;
+            StateHasChanged();
+        }
+	}
+
+}

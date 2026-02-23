@@ -1,0 +1,1 @@
+﻿select bomrevision, name, id  from bom 

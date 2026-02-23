@@ -1,0 +1,46 @@
+﻿@page "/ctpEstimateViewer"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@inject ServiceContainer ServiceContainer
+@inject IUserService UserService
+
+@if (hasViewPermission)
+{
+    <ErrorMessagesDisplay ErrorMessages=errorMessages />
+    <CTPRequestsGrid @ref="CTPRequestsGrid" IsSlidingPanel=false />
+}
+else
+{
+    <h4>No permission found.</h4>
+}
+
+@code {
+    #region Properties and State
+    private CTPRequestsGrid CTPRequestsGrid { get; set; } = new();
+    private bool isLoading = true;
+    private List<string> errorMessages = new();
+    private User currentUser;
+    private bool hasViewPermission = true;
+    #endregion
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (await CheckUserPermissionsAsync())
+        {
+            await CTPRequestsGrid.LoadDataAsync();
+        }
+    }
+
+    private async Task<bool> CheckUserPermissionsAsync()
+    {
+        currentUser = await ServiceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+        CTPRequestsGrid.currentUser = currentUser;
+        if (Shared.Utils.BlockUsersByAuthStatus(currentUser, null, NavigationManager))
+        {
+            hasViewPermission = false;
+            return false;
+        }
+        return true;
+    }
+}

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BuildPublisher>
+  <PackAssemblies>
+
+  </PackAssemblies>
+  <IgnoreAssemblies>
+    PT.APSCommon
+    PT.Common
+    PT.Scheduler
+    PT.SchedulerDefinitions
+    PT.ServerManagerProxyLib
+    PT.APSCommon.resources
+    PT.PackageDefinitions
+    PT.PackageResources
+  </IgnoreAssemblies>
+</BuildPublisher>

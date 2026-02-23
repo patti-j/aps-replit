@@ -1,0 +1,20 @@
+[
+  {
+    "importDate": "2024-02-05T00:00:00",
+    "SalesOrderId": 12345,
+    "ExternalId": "SO-789",
+    "Name": "Sample Sales Order",
+    "Description": "This is a sample sales order",
+    "Notes": "Sample notes about the sales order",
+    "Cancelled": false,
+    "CtpJobId": 67890,
+    "Customer": "Sample Customer Inc.",
+    "Estimate": true,
+    "ExpirationDate": "2024-03-15T00:00:00",
+    "SalesAmount": 2500.75,
+    "SalesOffice": "Sales Office 1",
+    "SalesPerson": "John Smith",
+    "Planner": "Jane Doe",
+    "Project": "Sample Project"
+  }
+]

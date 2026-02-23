@@ -1,0 +1,63 @@
+﻿@using DevExpress.Blazor
+<DxPopup @bind-Visible="Visible" HeaderText="Details" @ref="Popup" Width="800" MinHeight="500">
+    <HeaderContentTemplate>
+        <DxButton CssClass="dxbl-btn dxbl-btn-text-secondary dxbl-btn-tool dxbl-popup-header-button" IconCssClass="fa fa-arrow-left" Enabled="Breadcrumbs.Any()" Click="BackPressed"></DxButton><span>@DataItem.TypeDisplayName: @DataItem.Name</span>
+    </HeaderContentTemplate>
+    <BodyContentTemplate>
+        @if (DataItem is PlanningAreaScope scope)
+        {
+            <ScopeInfoDisplay Scope="scope" ShowItemWithBreadcrumb="ShowItemWithBreadcrumb"></ScopeInfoDisplay>
+        }
+        else if (DataItem is PADetails pa)
+        {
+            <PAInfoDisplay PA="pa" ShowItemWithBreadcrumb="ShowItemWithBreadcrumb"></PAInfoDisplay>
+        }
+        else if (DataItem is Role role)
+        {
+            <RoleViewer Role="role" ShowItemWithBreadCrumb="ShowItemWithBreadcrumb"></RoleViewer>
+        }
+        else if (DataItem is Team team)
+        {
+            <TeamInfoDisplay Team="team" ShowItemWithBreadcrumb="ShowItemWithBreadcrumb"></TeamInfoDisplay>
+        }
+        else
+        {
+            <span>This view does not support objects of type @DataItem.TypeDisplayName</span>
+        }
+    </BodyContentTemplate>
+</DxPopup>
+
+
+@code {
+    DxPopup Popup { get; set; }
+    [Parameter] 
+    public BaseEntity DataItem { get; set; }  // Object from the grid (e.g., PADetails)
+    [Parameter]
+    public Stack<BaseEntity> Breadcrumbs { get; set; } = new (); // List of objects to return to
+
+    private bool Visible { get; set; } = false;
+
+    public void ShowNewItem(BaseEntity dataItem)
+    {
+        DataItem = dataItem;
+        Breadcrumbs.Clear();
+        Visible = true;
+        Popup.ShowAsync();
+    }
+
+    private void BackPressed(MouseEventArgs args)
+    {
+        if (Breadcrumbs.Any())
+        {
+            DataItem = Breadcrumbs.Pop();
+        }
+    }
+
+    private void ShowItemWithBreadcrumb(BaseEntity obj)
+    {
+        Visible = true;
+        Breadcrumbs.Push(DataItem);
+        DataItem = obj;
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,27 @@
+﻿Instructions for managing custom report files
+---------------------------------------------
+
+\Reports
+	\StandardReports
+		\NamedReports
+	\CustomReports
+		\NamedReports
+		\JobReports
+		
+		
+The following list explains how each of the reports folders is used:
+
+- StandardReports:  Any reports that are immediately within this folder (not in subfolders) are shown in the Standard Reports section of the main menu.  
+	THESE FILES ARE UNINSTALLED AND OVERWRITTEN WHEN THE PROGRAM IS UPDATED AND THEREFORE ANY CHANGES MADE TO THEM WILL BE LOST.  To make custom versions of these files copy them to the CustomReports folder first.
+	
+	- StandardReports\NamedReports: The system updates these reports as well during upgrades so changes to these should be copied to the CustomReports\NamedReports folder.   
+		These reports are accessed by file name so the file names must not be altered.
+	
+- CustomReports: Any reports added directly to this folder are shown in the Custom Reports section of the main menu.  This files are not uninstalled or modified by the program in any way.
+	
+	- CustomReports\NamedReports: Any reports added to this folder are used INSTEAD OF the reports of the same name in the StandardReports\NamedReports folder.  This is to allow them to be customized.
+		These reports are accessed by file name so the file names must not be altered.
+	- CustomReports\JobReports:  These reports are added to the Job popup menu.  They are not modified in any way by the system.
+		
+		
+Note: It's recommended that all reports and system data be backed up on a regular basis to avoid accidental loss of data.

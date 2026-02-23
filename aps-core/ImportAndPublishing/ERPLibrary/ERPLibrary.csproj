@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+  <PropertyGroup>
+    <AssemblyName>PT.ERPLibrary</AssemblyName>
+    <RootNamespace>PT.ERPTransmissions</RootNamespace>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+      <Link>Properties\AssemblyInfoShared.cs</Link>
+    </Compile>
+    <Compile Update="PtImportDataSet.cs">
+      <DependentUpon>PtImportDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="PtImportDataSet.Designer.cs">
+      <DependentUpon>PtImportDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ResourceTDataSet.cs">
+      <DependentUpon>ResourceTDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ResourceTDataSet.Designer.cs">
+      <DependentUpon>ResourceTDataSet.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="PtImportDataSet.xsc">
+      <DependentUpon>PtImportDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="PtImportDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>PtImportDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="PtImportDataSet.xss">
+      <DependentUpon>PtImportDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceTDataSet.xsc">
+      <DependentUpon>ResourceTDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceTDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ResourceTDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="ResourceTDataSet.xss">
+      <DependentUpon>ResourceTDataSet.xsd</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common.Sql\Common.Sql.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\Transmissions\Transmissions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

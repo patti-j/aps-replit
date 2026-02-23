@@ -1,0 +1,193 @@
+    
+    <DxTabs @bind-ActiveTabIndex="TabIndex">
+        <DxTab Text="Team Members"/>
+        <DxTab Text="Details"/>
+    </DxTabs>
+    @switch (TabIndex)
+    {
+        case 1:
+        {
+            <div>
+                <DxFormLayout>
+                @foreach (var roleScope in GroupedByRole)
+                {
+                    <DxFormLayoutGroup Caption="@roleScope.Key.Name" ColSpanMd="12">
+                        <DxFormLayoutItem Caption="Users:" ColSpanMd="12">
+                            @GetHighestOfType(roleScope.Key.Permissions, "users")
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Reports:" ColSpanMd="12">
+                            @GetHighestOfType(roleScope.Key.Permissions, "reports")
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Servers:" ColSpanMd="12">
+                            @GetHighestOfType(roleScope.Key.Permissions, "servers")
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Integrations:" ColSpanMd="12">
+                            @GetHighestOfType(roleScope.Key.Permissions, "integrations")
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Scopes:" ColSpanMd="12">
+                            @(string.Join(", ", roleScope.Select(x => x.Scope.Name).ToArray()))
+                        </DxFormLayoutItem>
+                    </DxFormLayoutGroup>
+                }
+                </DxFormLayout>
+            </div>
+            break;
+        }
+        case 0:
+        {
+            <DxGrid ShowFilterRow="true" Data="@Users"
+                    PageSize="10"
+                    CssClass="ch-480"
+                    PagerPosition="GridPagerPosition.TopAndBottom"
+                    PageSizeSelectorVisible="true"
+                    PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+                    PageSizeSelectorAllRowsItemVisible="false"
+                    PagerSwitchToInputBoxButtonCount="10"
+                    PagerVisibleNumericButtonCount="10"
+                    ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+                <Columns>
+                    <DxGridDataColumn Caption="Name" FieldName="FullName"/>
+                </Columns>
+            </DxGrid>
+            break;
+        }
+    }
+
+
+
+@code
+{
+
+    [Parameter]
+    public bool Visible { get; set; }
+    [Parameter]
+    public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public Action<BaseEntity> ShowItemWithBreadcrumb { get; set; }
+    [Parameter]
+    public Team Team { get; set; }
+
+    [Inject] IRoleService RoleService { get; set; }
+    [Inject] ScopeService ScopeService { get; set; }
+
+    public IEnumerable<IGrouping<Role, ScopedRole>> GroupedByRole
+    {
+        get
+        {
+            return CopyScopedRoles.GroupBy(x => x.Role);
+        }
+    }
+
+    public int TabIndex { get; set; }
+    public List<User> Users => Team.Users;
+    private List<Role> Roles { get; set; }
+    private List<PlanningAreaScope> Scopes { get; set; }
+    private List<ScopedRole> CopyScopedRoles { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        Roles = await RoleService.GetRoles(Team.CompanyId);
+        Scopes = await ScopeService.GetAllScopesForCompany(Team.CompanyId);
+        CopyScopedRoles = Team.RolesAndScopes;
+        foreach (ScopedRole roleScope in CopyScopedRoles)
+        {
+            if (roleScope.Role == null)
+            {
+                roleScope.Role = Roles.FirstOrDefault(x => x.Id == roleScope.RoleId);
+            }
+
+            if (roleScope.Scope == null)
+            {
+                roleScope.Scope = Scopes.FirstOrDefault(x => x.Id == roleScope.ScopeId);
+            }
+        }
+    }
+
+    protected static string GetHighestOfType(List<string> permissions, string group)
+    {
+        switch (group)
+        {
+            case "user":
+            {
+                if (permissions.Contains(Permission.ManageUsers.Key))
+                {
+                    return Permission.ManageUsers.Name;
+                }
+                else if (permissions.Contains(Permission.EditUsers.Key))
+                {
+                    return Permission.EditUsers.Name;
+                }
+                else if (permissions.Contains(Permission.ViewUsers.Key))
+                {
+                    return Permission.ManageUsers.Name;
+                }
+                else
+                {
+                    return "None";
+                }
+                break;
+            }
+            case "reports":
+            {
+                if (permissions.Contains(Permission.ManageReports.Key))
+                {
+                    return Permission.ManageReports.Name;
+                }
+                else if (permissions.Contains(Permission.EditReports.Key))
+                {
+                    return Permission.EditReports.Name;
+                }
+                else if (permissions.Contains(Permission.ViewReports.Key))
+                {
+                    return Permission.ViewReports.Name;
+                }
+                else
+                {
+                    return "None";
+                }
+                break;
+            }
+            case "servers":
+            {
+                if (permissions.Contains(Permission.AdministrateServers.Key))
+                {
+                    return Permission.AdministrateServers.Name;
+                }
+                else if (permissions.Contains(Permission.OwnedOnlyServers.Key))
+                {
+                    return Permission.OwnedOnlyServers.Name;
+                }
+                else if (permissions.Contains(Permission.ViewServers.Key))
+                {
+                    return Permission.ViewServers.Name;
+                }
+                else
+                {
+                    return "None";
+                }
+                break;
+            }
+            case "integrations":
+            {
+                if (permissions.Contains(Permission.ManageIntegration.Key))
+                {
+                    return Permission.ManageIntegration.Name;
+                }
+                else if (permissions.Contains(Permission.EditIntegration.Key))
+                {
+                    return Permission.EditIntegration.Name;
+                }
+                else if (permissions.Contains(Permission.ViewIntegration.Key))
+                {
+                    return Permission.ViewIntegration.Name;
+                }
+                else
+                {
+                    return "None";
+                }
+                break;
+            }
+        }
+
+        return "None";
+    }
+}

@@ -1,0 +1,159 @@
+﻿@page "/notifications"
+@using _Imports = DevExpress.Blazor._Imports
+@using ReportsWebApp.Events
+@using DevExpress.Data.Mask.Internal
+@using ReportsWebApp.DB.Services.Interfaces
+<h3 class="mt-3">Notification Settings</h3>
+
+@if (viewPermission)
+{
+    <div class="profile-container pt-3">
+        @foreach (var disp in _typeCategories.Where(x => x.Types.Any()))
+        {
+            <DxCheckBox Checked="disp.IsChecked" CheckedChanged="@((bool val) => CheckedChanged(disp))">
+                @disp.Types.First()?.Name
+            </DxCheckBox>
+        }
+        <div class="save-button-with-spinner">
+            <DxButton Click="Save" Enabled="OptionChanged">
+                Save
+            </DxButton>
+            <span class="spinner @(Saving ? "spinner-loading" : "spinner-loaded")">
+                <span class="fa fa-check color-green-main"></span>
+            </span>
+        </div>
+    </div>
+}
+
+@code {
+    private User User { get; set; }
+    private bool hasLoaded;
+    private bool Saving { get; set; } = false;
+    private bool OptionChanged { get; set; } = false;
+    private bool viewPermission = false;
+
+    private class TypeSettingCategory
+    {
+        public ENotificationCategory Category { get; set; }
+        public List<NotificationType> Types { get; set; }
+        public bool IsChecked { get; set; }
+        public bool WasChecked { get; set; }
+
+        public TypeSettingCategory(ENotificationCategory category, NotificationType type, bool isChecked)
+        {
+            Category = category;
+            IsChecked = WasChecked = isChecked;
+            Types = new List<NotificationType> { type };
+        }
+    };
+
+    private List<TypeSettingCategory> _typeCategories = new();
+
+    [Inject]
+    private IUserService m_userService { get; set; }
+    [Inject]
+    INotificationService m_notificationService { get; set; }
+    [Inject]
+    IPermissionService m_permitionService { get; set; }
+    [Inject]
+    IAppInsightsLogger logger { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+            if (!User.Exists()) return;
+
+            viewPermission = true;
+
+            var allTypes = m_notificationService.GetAllNotificationTypes();
+            var permittedTypes = m_permitionService.FilterNotificationsForUser(User, allTypes.Select(t => t.Type).ToList());
+
+            permittedTypes.ForEach(t =>
+            {
+                var category = _typeCategories.FirstOrDefault(x => x.Category == t.Category);
+
+                if (category != null)
+                    category.Types.Add(t);
+                else
+                    _typeCategories.Add(new TypeSettingCategory(t.Category, t, User.SubscribedNotifications.Contains(t.Type)));
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex);
+            RedirectToError();
+        }
+    }
+
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Perform navigation logic after the component has rendered
+            if (!hasLoaded)
+            {
+                hasLoaded = true;
+                if (!User.Exists())
+                {
+                    RedirectToLogin();
+                }
+            }
+        }
+    }
+    private void RedirectToLogin()
+    {
+        NavigationManager.NavigateTo($"./login?redirectUri=/", true);
+    }
+
+    private void RedirectToError()
+    {
+        NavigationManager.NavigateTo($"./error");
+    }
+
+    private List<TypeSettingCategory> GetChangedTypes() =>
+        _typeCategories.Where(x => x.IsChecked != x.WasChecked).ToList();
+
+    private async Task Save()
+    {
+        var changed = GetChangedTypes();
+        if (User.Exists() && changed.Any())
+        {
+            OptionChanged = false;
+            Saving = true;
+            StateHasChanged();
+
+            var editedTypes = _typeCategories
+                .SelectMany(c => c.Types.Select(t => new NotificationType
+                    {
+                        Name = t.Name,
+                        Category = t.Category,
+                        Checked = c.IsChecked // propagate user toggle state
+                    }))
+                .ToList();
+
+            await m_notificationService.SetSubscriptionsAsync(User, editedTypes);
+
+            // Update baseline to new state
+            foreach (var c in changed)
+            {
+                c.WasChecked = c.IsChecked;
+            }
+
+            await NotificationEvents.OnSubscriptionChanged();
+
+            await Task.Delay(1000);
+            Saving = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool CheckedChanged(TypeSettingCategory type)
+    {
+        type.IsChecked = !type.IsChecked;
+        OptionChanged = GetChangedTypes().Any();
+        return type.IsChecked;
+    }
+}

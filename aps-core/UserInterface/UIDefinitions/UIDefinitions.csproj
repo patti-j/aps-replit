@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargetsWindows.props" />
+  <PropertyGroup>
+    <AssemblyName>PT.UIDefinitions</AssemblyName>
+    <RootNamespace>PT.UIDefinitions</RootNamespace>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonProjects\APSCommon.Windows\APSCommon.Windows.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\PackageDefinitions\PackageDefinitions.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\Transmissions\Transmissions.csproj" />
+    <Reference Update="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Update="System.Core">
+    </Reference>
+    <Reference Update="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Update="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Update="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+    <ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+      <Link>Properties\AssemblyInfoShared.cs</Link>
+    </Compile>
+    <Compile Update="SmartErrorProvider.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <EmbeddedResource Include="Cursors\CapacityIntervalRegularOnline.cur" />
+    <EmbeddedResource Include="Cursors\SelectOnly.cur" />
+    <EmbeddedResource Include="Cursors\Select_DragAll.cur" />
+    <EmbeddedResource Include="Cursors\Select_DragLeftRight.cur" />
+    <EmbeddedResource Include="Cursors\Select_DragUpDownRight.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DevExpress.Win" Version="25.2.3" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>true</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

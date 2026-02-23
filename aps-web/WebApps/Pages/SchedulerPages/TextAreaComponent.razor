@@ -1,0 +1,87 @@
+﻿@page "/template"
+@using System.Text
+@using System.Text.RegularExpressions
+@using ReportsWebApp.DB.Services.Interfaces
+@inject IGanttService GanttService
+<div class="right-panel">
+    <strong>Template preview</strong>
+    <DxButton CssClass="mx-1" Text="Toggle Editor (Beta)" Click="() => ToggleEditorMode()" />
+    <br />
+    @if (UseHtmlEditor)
+    {
+        <DxHtmlEditor @bind-Markup="@Markup"
+                      BindMarkupMode="HtmlEditorBindMarkupMode.OnDelayedInput"
+                      InputDelay="200"
+                      Width="90%" />
+    }
+    else
+    {
+        <textarea @bind="Markup" rows="5" class="form-control"></textarea>
+    }
+    <br />
+    <DxButton CssClass="mx-1" id="dropdown-target-container" IconCssClass="fa fa-info-circle" Click="() => IsOpen = !IsOpen" Attributes="@(new Dictionary<string, object> { ["title"] = "How to use templates" })"></DxButton>
+    <div class="mt-3 p-3 card testexampletemplate" style="background-color: transparent; display: inline-block;">
+        @TemplateTextExample
+    </div>
+    <div class="mt-3 p-3 text-danger" style="@(IsEvaluationVisible ? "display: block;" : "display: none;")">Evaluation: @TemplateEvaluation</div>
+    <MarkupHelpComponent IsOpen="@IsOpen" IsOpenChanged="@((newValue) => IsOpen = newValue)" />
+</div>
+@code {
+    [Parameter]
+    public string OriginalTemplate { get; set; }
+
+    [Parameter]
+    public EventCallback<string> TemplateTextInputChanged { get; set; }
+    private string _markup = "";
+    public string Markup
+    {
+        get { return _markup; }
+        set
+        {
+            if (_markup != value)
+            {
+                _markup = value;
+                EvaluateTemplate();
+            }
+        }
+    }
+
+    private bool UseHtmlEditor { get; set; } = false; // Default to false to use simple textarea
+    private bool IsOpen { get; set; } = false;
+    private bool IsEvaluationVisible { get; set; } = false;
+    private MarkupString TemplateTextExample { get; set; }
+    private string TemplateEvaluation { get; set; } = string.Empty;
+
+    public void AddText(string newText)
+    {
+        Markup += newText;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        Markup = OriginalTemplate;
+    }
+
+    private void EvaluateTemplate()
+    {
+        if (!string.IsNullOrEmpty(Markup))
+        {
+            var evaluatedTemplate = GanttService.TemplateSegmentContext.EvaluateTemplate(Markup);
+            TemplateTextExample = new MarkupString(evaluatedTemplate.Result);
+            TemplateEvaluation = evaluatedTemplate.Message;
+            IsEvaluationVisible = !evaluatedTemplate.Success;
+        }
+        else
+        {
+            TemplateTextExample = new MarkupString(string.Empty);
+            TemplateEvaluation = "Template is empty.";
+            IsEvaluationVisible = false;
+        }
+        TemplateTextInputChanged.InvokeAsync(Markup);
+        StateHasChanged();
+    }
+
+    private void ToggleEditorMode()
+    {
+        UseHtmlEditor = !UseHtmlEditor;
+    }
+}

@@ -1,0 +1,13 @@
+﻿@code {
+    [Parameter]
+    public bool IsLoading { get; set; }
+    [Parameter]
+    public string Message { get; set; }
+    [Parameter] 
+    public RenderFragment Content { get; set; }
+}
+<DxLoadingPanel Visible="IsLoading"
+                    IsContentBlocked="true"
+                    ApplyBackgroundShading="true"
+                    Text="@Message"
+                CssClass="">@Content</DxLoadingPanel>

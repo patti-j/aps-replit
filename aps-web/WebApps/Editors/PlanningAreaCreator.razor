@@ -1,0 +1,678 @@
+﻿@using System.Data.SqlClient
+@using System.Security.Cryptography
+@using Microsoft.JSInterop
+@using ReportsWebApp.DB
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.Pages
+@using System.Text.RegularExpressions
+@inject IJSRuntime JSRuntime
+@inject DB.Services.ServiceContainer ServiceContainer
+@inject IPlanningAreaDataService PlanningAreaDataService
+@inject ISubscriptionService SubscriptionService
+
+<DxPopup @bind-Visible="Visible" MaxWidth="800px" HeaderText="@PopupTitle" ShowFooter="true" Closed="Close" >
+    <BodyContentTemplate Context="popupBodyContext">
+        <LoadingOverlay IsLoading="@isLoading" Message="@loadingMessage">
+            <Content>
+                <EditForm OnValidSubmit="Save" OnInvalidSubmit="Invalid" Model="m_newPa" Context="FormContext" id="paCreateModal">
+                    <ValidationSummary/>
+                    <DxFormLayout CssClass="form-layout">
+                        @if (currentUser.CompanyId == 1)
+                        {
+                            <DxFormLayoutItem Caption="Company *" ColSpanMd="8">
+                                <DxComboBox Data="@currentUser.AuthorizedCompanies" 
+                                            Value="@m_newPa.SelectedCompany" 
+                                            ValueChanged="@(async (Company c) => await OnCompanyChanged(c))" 
+                                            ValueExpression="@(() => m_newPa.SelectedCompany)"
+                                            NullText="Select Company" 
+                                            ShowValidationIcon="true">
+                                </DxComboBox>
+                            </DxFormLayoutItem>
+                        }
+                        <DxFormLayoutItem Caption="Name and Version *" ColSpanMd="8">
+                            <DxTextBox @bind-Text="m_newPa.InstanceName" NullText="Enter Planning Area Name" ShowValidationIcon="true">
+                            </DxTextBox>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem ColSpanMd="4">
+                            <DxComboBox Data="@VersionOptions" @bind-Value="m_newPa.SelectedVersion" AllowUserInput="@true" ShowValidationIcon="true">
+                            </DxComboBox>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Caption="Scenario Filepath *" Visible="@(!IsUpgrade)" ColSpanMd="11">
+                            <DxTextBox NullText="New Scenario" @bind-Text="m_newPa.SelectedScenarioFile" ShowValidationIcon="true">
+                            </DxTextBox>
+                            
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Visible="@(!IsUpgrade)" ColSpanMd="1">
+                            <DxButton IconCssClass="fa fa-circle-question" Click="@(() =>
+                                                                                      Dialog.ConfirmOperation("Enter Scenario Filepath",
+                                                                                          "Please enter the filepath to the scenario to load." +
+                                                                                          " The scenario file must exist on the machine running the ServerAgent for this planning area." +
+                                                                                          " Leave the box blank to generate a new scenario.",
+                                                                                          yesButtonText: "Okay",
+                                                                                          displayNoButton: false))">
+                            </DxButton>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Caption="Integration Code *" Visible="@(!IsUpgrade)" ColSpanMd="@(m_newPa.SelectedScenarioFile == "Browse Disk" ? 12 : 5)">
+                            <DxComboBox Data="@IntegrationCodeOptions" @bind-Value="m_newPa.SelectedIntegrationCode" NullText="Select" 
+                                        ShowValidationIcon="true">
+                            </DxComboBox>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Caption="Workspace Profiles" Visible="@(!IsUpgrade)" ColSpanMd="7">
+                            <DxTagBox Data="@WorkspaceProfiles" @bind-Values="m_newPa.SelectedWorkspaceProfiles" NullText="Select Workspace Profiles" ShowValidationIcon="true">
+                            </DxTagBox>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Caption="Environment Type" Visible="@(!IsUpgrade)" ColSpanMd="5">
+                            <DxComboBox Data="@EnvironmentTypes" @bind-Value="m_newPa.SelectedEnvironmentType" ShowValidationIcon="true">
+                            </DxComboBox>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Caption="Subscription" Visible="@(!IsUpgrade)" ColSpanMd="7">
+                            <DxComboBox Data="@AvailableSubscriptions" 
+                                        Value="@m_newPa.SelectedSubscription"
+                                        ValueChanged="@((SubscriptionOption s) => OnSubscriptionChanged(s))"
+                                        ValueExpression="@(() => m_newPa.SelectedSubscription)"
+                                        NullText="Select Subscription" 
+                                        ShowValidationIcon="true"
+                                        TextFieldName="@nameof(SubscriptionOption.DisplayText)"
+                                        ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                        FilteringMode="DataGridFilteringMode.Contains">
+                                <ItemTemplate Context="subscriptionContext">
+                                    <div>
+                                        <strong>@subscriptionContext.DisplayText</strong>
+                                        @if (!string.IsNullOrEmpty(subscriptionContext.Description))
+                                        {
+                                            <div style="font-size: 0.9em; color: #666;">@subscriptionContext.Description</div>
+                                        }
+                                    </div>
+                                </ItemTemplate>
+                            </DxComboBox>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Caption="Serial Code" Visible="@(!IsUpgrade)" ColSpanMd="5">
+                            <DxTextBox @bind-Text="@ManualSerialCode" 
+                                       NullText="Enter serial code manually"
+                                       ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                       ShowValidationIcon="true"/>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Caption="Start Instance Service" ColSpanMd="5">
+                            <DxCheckBox @bind-Checked="m_newPa.StartWhenCreated" ValidationEnabled="false" />
+                        </DxFormLayoutItem>
+                    </DxFormLayout>
+                    <CustomValidator DataItemValidating="ValidateData" ValidateOnFieldChange="@false"></CustomValidator>
+                </EditForm>
+            </Content>
+        </LoadingOverlay>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <DxButton RenderStyle="ButtonRenderStyle.Danger" Text="Cancel" Click="Close" />
+        <DxButton RenderStyle="ButtonRenderStyle.Success" Text="@saveButtonText" SubmitFormOnClick="@enableSaveButton" form="paCreateModal" />
+    </FooterContentTemplate>
+
+</DxPopup>
+<ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Info"></ConfirmationDialog>
+
+@code {
+    [Inject] IToastNotificationService ToastService { get; set; }
+    [Inject] AzureTableService TableService { get; set; }
+    [Parameter] public bool IsUpgrade { get; set; }
+    [Parameter] public bool IsCopy { get; set; }
+    [Parameter] public string PopupTitle { get; set; } = "Create New Planning Area";
+    [Parameter] public EventCallback<(PADetails model, PADetails originForCopy, bool startWhenCreated)> OnSave { get; set; }
+    [Parameter] public List<PADetails> ExistingPlanningAreas { get; set; }  = new();
+    private string saveButtonText = "Save";
+    private bool enableSaveButton = true;
+    private CompanyServer SelectedServer { get; set; }
+    private ConfirmationDialog Dialog;
+
+    // Subscription-related classes
+    private class SubscriptionOption
+    {
+        public int SubscriptionId { get; set; }
+        public string SerialCode { get; set; }
+        public string DisplayText { get; set; }
+        public string Description { get; set; }
+    }
+
+    private class FormData(CompanyServer SelectedServer, Company company, string InstanceName = null, string SelectedVersion = null, string SelectedIntegrationCode = null, string SelectedScenarioFile = null, IEnumerable<string> SelectedWorkspaceProfiles = null, EnvironmentType SelectedEnvironmentType = EnvironmentType.Dev, SubscriptionOption SelectedSubscription = null, bool StartWhenCreated = false)
+    {
+        public CompanyServer SelectedServer { get; set; } = SelectedServer;
+        public Company SelectedCompany { get; set; } = company;
+        public string InstanceName { get; set; } = InstanceName;
+        public string SelectedVersion { get; set; } = SelectedVersion ?? string.Empty;
+        public string SelectedIntegrationCode { get; set; } = SelectedIntegrationCode;
+        public string SelectedScenarioFile { get; set; } = SelectedScenarioFile;
+        public IEnumerable<string> SelectedWorkspaceProfiles { get; set; } = SelectedWorkspaceProfiles;
+        public EnvironmentType SelectedEnvironmentType { get; set; } = SelectedEnvironmentType;
+        public SubscriptionOption SelectedSubscription { get; set; } = SelectedSubscription;
+        public bool StartWhenCreated { get; set; } = StartWhenCreated;
+    }
+
+    private User currentUser;
+    private PADetails m_copyFromModel = null;
+    private FormData m_newPa;
+    private string _manualSerialCode;
+
+    private List<CompanyServer> availableServers = new() { };
+
+    private List<string> VersionOptions = new();
+    private List<string> IntegrationCodeOptions = new();
+    private List<string> ScenarioFileOptions = new();
+    private List<string> WorkspaceProfiles = new();
+    private List<EnvironmentType> EnvironmentTypes = new() { EnvironmentType.Production, EnvironmentType.QA, EnvironmentType.Dev };
+    private List<string> UploadedFiles = new();
+    private List<SubscriptionOption> AvailableSubscriptions = new();
+
+    private bool Visible { get; set; }
+    private bool isLoading { get; set; }
+    private string loadingMessage { get; set; }
+
+    private string ManualSerialCode
+    {
+        get => _manualSerialCode;
+        set
+        {
+            _manualSerialCode = value;
+            
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                // Try to match with existing subscription
+                var formattedCode = CommonUtils.FormatSerialCodeAddSeparators(value);
+                var matchingSubscription = AvailableSubscriptions.FirstOrDefault(s => 
+                    s.SerialCode?.Equals(formattedCode, StringComparison.OrdinalIgnoreCase) == true);
+                
+                if (matchingSubscription != null)
+                {
+                    // If it matches an existing subscription, select it
+                    m_newPa.SelectedSubscription = matchingSubscription;
+                }
+                else
+                {
+                    // Manual entry that doesn't match any subscription - clear subscription selection
+                    m_newPa.SelectedSubscription = null;
+                }
+            }
+            else
+            {
+                // Clear subscription when manual input is cleared
+                m_newPa.SelectedSubscription = null;
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await ServiceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+    }
+
+    private void ShowLoadingState(bool state, string message)
+    {
+        isLoading = state;
+        loadingMessage = message;
+        StateHasChanged();
+    }
+
+    private async Task UpdateServerOptions()
+    {
+        //Here we get collections
+        // TODO: Add SM polling to deliver options. Comment code is old direct-TO-SM-communication, but we'll instead get data sent FROM SM
+        if (!SelectedServer.LocalVersions.IsNullOrEmpty())
+        {
+            VersionOptions = SelectedServer.LocalVersions.Split(',').ToList();
+        }
+        else
+        {
+            VersionOptions = new();
+        }
+
+        VersionOptions.AddRange((await TableService.GetAllSoftwareVersions()).Select(x => x.VersionNumber).Where(x => VersionOptions.All(y => x != y)).ToList());
+        VersionOptions = VersionOptions.OrderByDescending(x => new Version(x)).ToList();
+
+        // Let developers add 0.0 debug versions
+        if (currentUser.IsAuthorizedFor(Permission.DeveloperPermissions) && !VersionOptions.Contains("0.0"))
+        {
+            VersionOptions.Add("0.0");
+        }
+
+        if (SelectedServer == null || SelectedServer.Id < 1) return;
+
+        // IntegrationCodeOptions = await client.GetIntegrationCodeOptionsAsync();
+        IntegrationCodeOptions = new List<string> { "PlanetTogether" };
+        // ScenarioFileOptions = (await client.GetScenarioFileOptionsAsync()).Select(sf => sf.DisplayText).ToList();
+        ScenarioFileOptions = new() { "New Scenario" };
+        // WorkspaceProfiles = (await client.GetStandardWorkspaceFiles()).Select(sf => sf.DisplayText).ToList();
+        WorkspaceProfiles = new() { "Standard Workspace" };
+        // ScenarioFileOptions.Add("Browse Disk");
+
+    }
+
+    private async Task LoadSubscriptionsForCompany(int companyId)
+    {
+        try
+        {
+            ShowLoadingState(true, "Loading subscriptions...");
+            AvailableSubscriptions.Clear();
+
+            var subscriptions = await SubscriptionService.GetLiveSubscriptionsForServerAsync(companyId);
+            
+            if (subscriptions != null && subscriptions.Any())
+            {
+                AvailableSubscriptions = subscriptions.Select(s => new SubscriptionOption
+                {
+                    SubscriptionId = s.SubscriptionId,
+                    SerialCode = $"{CommonUtils.FormatSerialCodeAddSeparators(s.SerialCode)}",
+                    DisplayText = s.Name,
+                    Description = s.Description
+                }).ToList();
+            }
+            else
+            {
+                // No subscriptions found - this is acceptable, user can still proceed without selecting one
+                AvailableSubscriptions = new List<SubscriptionOption>();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log the error but don't fail - subscriptions are optional
+            ShowToast("Warning", $"Could not load subscriptions: {ex.Message}. You may proceed without selecting a subscription.", ToastRenderStyle.Warning);
+            AvailableSubscriptions = new List<SubscriptionOption>();
+        }
+        finally
+        {
+            ShowLoadingState(false, "");
+        }
+    }
+
+    private async Task OnCompanyChanged(Company newCompany)
+    {
+        m_newPa.SelectedCompany = newCompany;
+        if (newCompany != null && newCompany.Id > 0)
+        {
+            await LoadSubscriptionsForCompany(newCompany.Id);
+        }
+        else
+        {
+            AvailableSubscriptions.Clear();
+        }
+        StateHasChanged();
+    }
+
+    private void OnSubscriptionChanged(SubscriptionOption newSubscription)
+    {
+        m_newPa.SelectedSubscription = newSubscription;
+        
+        if (newSubscription != null && !string.IsNullOrWhiteSpace(newSubscription.SerialCode))
+        {
+            // Update the manual serial code field to match the selected subscription
+            _manualSerialCode = newSubscription.SerialCode;
+        }
+        else
+        {
+            // Clear the manual serial code when no subscription is selected
+            _manualSerialCode = string.Empty;
+        }
+        
+        StateHasChanged();
+    }
+
+    private void Close() => Visible = false;
+
+    protected void ValidateData(ValidationMessageStoreEventArgs e)
+    {
+        if (saveButtonText != "Save")
+        {
+            Close();
+            return;
+        }
+
+        if (m_newPa.SelectedCompany == null || m_newPa.SelectedCompany.Id <= 0)
+        {
+            e.AddError(nameof(m_newPa.SelectedServer), "Select a valid company.");
+        }
+
+        if (ExistingPlanningAreas.Any(pa => pa.Name.Equals(m_newPa.InstanceName, StringComparison.OrdinalIgnoreCase) &&
+                                            pa.Version.Equals(m_newPa.SelectedVersion) && // TODO: In future, we may change PA structure so name must be unique even across versions
+                                            pa.ServerId == SelectedServer.Id)) 
+        {
+            e.AddError(nameof(m_newPa.InstanceName), "Name must be unique.");
+        }
+
+        if (string.IsNullOrWhiteSpace(m_newPa.InstanceName))
+        {
+            e.AddError(nameof(m_newPa.InstanceName), "Name is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(m_newPa.SelectedVersion))
+        {
+            e.AddError(nameof(m_newPa.SelectedVersion), "Version is required.");
+        }
+
+        if (!IsUpgrade && string.IsNullOrWhiteSpace(m_newPa.SelectedIntegrationCode))
+        {
+            e.AddError(nameof(m_newPa.SelectedIntegrationCode), "Integration Code is required.");
+        }
+
+        if (!IsUpgrade && string.IsNullOrWhiteSpace(m_newPa.SelectedScenarioFile))
+        {
+            e.AddError(nameof(m_newPa.SelectedScenarioFile), "Scenario File is required.");
+        }
+
+        // Serial Code Validation - check both subscription and manual entry
+        if (!IsUpgrade)
+        {
+            var serialCodeToValidate = string.Empty;
+            
+            // Check manual entry first
+            if (!string.IsNullOrWhiteSpace(_manualSerialCode))
+            {
+                serialCodeToValidate = _manualSerialCode;
+            }
+            // Otherwise check if subscription is selected
+            else if (m_newPa.SelectedSubscription != null && !string.IsNullOrWhiteSpace(m_newPa.SelectedSubscription.SerialCode))
+            {
+                serialCodeToValidate = m_newPa.SelectedSubscription.SerialCode;
+            }
+            
+            if (!string.IsNullOrWhiteSpace(serialCodeToValidate) && !ValidateSerialCode(serialCodeToValidate))
+            {
+                e.AddError(nameof(m_newPa.SelectedSubscription), "Invalid serial code format.");
+            }
+        }
+    }
+
+    private async Task Invalid()
+    {
+        ShowToast("Validation Error", "Data is not valid, please fix the validation issues before submitting.", ToastRenderStyle.Warning);
+    }
+
+    private async Task Save()
+    {
+        if (saveButtonText == "Save")
+            try
+            {
+                enableSaveButton = false;
+                // Validate all required fields
+                if (SelectedServer == null || SelectedServer.Id < 1)
+                {
+                    ShowToast("Validation Error", "Please select a valid server.", ToastRenderStyle.Warning);
+                    return;
+                }
+
+                if (ExistingPlanningAreas.Any(pa => pa.Name.Equals(m_newPa.InstanceName, StringComparison.OrdinalIgnoreCase) &&
+                                                    pa.Version.Equals(m_newPa.SelectedVersion) && // TODO: In future, we may change PA structure so name must be unique even across versions
+                                                    pa.ServerId == SelectedServer.Id)) 
+                {
+                    ShowToast("Validation Error", $"A Planning Area already exists with Name/Version {m_newPa.InstanceName} {m_newPa.SelectedVersion}", ToastRenderStyle.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(m_newPa.InstanceName))
+                {
+                    ShowToast("Validation Error", "Planning Area Name is required.", ToastRenderStyle.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(m_newPa.SelectedVersion))
+                {
+                    ShowToast("Validation Error", "Version is required.", ToastRenderStyle.Warning);
+                    return;
+                }
+
+                if (!IsUpgrade && string.IsNullOrWhiteSpace(m_newPa.SelectedIntegrationCode))
+                {
+                    ShowToast("Validation Error", "Integration Code is required.", ToastRenderStyle.Warning);
+                    return;
+                }
+
+                if (!IsUpgrade && string.IsNullOrWhiteSpace(m_newPa.SelectedScenarioFile))
+                {
+                    ShowToast("Validation Error", "Scenario File is required.", ToastRenderStyle.Warning);
+                    return;
+                }
+
+                // Serial Code Validation - prioritize manual entry over subscription selection
+                string serialCode = string.Empty;
+                int subscriptionId = 0;
+                string subscriptionName = string.Empty;
+                
+                if (!IsUpgrade)
+                {
+                    // Check manual entry first
+                    if (!string.IsNullOrWhiteSpace(_manualSerialCode))
+                    {
+                        if (!ValidateSerialCode(_manualSerialCode))
+                            return;
+                        serialCode = _manualSerialCode;
+                        
+                        // If manual entry matches a subscription, use that subscription's details
+                        if (m_newPa.SelectedSubscription != null)
+                        {
+                            subscriptionId = m_newPa.SelectedSubscription.SubscriptionId;
+                            subscriptionName = m_newPa.SelectedSubscription.DisplayText;
+                        }
+                    }
+                    // Otherwise use selected subscription
+                    else if (m_newPa.SelectedSubscription != null && !string.IsNullOrWhiteSpace(m_newPa.SelectedSubscription.SerialCode))
+                    {
+                        if (!ValidateSerialCode(m_newPa.SelectedSubscription.SerialCode))
+                            return;
+                        serialCode = m_newPa.SelectedSubscription.SerialCode;
+                        subscriptionId = m_newPa.SelectedSubscription.SubscriptionId;
+                        subscriptionName = m_newPa.SelectedSubscription.DisplayText;
+                    }
+                }
+
+                // Update Scenario
+                if (m_newPa.SelectedScenarioFile.IsNullOrEmpty())
+                {
+                    m_newPa.SelectedScenarioFile = "New Scenario";
+                }
+                else
+                {
+                    // Add additional control text so that the SA knows to look locally
+                    m_newPa.SelectedScenarioFile = "Local;" + m_newPa.SelectedScenarioFile;
+                }
+
+                // All validations passed
+                // TODO: Very little of the settings creation process is happening here compared to what SM used to do.
+                // TODO: While that's somewhat fine for now (since SM will fill in gaps and save when done), ideally we want all that logic here,
+                // TODO: so that all the SM needs to work with are Service Settings that must be handled server side.
+                await OnSave.InvokeAsync((CreateNewPlanningArea(serialCode, subscriptionId, subscriptionName), m_copyFromModel, m_newPa.StartWhenCreated));
+
+                saveButtonText = "Close";
+                enableSaveButton = true;
+                Close(); // Close the form after saving
+            }
+            catch (Exception ex)
+            {
+                // Handle unexpected errors gracefully
+                ShowToast("Error", $"An error occurred while saving: {ex.Message}", ToastRenderStyle.Danger);
+            }
+        else Close();
+    }
+
+    private PADetails CreateNewPlanningArea(string serialCode, int subscriptionId, string subscriptionName)
+    {
+        return new PADetails
+        {
+            Server = SelectedServer,
+            CompanyId = m_newPa.SelectedCompany.Id,
+            Name = m_newPa.InstanceName,
+            Version = m_newPa.SelectedVersion,
+            PlanningAreaKey = Guid.NewGuid().ToString(),
+            ApiKey = CommonUtils.GeneratePaApiKey(),
+            PlanningArea = new PlanningArea
+            {
+                ServicePaths = new Servicepaths
+                {
+                        IntegrationCode = m_newPa.SelectedIntegrationCode,
+                },
+                Settings = new Settings
+                {
+                        ScenarioFile = m_newPa.SelectedScenarioFile,
+                    // TODO: merge this and other duplicate props between the PA and its Settings blob (ensuring we use vals from existing SM instances)
+                    CreationDate = DateTime.UtcNow, 
+                },
+                LicenseInfo = new Licenseinfo
+                {
+                        SerialCode = CommonUtils.RemoveSerialCodeSeparators(serialCode) ?? string.Empty,
+                        Subscription = subscriptionName ?? string.Empty,
+                        SubscriptionId = subscriptionId,
+                },
+                PublicInfo = new InstancePublicInfo
+                {
+                    EnvironmentType = m_newPa.SelectedEnvironmentType,
+                    InstanceName = m_newPa.InstanceName,
+                    SoftwareVersion = m_newPa.SelectedVersion,
+                    CreationDate = DateTime.UtcNow,
+
+                }
+            }
+        };
+    }
+
+    private bool ValidateSerialCode(string serialCode)
+    {
+        // Hardcoded regex pattern for serial code validation
+        const string SerialCodePattern = "^(?:[A-Z0-9]{12,}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4,})$";
+
+        if (!Regex.IsMatch(serialCode, SerialCodePattern, RegexOptions.IgnoreCase))
+        {
+            ShowToast("Validation Error", "Serial Code must be a 12-length alphanumeric code like ****-****-****.", ToastRenderStyle.Warning);
+            return false;
+        }
+        return true;
+    }
+
+    private Task<bool> ValidateUploadedFile(object value)
+    {
+        if (value is List<string> files && files.Any())
+        {
+            return Task.FromResult(files.First().EndsWith(".dat"));
+        }
+        return Task.FromResult(false);
+    }
+
+    public async Task Show(CompanyServer server, PADetails a_copyFromModel = null)
+    {
+        SetFields(a_copyFromModel);
+        SelectedServer = server;
+        await UpdateServerOptions();
+        
+        // Load subscriptions for the current company
+        if (m_newPa?.SelectedCompany != null && m_newPa.SelectedCompany.Id > 0)
+        {
+            await LoadSubscriptionsForCompany(m_newPa.SelectedCompany.Id);
+        }
+        
+        Visible = true;
+        ShowLoadingState(true, "Loading values...");
+
+        StateHasChanged();
+        ShowLoadingState(false, "");
+    }
+
+    private void SetFields(PADetails a_copyFromModel)
+    {
+        saveButtonText = "Save";
+        if (a_copyFromModel == null)
+        {
+            ResetFormFields();
+        }
+        else
+        {
+            SetFormFieldsFromCopy(a_copyFromModel);
+        }
+    }
+
+    private void ResetFormFields()
+    {
+        m_newPa = new(m_newPa?.SelectedServer ?? availableServers.FirstOrDefault() ?? new CompanyServer(), currentUser.Company,
+                            SelectedIntegrationCode: m_newPa?.SelectedIntegrationCode ?? IntegrationCodeOptions.FirstOrDefault(),
+                            SelectedScenarioFile: m_newPa?.SelectedScenarioFile ?? ScenarioFileOptions.FirstOrDefault()
+                            // TODO: pull in WorkSpaceProfiles!
+                            );
+
+        VersionOptions.Clear();
+        IntegrationCodeOptions.Clear();
+        ScenarioFileOptions.Clear();
+        WorkspaceProfiles.Clear();
+
+        m_copyFromModel = null;
+        _manualSerialCode = string.Empty;
+    }
+
+    private void SetFormFieldsFromCopy(PADetails a_copyFromModel)
+    {
+        var envFound = EnvironmentType.TryParse(a_copyFromModel.Environment, out EnvironmentType env);
+
+        m_newPa = new(a_copyFromModel.Server, currentUser.Company);
+        m_newPa.InstanceName = $"{a_copyFromModel} (Copy)";
+        m_newPa.SelectedVersion = a_copyFromModel.Version;
+        m_newPa.SelectedIntegrationCode = a_copyFromModel.PlanningArea.ServicePaths.IntegrationCode;
+        m_newPa.SelectedScenarioFile = a_copyFromModel.PlanningArea.Settings.ScenarioFile;
+        m_newPa.SelectedWorkspaceProfiles = new List<string>(); // TODO: we need to get these from the origin instance - the old SM code got this via api from POST instances/getInstanceWorkspaceNames - we need a similar mechanism
+        
+        // Try to find matching subscription - match by SerialCode first, then by name
+        var copiedSerialCode = a_copyFromModel.PlanningArea.LicenseInfo.SerialCode;
+        var copiedSubscriptionName = a_copyFromModel.PlanningArea.LicenseInfo.Subscription;
+        
+        if (AvailableSubscriptions.Any())
+        {
+            // First try to match by serial code if available
+            if (!string.IsNullOrWhiteSpace(copiedSerialCode))
+            {
+                var formattedCopiedCode = CommonUtils.FormatSerialCodeAddSeparators(copiedSerialCode);
+                m_newPa.SelectedSubscription = AvailableSubscriptions.FirstOrDefault(s => 
+                    s.SerialCode?.Equals(formattedCopiedCode, StringComparison.OrdinalIgnoreCase) == true);
+            }
+            
+            // If no match by serial code, try to match by subscription name
+            if (m_newPa.SelectedSubscription == null && !string.IsNullOrWhiteSpace(copiedSubscriptionName))
+            {
+                m_newPa.SelectedSubscription = AvailableSubscriptions.FirstOrDefault(s => 
+                    s.DisplayText == copiedSubscriptionName);
+            }
+        }
+        
+        // Set the manual serial code field
+        if (m_newPa.SelectedSubscription != null)
+        {
+            _manualSerialCode = m_newPa.SelectedSubscription.SerialCode;
+        }
+        else if (!string.IsNullOrWhiteSpace(copiedSerialCode))
+        {
+            _manualSerialCode = CommonUtils.FormatSerialCodeAddSeparators(copiedSerialCode);
+        }
+        
+        m_newPa.StartWhenCreated = false;
+
+        SelectedServer = a_copyFromModel.Server;
+
+        VersionOptions.Clear();
+        IntegrationCodeOptions.Clear();
+        ScenarioFileOptions.Clear();
+        WorkspaceProfiles.Clear();
+
+        m_copyFromModel = a_copyFromModel;
+    }
+
+
+    private void ShowToast(string title, string message, ToastRenderStyle style)
+    {
+        ToastService.ShowToast(new ToastOptions
+            {
+                ProviderName = "MainLayout",
+                Title = title,
+                Text = message,
+                ThemeMode = ToastThemeMode.Saturated,
+                RenderStyle = style,
+            });
+    }
+}

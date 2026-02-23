@@ -1,0 +1,186 @@
+﻿@using DevExpress.Blazor
+@using ReportsWebApp.DB.Models
+@inject HierarchyFilterService m_treeViewDataService
+
+<DxPopup @bind-Visible="@ShowPopup" CloseOnOutsideClick="true" Width="400px" Height="auto">
+    <HeaderTemplate>
+        <ServerContextHeader Title="Filter"
+        BigTitle="false"
+        OnSave="@ClosePopup"
+        OnRevert="@TryRevert"
+        OnClose="@TryCancel"
+        ShowSaveButton="@m_modified"
+        ShowRevertButton="@m_modified"
+                             ShowCloseButton="@(!m_modified)"
+        ConfirmOnClose="false" />
+    </HeaderTemplate>
+    <Content>
+        <DxTreeView Data="@m_filteredNodes"
+        CheckMode="TreeViewCheckMode.Recursive"
+        CheckAllVisible="true"
+        AnimationType="LayoutAnimationType.Slide"
+        CssClass="h-300"
+        CheckedChanged="@OnCheckedChanged">
+            <DataMappings>
+                <DxTreeViewDataMapping Children="Children" Text="Text" HasChildren="HasChildren" Checked="IsEnabled" />
+            </DataMappings>
+        </DxTreeView>
+    </Content>
+</DxPopup>
+
+<DxPopup @bind-Visible="m_isConfirmDialogVisible" ShowCloseButton="false" Width="300px" CssClass="m-3">
+    <HeaderTemplate><h5 class="text-danger p-1">Discard Changes?</h5></HeaderTemplate>
+    <BodyTemplate>
+        <div class="p-3">
+            <p class="mb-4">You have unsaved changes. Are you sure you want to discard them?</p>
+            <div class="d-flex justify-content-end">
+                <DxButton Text="Yes, Discard" Click="@ConfirmDiscard" RenderStyle="ButtonRenderStyle.Danger" CssClass="me-2" />
+                <DxButton Text="No, Cancel" Click="@CancelDialog" RenderStyle="ButtonRenderStyle.Secondary" />
+            </div>
+        </div>
+    </BodyTemplate>
+</DxPopup>
+
+@code {
+    [Parameter] public bool ShowPopup { get; set; }
+    [Parameter] public EventCallback<bool> ShowPopupChanged { get; set; }
+    [Parameter] public EventCallback<HashSet<string>> HierarchyFilterChanged { get; set; }
+
+    public string SelectedScenarioName { get; set; } = string.Empty;
+
+    private List<TreeNode> m_filteredNodes { get; set; } = new();
+    private HashSet<string> m_enabledNodeIds = new();
+    private HashSet<string> m_originalEnabledNodeIds = new();
+    private bool m_modified = false;
+    private bool m_isConfirmDialogVisible = false;
+    private Action? m_pendingDiscardAction;
+
+    /// <summary>
+    /// Fetch tree node data when parameters are updated.
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        m_filteredNodes = m_treeViewDataService.GetNodes();
+        m_enabledNodeIds = new();
+        CollectEnabledNodeIds(m_filteredNodes);
+        m_originalEnabledNodeIds = CommonUtils.DeepClone(m_enabledNodeIds);
+        m_modified = false;
+    }
+
+    private void OnCheckedChanged(TreeViewCheckedChangedEventArgs a_args)
+    {
+        m_modified = true;
+
+        foreach (var item in a_args.CheckedItems)
+            UpdateNode(item, true);
+
+        foreach (var item in a_args.LastUncheckedItems)
+            UpdateNode(item, false);
+
+        m_enabledNodeIds = new();
+        CollectEnabledNodeIds(m_filteredNodes);
+    }
+
+    private void UpdateNode(object a_treeViewItem, bool a_isEnabled)
+    {
+        var node = (TreeNode)((DevExpress.Blazor.Navigation.Internal.TreeViewItemModel)a_treeViewItem).Data;
+        FindAndUpdateNode(m_filteredNodes, node.Id, a_isEnabled);
+    }
+
+    private bool FindAndUpdateNode(IEnumerable<TreeNode> a_nodes, string a_id, bool a_isEnabled)
+    {
+        foreach (var node in a_nodes)
+        {
+            if (node.Id == a_id)
+            {
+                node.IsEnabled = a_isEnabled;
+                return true;
+            }
+
+            if (node.Children != null && FindAndUpdateNode(node.Children, a_id, a_isEnabled))
+                return true;
+        }
+
+        return false;
+    }
+
+    private void CollectEnabledNodeIds(IEnumerable<TreeNode> a_nodes)
+    {
+        foreach (var node in a_nodes)
+        {
+            if (node.IsEnabled)
+                m_enabledNodeIds.Add(node.Id);
+
+            if (node.Children?.Any() == true)
+                CollectEnabledNodeIds(node.Children);
+        }
+    }
+
+    private void RestoreOriginalTreeState()
+    {
+        foreach (var node in m_filteredNodes)
+            RestoreNodeStateRecursive(node);
+    }
+
+    private void RestoreNodeStateRecursive(TreeNode a_node)
+    {
+        a_node.IsEnabled = m_originalEnabledNodeIds.Contains(a_node.Id);
+
+        if (a_node.Children != null)
+        {
+            foreach (var child in a_node.Children)
+                RestoreNodeStateRecursive(child);
+        }
+    }
+
+    private void TryRevert() => PromptDiscard(async () =>
+    {
+        m_enabledNodeIds = CommonUtils.DeepClone(m_originalEnabledNodeIds);
+        RestoreOriginalTreeState();
+        m_modified = false;
+    });
+
+    private void TryCancel() => PromptDiscard(() =>
+    {
+        m_modified = false;
+        ClosePopup();
+    });
+
+    private void PromptDiscard(Action a_action)
+    {
+        if (m_modified)
+        {
+            m_pendingDiscardAction = a_action;
+            m_isConfirmDialogVisible = true;
+        }
+        else
+        {
+            a_action.Invoke();
+        }
+    }
+
+    private void ConfirmDiscard()
+    {
+        m_isConfirmDialogVisible = false;
+        m_pendingDiscardAction?.Invoke();
+        m_pendingDiscardAction = null;
+        StateHasChanged();
+    }
+
+    private void CancelDialog()
+    {
+        m_isConfirmDialogVisible = false;
+    }
+
+    private void ClosePopup()
+    {
+        ShowPopup = false;
+
+        if (m_modified)
+        {
+            HierarchyFilterChanged.InvokeAsync(m_enabledNodeIds);
+        }
+
+        ShowPopupChanged.InvokeAsync(ShowPopup);
+    }
+}

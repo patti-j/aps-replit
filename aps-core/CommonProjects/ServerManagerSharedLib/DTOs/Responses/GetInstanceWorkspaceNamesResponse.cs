@@ -1,0 +1,14 @@
+﻿using PT.ServerManagerSharedLib.Azure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PT.ServerManagerSharedLib.DTOs.Responses
+{
+    public class GetInstanceWorkspaceNamesResponse
+    {
+        public List<FileEntity> Workspaces { get; set; }
+    }
+}

@@ -1,0 +1,165 @@
+﻿@inherits DxTreeList
+
+@{
+    base.BuildRenderTree(__builder);
+}
+
+@code
+{
+    public interface TreeRow
+    {
+        public string Id { get; set; }
+        public bool IsExpanded { get; set; }
+        public List<TreeRow> Children { get; set; }
+    }
+
+    private bool _expansionSynced = false;
+    private IJSObjectReference _jsModule;
+    private DotNetObjectReference<CustomTreeList> _dotNetRef;
+
+    [Parameter] public EventCallback TreeListRenderedAndExpanded { get; set; }
+    [Parameter] public EventCallback TreeListFirstRender { get; set; }
+    [Parameter] public EventCallback<int> ExpandedChanged { get; set; }
+    [Parameter] public EventCallback<int> ExpandedChangedByUser { get; set; }
+    [Inject] private IJSRuntime JSRuntime { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _dotNetRef = DotNetObjectReference.Create(this);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (firstRender) {
+            _jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "/js/customTreeList/CustomTreeList.cs.js");
+
+            if (TreeListFirstRender.HasDelegate) {
+                await TreeListFirstRender.InvokeAsync(null);
+            }
+        }
+        if (!_expansionSynced) {
+            SyncExpansion();
+            _expansionSynced = true;
+
+            if (TreeListRenderedAndExpanded.HasDelegate) {
+                await TreeListRenderedAndExpanded.InvokeAsync(null);
+            }
+        }
+        _ = AttachExpandButtonHandlerAsync();
+
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task AttachExpandButtonHandlerAsync()
+    {
+        if (_jsModule != null && _dotNetRef != null)
+            await _jsModule.InvokeVoidAsync("attachExpandButtonHandler", _dotNetRef);
+    }
+
+    public new void ExpandRow(int rowIndex)
+    {
+        // Update Data expansion property
+        var item = GetDataItem(rowIndex) as TreeRow;
+        if (item != null)
+        {
+            item.IsExpanded = true;
+        }
+
+        // Fire events
+        base.ExpandRow(rowIndex);
+        if (ExpandedChanged.HasDelegate && _expansionSynced)
+            ExpandedChanged.InvokeAsync(rowIndex);
+    }
+
+    public new void CollapseRow(int rowIndex)
+    {
+        // Update Data expansion property
+        var item = GetDataItem(rowIndex) as TreeRow;
+        if (item != null)
+        {
+            item.IsExpanded = false;
+        }
+
+        // Fire events
+        base.CollapseRow(rowIndex);
+        if (ExpandedChanged.HasDelegate)
+            ExpandedChanged.InvokeAsync(rowIndex);
+    }
+
+    [JSInvokable]
+    public async void OnExpandedChangedByUser(int visibleIndex)
+    {
+        // Update Data expansion property
+        var item = GetDataItem(visibleIndex) as TreeRow;
+        if (item != null)
+        {
+            item.IsExpanded = !item.IsExpanded;
+        }
+
+        // Fire events
+        if (ExpandedChanged.HasDelegate)
+            await ExpandedChanged.InvokeAsync(visibleIndex);
+        if (ExpandedChangedByUser.HasDelegate)
+            await ExpandedChangedByUser.InvokeAsync(visibleIndex);
+    }
+
+    /// <summary>
+    /// Recursively check nodes expansion state
+    /// </summary>
+    /// <param name="nodes">The nodes to check. If null, will start with the root nodes.</param>
+    /// <returns></returns>
+    public List<TreeRow> GetExpandedNodes(List<TreeRow>? nodes = null)
+    {
+        if (nodes == null)
+        {
+            if (Data is IEnumerable<TreeRow> rootNodes)
+            {
+                nodes = rootNodes.ToList();
+            }
+            else
+            {
+                return [];
+            }
+        }
+
+        List<TreeRow> expanded = new ();
+        foreach (var node in nodes)
+        {
+            if (node.IsExpanded)
+            {
+                expanded.Add(node);
+                expanded = expanded.Concat(GetExpandedNodes(node.Children ?? [])).ToList();
+            }
+        }
+
+        return expanded;
+    }
+
+    /// <summary>
+    /// Causes the tree to synchronize its expansion state to the IsExpanded properties of its data
+    /// It will not fire any events while syncing
+    /// </summary>
+    public void ReSyncExpansion()
+    {
+        _expansionSynced = false;
+        SyncExpansion();
+        _expansionSynced = true;
+    }
+
+    private void SyncExpansion()
+    {
+        BeginUpdate();
+        int i = 0;
+        while (i < GetVisibleRowCount())
+        {
+            var item = GetDataItem(i) as TreeRow;
+            if (item != null && item.IsExpanded && !IsRowExpanded(i))
+            {
+                ExpandRow(i);
+            }
+            i++;
+        }
+        EndUpdate();
+    }
+    
+}

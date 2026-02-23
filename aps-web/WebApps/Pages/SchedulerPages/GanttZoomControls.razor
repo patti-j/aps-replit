@@ -1,0 +1,158 @@
+﻿@using ReportsWebApp.DB.Services.Interfaces
+@inject ServiceContainer _serviceContainer
+@inject IGanttService GanttService
+
+<div class="zoom-toolbar p-3 mt-3">
+    <h6 class="mb-3 text-primary"><i class="fa fa-sliders-h me-1"></i> Timeline Zoom Settings</h6>
+
+    <div class="mb-3">
+        <label><i class="fa fa-calendar-alt me-1"></i> Base Date</label>
+        <DxDateEdit Date="@m_zoomDate" DateChanged="@((DateTime val) => ZoomToDate(val))" />
+        <small class="text-muted">Used as the reference date to apply the selected zoom duration.</small>
+    </div>
+
+    <div class="mb-3 d-flex">
+        <DxCheckBox @bind-Checked="@_serviceContainer.PopupManager.ShowZoomPanel" CssClass="mt-1" />
+        <label class="m-2"><i class="fa fa-eye me-1"></i> Display Zoom Timeline Graph</label>
+    </div>
+
+    <div class="mb-3 d-flex">
+        <DxCheckBox Checked="@m_useCustomDuration" CheckedChanged="((bool val) => OnUseCustomDurationChanged(val))" CssClass="mt-1" />
+        <label class="m-2"><i class="fa fa-edit me-1"></i> Enable Manual Duration (Days)</label>
+    </div>
+
+    @if (m_useCustomDuration)
+    {
+        <div class="mb-3">
+            <label><i class="fa fa-ruler-horizontal me-1"></i> Manual Duration</label>
+            <DxSpinEdit Value="@m_customDays" ValueChanged="@((int val) => ZoomToCustom(val))" MinValue="1" MaxValue="365" />
+        </div>
+    }
+    else
+    {
+        <div class="mb-3">
+            <label><i class="fa fa-clock me-1"></i> Preset Duration</label>
+            <DxComboBox Data="@m_suggestedDurations"
+                        Value="@m_selectedDuration"
+                        TValue="DurationOption"
+                        TData="DurationOption"
+                        TextFieldName="@nameof(DurationOption.Name)"
+                        ValueChanged="@OnDurationChanged"
+                        NullText="Select duration..." />
+        </div>
+    }
+</div>
+
+<style>
+    .zoom-toolbar {
+        border-radius: 0.5rem;
+    }
+</style>
+
+@code {
+    [Parameter] public SchedulerInterop SchedulerInterop { get; set; }
+
+    private int m_customDays = 14;
+    private DateTime m_zoomDate = DateTime.Today;
+    private DurationOption m_selectedDuration;
+    private bool m_useCustomDuration = false;
+    private List<DurationOption> m_suggestedDurations => GanttService.PresetConfig.GetDurationOptions();
+
+    /// <summary>
+    /// Zooms the timeline to a specific preset duration.
+    /// </summary>
+    private async Task ZoomToDuration(DurationOption a_days)
+    {
+        m_selectedDuration = a_days;
+        var start = m_zoomDate;
+        var end = start.AddDays(a_days.Days - 1);
+        GanttService.PresetConfig.StartDate = start;
+        GanttService.PresetConfig.EndDate = end;
+        await SchedulerInterop.ZoomToTimeSpan(start, end, start);
+    }
+
+    /// <summary>
+    /// Zooms the timeline using a manually defined day range.
+    /// </summary>
+    private async Task ZoomToCustom(int a_days)
+    {
+        m_customDays = a_days;
+        var start = m_zoomDate;
+        var end = start.AddDays(a_days - 1);
+        GanttService.PresetConfig.StartDate = start;
+        GanttService.PresetConfig.EndDate = end;
+        await SchedulerInterop.ZoomToTimeSpan(start, end, start);
+    }
+
+    /// <summary>
+    /// Applies a zoom based on the selected reference date.
+    /// </summary>
+    private async Task ZoomToDate(DateTime a_date)
+    {
+        m_zoomDate = a_date;
+        double durationDays = m_useCustomDuration
+            ? m_customDays
+            : GanttService.PresetConfig.EndDate.Subtract(GanttService.PresetConfig.StartDate).TotalDays;
+
+        var start = a_date;
+        var end = a_date.AddDays(durationDays - 1);
+
+        GanttService.PresetConfig.StartDate = start;
+        GanttService.PresetConfig.EndDate = end;
+
+        await SchedulerInterop.ZoomToTimeSpan(start, end, start);
+    }
+
+    /// <summary>
+    /// Handles user toggling between preset and custom duration modes.
+    /// </summary>
+    private async Task OnUseCustomDurationChanged(bool a_value)
+    {
+        m_useCustomDuration = a_value;
+
+        if (!a_value)
+        {
+            m_selectedDuration = m_suggestedDurations.OrderBy(p => Math.Abs(p.Days - m_customDays)).FirstOrDefault();
+        }
+        else
+        {
+            m_customDays = m_selectedDuration?.Days ?? m_customDays;
+        }
+    }
+
+    /// <summary>
+    /// Handles selection of a preset duration option.
+    /// </summary>
+    private async Task OnDurationChanged(DurationOption a_val)
+    {
+        m_selectedDuration = a_val;
+        if (!m_useCustomDuration)
+        {
+            m_customDays = a_val.Days;
+            await ZoomToDuration(a_val);
+        }
+    }
+
+    /// <summary>
+    /// Initializes zoom configuration from the current scheduler state.
+    /// </summary>
+    private async Task OnZoomInitializing()
+    {
+        var snapshot = await SchedulerInterop.GetCurrentZoomSnapshot();
+        GanttService.PresetConfig.StartDate = snapshot.StartDate;
+        GanttService.PresetConfig.EndDate = snapshot.EndDate;
+        m_zoomDate = snapshot.StartDate;
+
+        var duration = GanttService.PresetConfig.EndDate.Subtract(GanttService.PresetConfig.StartDate).TotalDays;
+        m_selectedDuration = m_suggestedDurations.OrderBy(p => Math.Abs(p.Days - duration)).FirstOrDefault();
+        m_customDays = (int)Math.Round(duration);
+    }
+
+    /// <summary>
+    /// Called when component parameters are set.
+    /// </summary>
+    protected override async Task OnParametersSetAsync()
+    {
+        await OnZoomInitializing();
+    }
+}

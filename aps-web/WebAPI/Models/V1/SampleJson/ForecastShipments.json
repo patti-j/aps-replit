@@ -1,0 +1,11 @@
+[
+  {
+    "importDate": "2022-01-11T12:00:00",
+    "ForecastId": 12345,
+    "ForecastShipmentId": 67890,
+    "RequiredDate": "2022-02-15T10:30:00",
+    "RequiredQty": 100.5,
+    "ConsumedQty": 85.25,
+    "ConsumptionDetails": "Shipment details for forecast"
+  }
+]

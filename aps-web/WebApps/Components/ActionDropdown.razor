@@ -1,0 +1,40 @@
+﻿@typeparam TItem
+@using DevExpress.Blazor
+
+<DxComboBox Data="@EnabledActions"
+            ValueChanged="@(async (ActionItem<TItem> action) => { })"
+            CssClass="cw-240" DropDownBodyCssClass="no-pad-dropdown" DropDownCssClass="no-pad-dropdown">
+
+    <EditBoxDisplayTemplate>
+        <small style="
+                font-size: x-small;
+                position: absolute;
+                top: 8px;
+                left: 6px;
+                font-weight: bold;
+            ">Actions</small>
+    </EditBoxDisplayTemplate>
+
+    <ItemDisplayTemplate Context="comboContext">
+        <div @onclick="@(async () => await ExecuteActionAsync(comboContext.DataItem, DataItem))" class="padded-dropdown-item">
+            <i class="@comboContext.DataItem.IconCssClass"></i>
+            <span class="mx-2">@comboContext.DataItem.ActionText</span>
+        </div>
+    </ItemDisplayTemplate>
+</DxComboBox>
+
+@code {
+    [Parameter] public TItem DataItem { get; set; }  // Object from the grid (e.g., PADetails)
+
+    [Parameter] public IEnumerable<ActionItem<TItem>> Actions { get; set; } = new List<ActionItem<TItem>>();
+
+    private IEnumerable<ActionItem<TItem>> EnabledActions => Actions?.Where(a => a.ShouldActionButtonBeEnabled(DataItem));
+
+    private async Task ExecuteActionAsync(ActionItem<TItem> action, TItem dataItem)
+    {
+        if (action?.Action != null)
+        {
+            await action.Action(dataItem);
+        }
+    }
+}

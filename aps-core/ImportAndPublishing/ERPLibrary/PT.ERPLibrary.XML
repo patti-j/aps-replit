@@ -1,0 +1,827 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PT.ERPLibrary</name>
+    </assembly>
+    <members>
+        <member name="T:PT.ERPTransmissions.BaseCapability">
+            <summary>
+            For creating an BaseResource via ERP transmission.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.BaseResource">
+            <summary>
+            For creating an BaseResource via ERP transmission.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.Sort">
+            <summary>
+            Can be used for sorting Resources in Gantt Charts, reports, etc.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.Active">
+            <summary>
+            If not Active, then no new Activities can be scheduled to use this Resource.  This does not affect Activiites already scheduled to use the Resource.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.Workcenter">
+            <summary>
+            The name of the workcenter in the ERP system.  For information only.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.WorkcenterExternalId">
+            <summary>
+            The ID of the workcenter in the ERP system.  For information only.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.ResourceType">
+            <summary>
+            The type of physical entity represented by the Resource.  Used for custom reports and other display groupings.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.DisallowDragAndDrops">
+            <summary>
+            If true then drag and drop of Activities on the Resource are not allowed.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.GanttRowHeightFactor">
+            <summary>
+            Controls how tall the row is relative to other rows.  Valid ranges is from 1 (shortest) to 10 (tallest).
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.ImageFileName">
+            <summary>
+            Name (with suffix but not path) of which image to use in the Gantt, etc to represent this Resource.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.MaxCumulativeQty">
+            <summary>
+            Often used to model "tank capacity" or "subcontractor capacity", this is the maximum quantity of simultaneous Activities allowed on the Resource.  
+            Violations create Block Flags. A Block is Flagged if the total Start Quantity of Activities beginning but not yet ending on the Resource exceeds this quantity.
+            Set this value to zero to turn it off.
+            This is not a constraint -- it is a Flag only.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.ExcludeFromReports">
+            <summary>
+            Whether the Resource should be excluded from Schedule Reports.  
+            This is often set to true for inactive resources, etc.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.ExcludeExceptFromDepartment">
+            <summary>
+            Whether the Resource should be excluded from the full plants gantt, and all act mode in the activity grid.  
+            This could be set for tooling, labor etc.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.ExcludeFromGantts">
+            <summary>
+            Whether the Resource should be excluded from Resource Gantts.  
+            This is often set to true for inactive resources, etc.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.ExcludeFromCapacityPlan">
+            <summary>
+            Whether the Resource should be excluded from the Capacity Plan display.  This has no effect on scheduling.  
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.ManualAssignmentOnly">
+            <summary>
+            Whether the Resource only be assigned manually and not during Optimizations.  
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.BaseResource.NumberOfResources">
+            <summary>
+            The number of Resources that should be created from this Resource definition.
+            The value must be at least 1.  If the value is greater than 1 then copies of the Resource will be created with an ExternalId 
+            and Name that have a '-n' appended where n is the index number.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.BaseResource.Connector">
+            <summary>
+            Identifies a successor resource in a resource connection relationship.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.Definitions">
+            <summary>
+            Summary description for Definitions.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.Definitions.PerformImportResult">
+            <summary>
+            The result of running the PerformImport command of the importer service.
+            </summary>
+        </member>
+        <member name="F:PT.ERPTransmissions.Definitions.PerformImportResult.Started">
+            <summary>
+            The import was started.
+            </summary>
+        </member>
+        <member name="F:PT.ERPTransmissions.Definitions.PerformImportResult.Busy">
+            <summary>
+            The import couldn't be started because an import was already in process.
+            </summary>
+        </member>
+        <member name="F:PT.ERPTransmissions.Definitions.PerformImportResult.Failed">
+            <summary>
+            The import couldn't be started because the call to the importer service failed.
+            Possible causes include not being able to access the importer service, the importer service not running, ...
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ERPMaintenanceTransmission`1">
+            <summary>
+            Summary description for ERPMaintenanceTransmission.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ERPTransmission">
+            <summary>
+            This is the base class of all manufacturing system transmissions.
+            </summary>
+            
+        </member>
+        <member name="M:PT.ERPTransmissions.ERPTransmission.ulongUserConnectionNbrReader(PT.Common.IReader)">
+            <summary>
+            For backwards compatibility with the ulong version of user connections.
+            </summary>
+            <param name="reader"></param>
+        </member>
+        <member name="P:PT.ERPTransmissions.ERPTransmission.UserConnectionNbr">
+            <summary>
+            This is an optional value. You may use it to specify the
+            Planet Together connection number of the user who caused
+            this transmission to be sent. If you set it,
+            the client of Planet Together may use it to display error
+            messages on the Planet Together user's window.
+            
+            This value may be different from the ConnectionNbr because
+            the ConnectionNbr refers to the actual connection on which
+            the transmission was broadcast, for instance a connection
+            number established from the Planet Together Interface
+            service.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.IdList">
+            <summary>
+            Defines a list of External Ids.  These can be used for various purposes such as specifying a list of Capability Ids for a Resource
+            </summary>
+        </member>
+        <member name="M:PT.ERPTransmissions.IdList.Contains(System.String)">
+            <summary>
+            Checks whether an ExternalId exists in the list.
+            </summary>
+            <param name="a_externalId">ExternalId of the object</param>
+            <returns>true if ExternalId Exists in the list</returns>
+        </member>
+        <member name="T:PT.ERPTransmissions.InternalActivityUpdateT">
+            <summary>
+            Summary description for InternalActivityUpdateT.
+            </summary>
+        </member>
+        <member name="M:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.#ctor(PT.SchedulerDefinitions.InternalActivityDefs.productionStatuses,System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Updates the status of an Activity, fully specifying its identification and scheduled Resource.  If the Activity is not already scheduled on the Scheduled Resource then it will be moved there if the Resource is eligible.
+            </summary>
+            <param name="productionStatus">The current status of the Activity.  Activities cannot have their status updated in reverse of this sequence: SettingUp, Running, PostProcessing, Transferring, Finished.</param>
+            <param name="jobExternalId">The ExternalId of the Job.</param>
+            <param name="manufacturingOrderExternalId">The ExternalId of the Manufacturing Order.</param>
+            <param name="operationExternalId">The ExternalId of the Operation.</param>
+            <param name="activityExternalId">The ExternalId of the Activity.</param>
+            <param name="scheduledPlantExternalId">The PlantExternalId of a Resource on which the Activity is currently scheduled. This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified. If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.</param>
+            <param name="scheduledDeptExternalId">The DepartmentExternalId of a Resource on which the Activity is currently scheduled. This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified. If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.</param>
+            <param name="scheduledResourceExternalId">The ExternalId of a Resource on which the Activity is currently scheduled. This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified. If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.</param>
+        </member>
+        <member name="M:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.#ctor(PT.SchedulerDefinitions.InternalActivityDefs.productionStatuses,System.String,System.String,System.String,System.String)">
+            <summary>
+            Updates the status of an Activity, fully specifying its identification
+            </summary>
+            <param name="productionStatus">The current status of the Activity.  Activities cannot have their status updated in reverse of this sequence: SettingUp, Running, PostProcessing, Transferring, Finished.</param>
+            <param name="jobExternalId">The ExternalId of the Job.</param>
+            <param name="manufacturingOrderExternalId">The ExternalId of the Manufacturing Order.</param>
+            <param name="operationExternalId">The ExternalId of the Operation.</param>
+            <param name="activityExternalId">The ExternalId of the Activity.</param>
+        </member>
+        <member name="M:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.#ctor(PT.SchedulerDefinitions.InternalActivityDefs.productionStatuses,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Updates the status of an Activity using its scheduled Resource to help identify it.  If more than one Activity qualifies, a validation error will occur and the transmission will have no effect.
+            </summary>
+            <param name="productionStatus">The current status of the Activity.  Activities cannot have their status updated in reverse of this sequence: SettingUp, Running, PostProcessing, Transferring, Finished.</param>
+            <param name="jobExternalId">The ExternalId of the Job.</param>
+            <param name="manufacturingOrderExternalId">The ExternalId of the Manufacturing Order.</param>
+            <param name="operationExternalId">The ExternalId of the Operation.</param>
+            <param name="scheduledPlantExternalId">The PlantExternalId of a Resource on which the Activity is currently scheduled. This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified. If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.</param>
+            <param name="scheduledDeptExternalId">The DepartmentExternalId of a Resource on which the Activity is currently scheduled. This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified. If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.</param>
+            <param name="scheduledResourceExternalId">The ExternalId of a Resource on which the Activity is currently scheduled. This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified. If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.</param>
+        </member>
+        <member name="M:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.#ctor(PT.SchedulerDefinitions.InternalActivityDefs.productionStatuses,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Updates the status of an Activity using its scheduled Resource to help identify it.  If more than one Activity qualifies, a validation error will occur and the transmission will have no effect.
+            </summary>
+            <param name="productionStatus">The current status of the Activity.  Activities cannot have their status updated in reverse of this sequence: SettingUp, Running, PostProcessing, Transferring, Finished.</param>
+            <param name="jobExternalId">The ExternalId of the Job.</param>
+            <param name="manufacturingOrderExternalId">The ExternalId of the Manufacturing Order.</param>
+            <param name="scheduledPlantExternalId">The PlantExternalId of a Resource on which the Activity is currently scheduled. This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified. If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.</param>
+            <param name="scheduledDeptExternalId">The DepartmentExternalId of a Resource on which the Activity is currently scheduled. This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified. If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.</param>
+            <param name="scheduledResourceExternalId">The ExternalId of a Resource on which the Activity is currently scheduled. This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified. If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.</param>
+        </member>
+        <member name="M:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.#ctor(System.String,PT.SchedulerDefinitions.InternalActivityDefs.productionStatuses,System.String,System.String,System.String)">
+            <summary>
+            Updates the status of an Activity using its scheduled Resource to help identify it.  If more than one Activity qualifies, a validation error will occur and the transmission will have no effect.
+            </summary>
+            <param name="productionStatus">The current status of the Activity.  Activities cannot have their status updated in reverse of this sequence: SettingUp, Running, PostProcessing, Transferring, Finished.</param>
+            <param name="jobExternalId">The ExternalId of the Job.</param>
+            <param name="scheduledPlantExternalId">The PlantExternalId of a Resource on which the Activity is currently scheduled. This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified. If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.</param>
+            <param name="scheduledDeptExternalId">The DepartmentExternalId of a Resource on which the Activity is currently scheduled. This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified. If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.</param>
+            <param name="scheduledResourceExternalId">The ExternalId of a Resource on which the Activity is currently scheduled. This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified. If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.</param>
+        </member>
+        <member name="M:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.#ctor(PT.SchedulerDefinitions.InternalActivityDefs.productionStatuses,System.String,System.String,System.String)">
+            <summary>
+            Updates the status of an Activity assuming there is only Activity for the specified Operation.  If it has more than one Activity, a validation error will occur and the transmission will have no effect.
+            </summary>
+            <param name="productionStatus">The current status of the Activity.  Activities cannot have their status updated in reverse of this sequence: SettingUp, Running, PostProcessing, Transferring, Finished.</param>
+            <param name="jobExternalId">The ExternalId of the Job.</param>
+            <param name="manufacturingOrderExternalId">The ExternalId of the Manufacturing Order.</param>
+            <param name="operationExternalId">The ExternalId of the Operation.</param>
+        </member>
+        <member name="M:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.#ctor(PT.SchedulerDefinitions.InternalActivityDefs.productionStatuses,System.String,System.String)">
+            <summary>
+            Updates the status of an Activity assuming there is only Activity for the specified Manufacturing Order.  If it has more than one Activity, a validation error will occur and the transmission will have no effect.
+            </summary>
+            <param name="productionStatus">The current status of the Activity.  Activities cannot have their status updated in reverse of this sequence: SettingUp, Running, PostProcessing, Transferring, Finished.</param>
+            <param name="jobExternalId">The ExternalId of the Job.</param>
+            <param name="manufacturingOrderExternalId">The ExternalId of the Manufacturing Order.</param>
+        </member>
+        <member name="M:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.#ctor(System.String,System.String,PT.SchedulerDefinitions.InternalActivityDefs.productionStatuses)">
+            <summary>
+            Updates the status of the Operation with the earliest Scheduled Start Date.
+            </summary>
+            <param name="jobExternalId">The ExternalId of the Job.</param>
+            <param name="operationExternalId"></param>
+            <param name="productionStatus">The current status of the Activity.  Activities cannot have their status updated in reverse of this sequence: SettingUp, Running, PostProcessing, Transferring, Finished.</param>
+        </member>
+        <member name="M:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.#ctor(PT.SchedulerDefinitions.InternalActivityDefs.productionStatuses,System.String)">
+            <summary>
+            Updates the status of an Activity assuming there is only Activity for the specified Job.  If it has more than one Activity, a validation error will occur and the transmission will have no effect.
+            </summary>
+            <param name="productionStatus">The current status of the Activity.  Activities cannot have their status updated in reverse of this sequence: SettingUp, Running, PostProcessing, Transferring, Finished.</param>
+            <param name="jobExternalId">The ExternalId of the Job.</param>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.JobExternalId">
+            <summary>
+            The ExternalId of the Job.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.ManufacturingOrderExternalId">
+            <summary>
+            The ExternalId of the Manufacturing Order.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.OperationExternalId">
+            <summary>
+            The ExternalId of the Operation.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.ActivityExternalId">
+            <summary>
+            The ExternalId of the Activity.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.ScheduledPlantExternalId">
+            <summary>
+            The PlantExternalId of a Resource on which the Activity is currently scheduled.
+            This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified.
+            If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.ScheduledDeptExternalId">
+            <summary>
+            The DepartmentExternalId of a Resource on which the Activity is currently scheduled.
+            This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified.
+            If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.ScheduledResourceExternalId">
+            <summary>
+            The ExternalId of a Resource on which the Activity is currently scheduled.
+            This can be used to identify an Activity if the Operation and Activity ExternalIds are not specified.
+            If the Operation and Activity ExternalIds are specified then this can be used to move the Activity to this Resource.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.ProductionStatus">
+            <summary>
+            The current status of the Activity.  
+            Activities cannot have their status updated in reverse of this sequence: SettingUp, Running, PostProcessing, Transferring, Finished.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.ReportedFinishDate">
+            <summary>
+            This value is used only when the the activity has been finished.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.ReportedStartDate">
+            <summary>
+            This value is used only when the the activity has been finished.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.PeopleUsage">
+            <summary>
+            Determines how many people are allocated to an Activity in the schedule.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.NbrOfPeople">
+            <summary>
+            If PeopleUsage is set to UseSpecifiedNbr then this is the maximum number of people that will be allocated to the Activity.
+            Fewer than this number will be allocated during time periods over which the Primary Resource's Nbr Of People is less than this value.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.Comments">
+            <summary>
+            Text that can be entered by operators or loaded from bar code systems.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.Comments2">
+            <summary>
+            Text that can be entered by operators or loaded from bar code systems.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.ReportedSpansAreIncremental">
+            <summary>
+            If true then all Reported Spans are added to the current total for the Activity.  Otherwise, they are treated as replacement values.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.ReportedQtiesAreIncremental">
+            <summary>
+            If true then all Reported Quantities are added to the current total for the Activity.  Otherwise, they are treated as replacement values.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.ReportedBy">
+            <summary>
+            The name or identifier of the person who entered the transaction in the data collection system.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.Timestamp">
+            <summary>
+            The date/time when the transaction occurred in the data collection system.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalActivityUpdateT.ActivityStatusUpdate.Notes">
+            <summary>
+            Text to be added to the History, etc.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.InternalResource">
+            <summary>
+            For creating an InternalResource via ERP transmission.
+            </summary>
+        </member>
+        <member name="F:PT.ERPTransmissions.InternalResource.plantExternalId">
+            <summary>
+            This value is only used by ERP Link to construct Machines.
+            </summary>
+        </member>
+        <member name="F:PT.ERPTransmissions.InternalResource.departmentExternalId">
+            <summary>
+            This value is only used by ERP Link to construct Machines.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.Role">
+            <summary>
+            Indicatest the types of Resource Requirements for which the Resource is eligible.  Main Resource Requirements set the duration of the Operation.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.BufferSpan">
+            <summary>
+            Used by the Drum-Buffer-Rope Release rule to prevent starving of this resource thus keeping its utilization high.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.CanPreemptMaterials">
+            <summary>
+            Whether the Resource can drive the schedule by requesting that Material Requirments be delivered sooner than they are currently scheduled to start by ignoring them as constraints. This does NOT allow preemption of ConfirmedConstraints.  See also: BaseOperation.IsConfirmedConstraint and MaterialRequirment.IsConfirmedConstraint. Only allowed outside the Scenario.KeepFeasibleSpan.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.CanPreemptPredecessors">
+            <summary>
+            Whether the Resource can drive the schedule by requesting that predecessor Operations start sooner than they are currently scheduled to start by ignoring them as constraints. This does NOT allow preemption of ConfirmedConstraints.  See also: BaseOperation.IsConfirmedConstraint and MaterialRequirment.IsConfirmedConstraint. This does NOT allow scheduling before the c_EarliestPossibleFinish of an Operation. Only allowed outside the Scenario.KeepFeasibleSpan.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.CanWorkOvertime">
+            <summary>
+            Will cause suggestions for overtime to be generated for late activities where adding the overtime would cause the activity to complete earlier.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.ConsecutiveSetupTimes">
+            <summary>
+            Controls whether Resource and Operation setup times are consecutive (added) or concurrent (the maximum is used).
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.CycleEfficiencyMultiplier">
+            <summary>
+            Multiplies run time to adjust for slower/faster Resources.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.CycleSpanAlgorithm">
+            <summary>
+            Name of the script used to override CycleSpan in Activities on this resource.  If specified, this gives the absolute final value for CyclesSpan.  Result must be non-negative double or zero will be substituted and an error will be logged.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.DurationDependsOnCapacity">
+            <summary>
+            If true, then the length of the activities is based upon the amount of capacity available rather than only the setup/cycle/teardown times.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.HeadStartSpan">
+            <summary>
+            During Optimizations, Activities are not permitted to start before  JitStartDate-(SameSetupHeadstartMultiplier*setupSpan+HeadStartSpan).  This can be used to prevent excessive inventory buildup and aid in grouping same-SetupCode Activities.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.Drum">
+            <summary>
+            Whether to treat this Resource as a Drum when using the Drum-Buffer-Rope Release rule.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.MaxSameSetupSpan">
+            <summary>
+            When using same-SetupCode Simulation rules, a setupCode change is forced after this many hours of cycle-time passes.  Can be used to force periodic rotation between groups of products.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.Overlap">
+            <summary>
+            Specifies when operations are considered ready to start processing on THIS Resource.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.OvertimeHourlyCost">
+            <summary>
+            Can be used for calculating schedule quality and in scripts.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.ProcessingStatus">
+            <summary>
+            Specifies the Resource's status as of the last update.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.ScheduledRunSpanAlgorithm">
+            <summary>
+            Name of the script used to calculate ScheduledRunSpan in Activities on this resource.  If specified, this gives the absolute final value for ScheduledRunSpan.  Result must be non-negative double or 1 will be substituted and an error will be logged.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.ScheduledSetupSpanAlgorithm">
+            <summary>
+            Name of the script used to calculate ScheduledSetupSpan in Activities on this resource.  If specified, this gives the absolute final value for ScheduledSetupSpan.  Result must be non-negative double or zero will be substituted and an error will be logged.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.ScheduledTransferSpanAlgorithm">
+            <summary>
+            Name of the script used to calculate ScheduledTransferSpan in Activities on this resource.  If specified, this gives the absolute final value for ScheduledTransferSpan.  Result must be non-negative double or zero will be substituted and an error will be logged.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.DiscontinueSameCellScheduling">
+            <summary>
+            If set then same cell scheduling for predecessor operations is discontinued. But if this resource is part of a cell then the behavior is as usual and this resource's cell will become the new cell to try to schedule in.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.SameSetupHeadstartMultiplier">
+            <summary>
+            Used in the calculation of how far an operation can be scheduled before c_JITstartDate. Larger values result in Activities with longer setups being allowed to start earlier to save a setup.  During Optimizations, Activities are not permitted to start more c_JITstartDate-(SameSetupHeadstartMultiplier*currentSetupSpan+headStartSpan). Can be used to prevent excessive inventory buildup and aid in grouping same-setupCode Activities.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.Stage">
+            <summary>
+            Used for multi-stage scheduling to allow scheduling of groups of resources stage by stage.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.SetupIncluded">
+            <summary>
+            Specifies when setup times are applied.
+            For Multi-Tasking Resources, setup is always included unless this value is set to 'Never'.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.SetupEfficiencyMultiplier">
+            <summary>
+            Multiplies setup time to adjust for slower/faster setups.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.TransferSpan">
+            <summary>
+            Successor Operations cannot start before this time passes after finishing the Operation.  Resource is not consumed during this time. 
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.UseOperationSetupTime">
+            <summary>
+            Whether to use the operation setup time.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.OmitSetupOnFirstActivity">
+            <summary>
+            If true then the Setup Time on the first Activity scheduled on the Resource is always zero.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.OmitSetupOnFirstActivityInShift">
+            <summary>
+            If true then the Setup Time on the first Activity scheduled on a Capacity Interval is always zero.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.CanOffload">
+            <summary>
+            Whether Activities can be reassigned from this Resource during Optimizations.
+            </summary>        
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.CapacityType">
+            <summary>
+            If SingleTasking then only one Activity can be performed on the Resource at any point in time.  
+            If Infinite then any number of can be performed simultaneously.
+            If MultiTasking then Operations with Attention Percent less than 100% may be scheduled to run simultaneously (up to a total of 100% across
+            all Operations that are running at any one point in time on the Resource).
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.SetupSpan">
+            <summary>
+            Time that must be spent to setup this resource whenever the preceding operation did not use this resource.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.StandardHourlyCost">
+            <summary>
+            Can be used for calculating schedule quality and in scripts.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.AutoJoinSpan">
+            <summary>
+            When AutoJoining, only Join for Operations that start before this amount of time after the Clock.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.CurrentProductSetup">
+            <summary>
+            The Product for which the Resource is currently or was most recently setup.  This is used to calculate setup time for the first scheduled Activity on the Resource.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.CurrentSetupCode">
+            <summary>
+            The SetupCode for which the Resource is currently or was most recently setup.  This is used to calculate setup time for the first scheduled Activity on the Resource.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.CurrentSetupNumber">
+            <summary>
+            The SetupNumber for which the Resource is currently or was most recently setup.  This is used to calculate setup time for the first scheduled Activity on the Resource.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.NoDefaultRecurringCapacityInterval">
+            <summary>
+            Set to false in order to create a default online Recurring Capacity Interval.
+            Set to true if the RCI will be loaded explicitly instead.
+            </summary>
+        </member>
+        <member name="P:PT.ERPTransmissions.InternalResource.MinNbrOfPeople">
+            <summary>
+            Activities that specify a NbrOfPeople less than this value cannot be scheduled on this Resource.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet">
+             <summary>
+            Represents a strongly typed in-memory cache of data.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.InventoriesDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.LotDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.ItemsDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.WarehousesDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.SuppliedPlantsDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.PlantsDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.DepartmentsDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.UsersDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.CapabilitiesDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.PurchaseToStocksDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.LotAllocationRulesDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.CellsDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.ItemsRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.WarehousesRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.SuppliedPlantsRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.InventoriesRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.PlantsRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.DepartmentsRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.UsersRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.CapabilitiesRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.PurchaseToStocksRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.LotRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.LotAllocationRulesRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.CellsRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.ItemsRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.WarehousesRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.SuppliedPlantsRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.InventoriesRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.PlantsRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.DepartmentsRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.UsersRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.CapabilitiesRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.PurchaseToStocksRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.LotRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.LotAllocationRulesRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.PtImportDataSet.CellsRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet">
+             <summary>
+            Represents a strongly typed in-memory cache of data.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet.ConnectorsDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet.ResourceDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet.CapabilityAssignmentsDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet.AllowedHelperResourcesDataTable">
+             <summary>
+            Represents the strongly named DataTable class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet.ResourceRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet.CapabilityAssignmentsRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet.ConnectorsRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet.AllowedHelperResourcesRow">
+             <summary>
+            Represents strongly named DataRow class.
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet.ResourceRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet.CapabilityAssignmentsRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet.ConnectorsRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+        <member name="T:PT.ERPTransmissions.ResourceTDataSet.AllowedHelperResourcesRowChangeEvent">
+             <summary>
+            Row event argument class
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,201 @@
+﻿@using ReportsWebApp.DB.Models
+
+<DxFormLayout CssClass="w-100 p-3"
+              CaptionPosition="CaptionPosition.Vertical"
+              ColCountMd="12">
+
+    <DxFormLayoutGroup Caption="General" ColCountMd="12">
+        <DxFormLayoutItem Caption="Name" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.Name" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Company" ColSpanMd="6">
+            <DxComboBox TData="Company" TValue="int"
+                        Data="Companies"
+                        KeyFieldName="Name"
+                        ValueFieldName="Id"
+                        @bind-Value="Model.CompanyId" />
+        </DxFormLayoutItem>        
+
+    </DxFormLayoutGroup>
+    
+    @* Import Settings *@
+    <DxFormLayoutGroup Caption="Import Settings" ColCountMd="12">
+
+        <DxFormLayoutItem ColSpanMd="12">
+            <Template>
+                <div class="d-flex justify-content-start mb-2">
+                    <DxButton Text="Edit Database"
+                              RenderStyle="ButtonRenderStyle.Secondary"
+                              IconCssClass="fa fa-database"
+                              Click="@(() => OpenDbEditor(DbTarget.Import))" />
+                </div>
+            </Template>
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Pre-Import Program Path" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.PreImportProgramPath" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Program Arguments" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.PreImportProgramArgs" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem ColSpanMd="6">
+            <Template>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span>Run Pre-Import SQL</span>
+                    <DxCheckBox @bind-Checked="Model.RunPreImportSQL" />
+                </div>
+            </Template>
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem ColSpanMd="6">
+            <Template>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span>Enable Integration Studio Board</span>
+                    <DxCheckBox @bind-Checked="Model.IsIntegrationV2Enabled" />
+                </div>
+            </Template>
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Pre-Import SQL Command" ColSpanMd="12">
+            <DxMemo @bind-Text="PreImportSQL" Rows="2" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Pre-Import URL" ColSpanMd="12">
+            <DxTextBox @bind-Text="Model.PreImportURL" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Post-Import URL" ColSpanMd="12">
+            <DxTextBox @bind-Text="Model.PostImportURL" />
+        </DxFormLayoutItem>
+
+        
+    </DxFormLayoutGroup>
+
+    @* Publish Settings *@
+    <DxFormLayoutGroup Caption="Publish Settings" ColCountMd="12">
+
+        <DxFormLayoutItem ColSpanMd="12">
+            <Template>
+                <div class="d-flex justify-content-start mb-2">
+                    <DxButton Text="Edit Database"
+                              RenderStyle="ButtonRenderStyle.Secondary"
+                              IconCssClass="fa fa-database"
+                              Click="@(() => OpenDbEditor(DbTarget.Publish))" />
+                </div>
+            </Template>
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Pre-Export URL" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.PreExportURL" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Post-Export URL" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.PostExportSQL" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="SQL Command to Run after Publish" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.PostExportSQL" />
+        </DxFormLayoutItem>
+    </DxFormLayoutGroup>    
+
+    <DxFormLayoutItem ColSpanMd="12">
+        <Template>
+            <div class="d-flex justify-content-end">
+                <DxButton Text="Save"
+                          Click="SaveClicked"
+                          RenderStyle="ButtonRenderStyle.Primary" />
+            </div>
+        </Template>
+    </DxFormLayoutItem>
+
+</DxFormLayout>
+
+
+<DatabaseSettings @bind-Visible="isDatabaseSettingsPopupVisible"
+                  @ref="DatabaseSettingsEditorRef"
+                  ConnectionString="CurrentConnectionString"
+                  ConnectionStringChanged="OnDbSettingsChanged" 
+                  OnPremCustomer="OnPremCustomer"/>
+
+@code {
+    [Parameter] public DataConnector Model { get; set; }
+    [Parameter] public IEnumerable<Company> Companies { get; set; } = Enumerable.Empty<Company>();
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public bool OnPremCustomer { get; set; }
+
+    private bool isDatabaseSettingsPopupVisible;
+    private DatabaseSettings DatabaseSettingsEditorRef { get; set; }
+
+    //New
+    private enum DbTarget { Import, Publish }
+    private DbTarget editingTarget;
+
+
+    private string CurrentConnectionString =>
+        editingTarget == DbTarget.Import
+            ? (Model.ImportConnectionString ?? "")
+            : (Model.PublishConnectionString ?? "");
+
+
+    private string? CurrentIntegrationCreds =>
+  editingTarget == DbTarget.Import
+      ? Model.ImportIntegrationUserAndPass
+      : null; 
+
+    private void OpenDbEditor(DbTarget target)
+    {
+        editingTarget = target;
+        isDatabaseSettingsPopupVisible = true;
+        
+        var dbType = (target == DbTarget.Import) ? "import" : "publish";
+
+        DatabaseSettingsEditorRef.SetCurrentConnectionInputs(
+            CurrentConnectionString,
+            dbType,
+            CurrentIntegrationCreds,
+             Model.UseSeparateDatabases ?? false
+        );
+    }
+
+    private void OnDbSettingsChanged((string conString, string? integrationUserAndPass, bool? useSeparateDatabases) payload)
+    {
+        if (editingTarget == DbTarget.Import)
+        {
+            Model.ImportConnectionString = payload.conString;
+            Model.ImportIntegrationUserAndPass = payload.integrationUserAndPass;
+        }
+        else
+        {
+            Model.PublishConnectionString = payload.conString;
+            
+        }
+
+        Model.UseSeparateDatabases = payload.useSeparateDatabases ?? false;
+
+    }
+
+
+    //New
+
+
+    public string PreImportSQL
+    {
+        get => Model.PreImportSQL ?? string.Empty;  
+        set => Model.PreImportSQL = value;
+    }
+
+    private void OpenDbEditor()
+    {
+        isDatabaseSettingsPopupVisible = true;
+        DatabaseSettingsEditorRef.SetCurrentConnectionInputs(Model?.ConnectionString ?? "", "", null, Model?.UseSeparateDatabases ?? false);
+    }
+
+    private async Task SaveClicked()
+    {
+        await OnSave.InvokeAsync();
+    }
+
+}

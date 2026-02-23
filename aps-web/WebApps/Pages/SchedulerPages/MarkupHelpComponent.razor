@@ -1,0 +1,40 @@
+﻿@code {
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsOpenChanged { get; set; }
+}
+
+
+<DxDropDown @bind-IsOpen="@IsOpen"
+            Width="max(50vw, 400px)"
+            PositionMode="DropDownPositionMode.Bottom"
+            PositionTarget="#dropdown-target-container"
+            RestrictionTarget="#Navigation-DropDown-Customization"
+            CloseMode="DropDownCloseMode.Close"
+            PreventCloseOnPositionTargetClick="true"
+            HeaderVisible="true"
+            HeaderText="Template Syntax Help"
+            FooterVisible="false">
+    <BodyContentTemplate>
+        <div style="padding: 10px; font-family: Arial, sans-serif;">
+            <p style="font-size: 16px;">Enhance your template by dynamically manipulating it based on data. Embed JavaScript code within double curly braces <code style="padding: 2px 4px; border-radius: 4px;">{{ }}</code>. Examples include:</p>
+            <ul>
+                <li>
+                    <strong style="color: #2fa4e750;">Mathematical Calculations:</strong>
+                    <code style="padding: 2px 4px; border: 1px solid #ccc; border-radius: 4px;">{{ DashtResource.AvailableUnits * 2 }}</code>
+                </li>
+                <li>
+                    <strong style="color: #2fa4e750;">Conditional Statements:</strong>
+                    <code style="padding: 2px 4px; border: 1px solid #ccc; border-radius: 4px;">{{ DashtPlanning.Quantity > 100 ? 'Large Order' : 'Standard Order' }}</code>
+                </li>
+                <li>
+                    <strong style="color: #2fa4e750;">Function Calls:</strong>
+                    <code style="padding: 2px 4px; border: 1px solid #ccc; border-radius: 4px;">{{ Math.round(DashtResource.PercentageUsed) }}</code>
+                </li>
+            </ul>
+            <p style="font-size: 14px; color: #666;">Ensure correct syntax to prevent template evaluation errors.</p>
+        </div>
+    </BodyContentTemplate>
+</DxDropDown>

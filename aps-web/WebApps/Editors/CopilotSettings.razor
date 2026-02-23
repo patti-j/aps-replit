@@ -1,0 +1,71 @@
+﻿<!-- CoPilot Settings -->
+
+<DxAccordionItem Text="Service Configuration" Expanded=false>
+    <HeaderTextTemplate>
+        <i class="fas fas fa-robot m-2"></i>Copilot Settings
+    </HeaderTextTemplate>
+    <ContentTemplate Context="accordionContext">
+        <DxFormLayout CssClass="w-100 p-3">
+            <DxFormLayoutItem Caption="Copilot Enabled:">
+                <DxCheckBox @bind-Checked="@CopilotEnabled" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Average CPU Usage:">
+                <DxSpinEdit @bind-Value="@AverageCpuUsage" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Boost Percentage:">
+                <DxSpinEdit @bind-Value="@BoostPercentage" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Burst Duration (Hours):">
+                <DxTextBox @bind-Text="@BurstDuration" />
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </ContentTemplate>
+</DxAccordionItem>
+@code {
+    [Parameter]
+    public PADetails Model { get; set; }
+    
+    [Parameter]
+    public EventCallback<PADetails> ModelChanged { get; set; }
+
+    public bool CopilotEnabled
+    {
+        get => Model.PlanningArea.Settings.CoPilotSettings.Enabled;
+        set
+        {
+            Model.PlanningArea.Settings.CoPilotSettings.Enabled = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public float AverageCpuUsage
+    {
+        get => Model.PlanningArea.Settings.CoPilotSettings.AverageCpuUsage;
+        set
+        {
+            Model.PlanningArea.Settings.CoPilotSettings.AverageCpuUsage = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public float BoostPercentage
+    {
+        get => Model.PlanningArea.Settings.CoPilotSettings.BoostPercentage;
+        set
+        {
+            Model.PlanningArea.Settings.CoPilotSettings.BoostPercentage = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string BurstDuration
+    {
+        get => Model.PlanningArea.Settings.CoPilotSettings.BurstDuration;
+        set
+        {
+            Model.PlanningArea.Settings.CoPilotSettings.BurstDuration = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+}

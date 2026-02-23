@@ -1,0 +1,13 @@
+﻿/* General form and input-related styles */
+input[type="text"].valid, input[type="email"].valid {
+    border: 1px solid green;
+}
+
+input[type="text"].invalid, input[type="email"].invalid {
+    border: 1px solid red;
+}
+
+.form-warning {
+    color: red;
+    font-size: 0.8em;
+}

@@ -1,0 +1,19 @@
+[
+  {
+    "importDate": "2024-02-05T08:00:00Z",
+    "JobId": 123,
+    "ManufacturingOrderId": 456,
+    "OperationId": 789,
+    "Name": "Sample Operation",
+    "Description": "Description of the operation",
+    "Code": "OP123",
+    "Number": 1.23,
+    "ColorCodeColorName": "Red",
+    "ConsecutiveSetup": true,
+    "SetupHrs": 2.5,
+    "SetupCost": 100.0,
+    "IncurSetupWhen": "On Demand",
+    "ShowInGantt": false,
+    "ManualUpdateOnly": true
+  }
+]

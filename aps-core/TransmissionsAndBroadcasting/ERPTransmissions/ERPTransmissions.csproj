@@ -1,0 +1,238 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+  <PropertyGroup>
+    <AssemblyName>PT.ERPTransmissions</AssemblyName>
+    <RootNamespace>PT.ERPTransmissions</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Update="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Update="System.Core">
+    </Reference>
+    <Reference Update="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Update="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Update="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+    <ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\ImportAndPublishing\ERPLibrary\ERPLibrary.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+    <ProjectReference Include="..\Transmissions\Transmissions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="CapacityIntervalTDataSet.cs">
+      <DependentUpon>CapacityIntervalTDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="CapacityIntervalTDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CapacityIntervalTDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="CompatibilityCodeTableDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CompatibilityCodeTableDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="Forecast\ForecastTDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ForecastTDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="LookupAttributeCodeTableDataSet - Copy.cs">
+      <DependentUpon>LookupAttributeCodeTableDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="LookupItemCleanoutTableDataSet.Designer.cs">
+      <DependentUpon>LookupItemCleanoutTableDataSet.xsd</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="LookupAttributeCodeTableDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>LookupAttributeCodeTableDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="LookupAttributeNumberRangeDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>LookupAttributeNumberRangeDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="CleanoutTriggerTablesDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CleanoutTriggerTablesDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ProductRulesTDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ProductRulesTDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ResourceConnectorsDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ResourceConnectorsDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="SalesOrderT\SalesOrderTDataSet.cs">
+      <DependentUpon>SalesOrderTDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="LookupAttributeCodeTableDataSet.cs">
+      <DependentUpon>LookupAttributeCodeTableDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="SalesOrderT\SalesOrderTDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SalesOrderTDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="TimeCleanoutTriggerTableDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>TimeCleanoutTriggerTableDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="TransferOrderT\TransferOrderTDataSet.cs">
+      <DependentUpon>TransferOrderTDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="Forecast\ForecastTDataSet.cs">
+      <DependentUpon>ForecastTDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="LookupAttributeNumberRangeDataSet.cs">
+      <DependentUpon>LookupAttributeNumberRangeDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ProductRulesTDataSet.cs">
+      <DependentUpon>ProductRulesTDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="TransferOrderT\TransferOrderTDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>TransferOrderTDataSet.xsd</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="CompatibilityCodeTableDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>CompatibilityCodeTableDataSet.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="LookupAttributeCodeTableDataSet - Copy.xsc">
+      <DependentUpon>LookupAttributeCodeTableDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="LookupItemCleanoutTableDataSet.xsd">
+      <SubType>Designer</SubType>
+      <LastGenOutput>LookupItemCleanoutTableDataSet.Designer.cs</LastGenOutput>
+      <Generator>MSDataSetGenerator</Generator>
+    </None>
+    <None Update="LookupAttributeCodeTableDataSet - Copy.xss">
+      <DependentUpon>LookupAttributeCodeTableDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ResourceConnectorsDataSet.xsd">
+      <LastGenOutput>ResourceConnectorsDataSet.Designer.cs</LastGenOutput>
+      <Generator>MSDataSetGenerator</Generator>
+    </None>
+    <None Update="CleanoutTriggerTablesDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>CleanoutTriggerTablesDataSet.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="CapacityIntervalTDataSet.xsc">
+      <DependentUpon>CapacityIntervalTDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="CapacityIntervalTDataSet.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>CapacityIntervalTDataSet.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="CapacityIntervalTDataSet.xss">
+      <DependentUpon>CapacityIntervalTDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="LookupAttributeCodeTableDataSet.xsc">
+      <DependentUpon>LookupAttributeCodeTableDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="LookupAttributeCodeTableDataSet.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>LookupAttributeCodeTableDataSet.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="LookupAttributeCodeTableDataSet.xss">
+      <DependentUpon>LookupAttributeCodeTableDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="SetupCodeTableDataSet.xsc">
+      <DependentUpon>SetupCodeTableDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="SetupCodeTableDataSet.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>SetupCodeTableDataSet.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="SetupCodeTableDataSet.xss">
+      <DependentUpon>SetupCodeTableDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="TransferOrderT\TransferOrderTDataSet.xsc">
+      <DependentUpon>TransferOrderTDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="TransferOrderT\TransferOrderTDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>TransferOrderTDataSet.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>PT.ERPTransmissions</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="TransferOrderT\TransferOrderTDataSet.xss">
+      <DependentUpon>TransferOrderTDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="Forecast\ForecastTDataSet.xsc">
+      <DependentUpon>ForecastTDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="Forecast\ForecastTDataSet.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ForecastTDataSet.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>PT.ERPTransmissions</CustomToolNamespace>
+    </None>
+    <None Update="Forecast\ForecastTDataSet.xss">
+      <DependentUpon>ForecastTDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="LookupAttributeNumberRangeDataSet.xsc">
+      <DependentUpon>LookupAttributeNumberRangeDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="LookupAttributeNumberRangeDataSet.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>LookupAttributeNumberRangeDataSet.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="LookupAttributeNumberRangeDataSet.xss">
+      <DependentUpon>LookupAttributeNumberRangeDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ProductRulesTDataSet.xsc">
+      <DependentUpon>ProductRulesTDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ProductRulesTDataSet.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ProductRulesTDataSet.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="ProductRulesTDataSet.xss">
+      <DependentUpon>ProductRulesTDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="SalesOrderT\SalesOrderTDataSet.xsc">
+      <DependentUpon>SalesOrderTDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="SalesOrderT\SalesOrderTDataSet.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>SalesOrderTDataSet.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>PT.ERPTransmissions</CustomToolNamespace>
+    </None>
+    <None Update="SalesOrderT\SalesOrderTDataSet.xss">
+      <DependentUpon>SalesOrderTDataSet.xsd</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

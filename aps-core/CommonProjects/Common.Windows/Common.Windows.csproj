@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Does NOT use ProjectSharedTargetsWindows.props like other projects. Has its own config, shareable outside of winforms apps-->
+	<Import Project="..\..\SolutionMiscFiles\ProjectSharedTargetsWindows.props" />
+	<PropertyGroup>
+		<AssemblyName>PT.Common.Windows</AssemblyName>
+		<RootNamespace>PT.Common.Windows</RootNamespace>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+			<Link>Properties\AssemblyInfoShared.cs</Link>
+		</Compile>
+		<PackageReference Include="lz4net" Version="1.0.15.93" />
+		<PackageReference Include="System.Diagnostics.EventLog" Version="9.0.6" />
+		<PackageReference Include="System.IO" Version="4.3.0" />
+		<PackageReference Include="System.IO.Compression" Version="4.3.0" />
+		<PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Common\Common.csproj" />
+	</ItemGroup>
+	<PropertyGroup>
+		<DotfuscatorIncludeAsInput>true</DotfuscatorIncludeAsInput>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<Optimize>True</Optimize>
+	</PropertyGroup>
+</Project>

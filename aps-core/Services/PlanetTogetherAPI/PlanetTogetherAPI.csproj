@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+  <PropertyGroup>
+	<AssemblyName>PT.API</AssemblyName>
+	<RootNamespace>PT.API</RootNamespace>
+  </PropertyGroup>
+  <!-- Pulls in ASP.NET Core shared framework: routing, middleware, auth, MVC, etc. -->
+  <ItemGroup>
+	  <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonProjects\PackageDefinitions\PackageDefinitions.csproj" />
+    <ProjectReference Include="..\..\Scheduling\Scheduler\Scheduler.csproj" />
+    <ProjectReference Include="..\Definitions\APIDefintion\APIDefinitions.csproj" />
+    <ProjectReference Include="..\Definitions\ShopViewsDefinitions\ShopViewsDefinitions.csproj" />
+    <ProjectReference Include="..\SystemService\SystemServiceDefinitions\SystemServiceDefinitions.csproj" />
+    <ProjectReference Include="..\SystemService\SystemServiceLibrary\SystemServiceLibrary.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\ImportAndPublishing\CustomInterface\CustomInterface.csproj" />
+    <ProjectReference Include="..\..\ImportAndPublishing\ERPLibrary\ERPLibrary.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerExtentions\SchedulerExtensions.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\ERPTransmissions\ERPTransmissions.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\Transmissions\Transmissions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+      <Link>Properties\AssemblyInfoShared.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="BuildPublisher.xml" />
+    <None Update="FodyWeavers.xml">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="LazyCache.AspNetCore" Version="2.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.3.6" />
+  </ItemGroup>
+  <!--Only host Swagger in Debug for now-->
+  <ItemGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <PackageReference Include="Swashbuckle" Version="5.6.0" />
+	  <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.0.1" />
+	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.0.1" />
+	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.1" />
+  </ItemGroup>
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

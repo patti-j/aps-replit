@@ -1,0 +1,681 @@
+﻿@page "/servermanager/settings"
+@using ReportsWebApp.DB
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.Pages
+@inject ServiceContainer ServiceContainer
+@inject IJSRuntime jsRuntime
+
+<div class="no-borders visible">
+    <DxFormLayout CssClass="no-borders">
+        <DxFormLayoutGroup>
+            <HeaderTemplate>
+                <ServerContextHeader Title="Server Manager Settings" ShowServerPill=true SelectedServer=Server ShowSaveButton=false OnReturn="@NavigateTo"
+                                     Subtitle1=@ServiceContainer.ScopedAppStateService.Server?.Name ShowCloseButton=false />
+            </HeaderTemplate>
+            <Items>
+                @if (errorMessages.Count > 0)
+                {
+                    <ErrorMessagesDisplay ErrorMessages="@errorMessages" />
+                }
+                else if (isLoading)
+                {
+                    <DxLoadingPanel Visible="true" />
+                }
+                else
+                {
+                    <DxFormLayout CssClass="p-4 rounded shadow-sm">
+
+                        <!-- General Information Group -->
+                        <DxFormLayoutGroup Caption="General Information" CaptionCssClass="fs-5">
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-tag text-info me-2" title="Server Name"></i>
+                                        <span class="fw-bold">Server Name</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxTextBox @bind-Text="@Server.Name" CssClass="form-control form-control-sm" />
+                                </Template>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-network-wired text-primary me-2" title="IP Address"></i>
+                                        <span class="fw-bold">IP Address</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxTextBox @bind-Text="@Server.IPAddress" CssClass="form-control form-control-sm" />
+                                </Template>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-map-marker-alt text-danger me-2" title="Location"></i>
+                                        <span class="fw-bold">Location</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxTextBox @bind-Text="@Server.Location" CssClass="form-control form-control-sm" />
+                                </Template>
+                            </DxFormLayoutItem>
+                            @if (User?.Roles.Any(x => x.Name == "Company Admin" && x.CompanyId == User.CompanyId) == true)
+                            {
+                                <DxFormLayoutItem ColSpanMd="6">
+                                    <CaptionTemplate>
+                                        <div style="min-width: 190px; margin-top: 7px;">
+                                            <i class="fas fa-user text-secondary me-2" title="Owner"></i>
+                                            <span class="fw-bold">Owner</span>
+                                        </div>
+                                    </CaptionTemplate>
+                                    <Template>
+                                        <DxComboBox Data="Users" @bind-Value="Server.OwningUserId" TextFieldName="FullName" ValueFieldName="Id" ValidationEnabled="false" CssClass="form-control form-control-sm" />
+                                    </Template>
+                                </DxFormLayoutItem>
+                            }
+                        </DxFormLayoutGroup>
+
+                        <!-- Server Settings Group -->
+                        <DxFormLayoutGroup Caption="Server Settings" CaptionCssClass="fs-5">
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-server text-info me-2" title="Server Name"></i>
+                                        <span class="fw-bold">Server Name</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <span class="fw-bold">@Server.ServerName</span>
+                                </Template>
+                            </DxFormLayoutItem>
+
+                            <!-- Client Address -->
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-link text-warning me-2" title="Client Address"></i>
+                                        <span class="fw-bold">Client Address</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <span class="fw-bold">@($"https://{Server.ServerName}:{Server.ApiPort}")</span>
+                                </Template>
+                            </DxFormLayoutItem>
+
+                            <!-- Version -->
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-info-circle text-primary me-2" title="Version"></i>
+                                        <span class="fw-bold">Version</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <span class="fw-bold">@Server.Version</span>
+                                </Template>
+                            </DxFormLayoutItem>
+
+                            <!-- System ID -->
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-id-badge text-secondary me-2" title="System ID"></i>
+                                        <span class="fw-bold">System ID</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <span class="fw-bold">@Server.SystemId</span>
+                                </Template>
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+
+                        <!-- Certificate Settings Group -->
+                        <DxFormLayoutGroup Caption="Certificate Settings" CaptionCssClass="fs-5">
+                            <DxFormLayoutItem ColSpanMd="4">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-certificate text-info me-2" title="Certificate Name"></i>
+                                        <span class="fw-bold">Certificate Name</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxTextBox Text="PlanetTogether" ReadOnly="true" CssClass="form-control form-control-sm readonly-field" />
+                                </Template>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-fingerprint text-muted me-2" title="Certificate Thumbprint"></i>
+                                        <span class="fw-bold">Certificate Thumbprint</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxTextBox @bind-Text="@Server.Thumbprint" ReadOnly="false" CssClass="form-control form-control-sm" />
+                                </Template>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem ColSpanMd="2" CssClass="d-flex justify-content-end">
+                                <DxButton Text="Choose Certificate" IconCssClass="fas fa-file-signature" Click="@ShowingCertificateSelector" />
+                            </DxFormLayoutItem>
+                            @if (Server.UsingCompanies.Any())
+                            {
+                                <DxFormLayoutItem Caption="Disable HTTPS:" ColSpanMd="12">
+                                    <DxCheckBox @bind-Checked="@DisableHTTPS" />
+                                </DxFormLayoutItem>
+                            }
+                        </DxFormLayoutGroup>
+
+                        <!-- Connection Settings Group -->
+                        <DxFormLayoutGroup Caption="Connection Settings" CaptionCssClass="fs-5">
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-globe text-primary me-2" title="Host Name"></i>
+                                        <span class="fw-bold">Host Name</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxTextBox @bind-Text="@Server.ComputerNameOrIP" CssClass="form-control form-control-sm" />
+                                </Template>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem ColSpanMd="4">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-network-wired text-danger me-2" title="Public Port"></i>
+                                        <span class="fw-bold">Public Port</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <span style="
+                            position: relative;
+                            top: -5px;
+                            font-weight: 500;
+                            ">@Server.ApiPort</span>
+                                </Template>
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+
+                        <!-- Automatic Updates Group -->
+                        <DxFormLayoutGroup Caption="Automatic Updates" CaptionCssClass="fs-5">
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-clock text-info me-2" title="Update Frequency"></i>
+                                        <span class="fw-bold">Update Frequency</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxComboBox Data="@UpdateFrequency" @bind-Value="Server.AutomaticUpdateFrequency" NullText="Disabled" Context="ComboContext" CssClass="form-control form-control-sm">
+                                        <ItemTemplate>
+                                            <span>@(ComboContext ?? "Disabled")</span>
+                                        </ItemTemplate>
+                                    </DxComboBox>
+                                </Template>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem ColSpanMd="6" Visible="Server.AutomaticUpdateFrequency != null">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-clock text-primary me-2" title="Update Time"></i>
+                                        <span class="fw-bold">Update Time</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxComboBox Data="@UpdateTimes" @bind-Value="Server.AutomaticUpdateHour" NullText="Any Time" Context="ComboContext" ValueFieldName="Value.Hour" CssClass="form-control form-control-sm">
+                                        <ItemTemplate>
+                                            @if (ComboContext.HasValue)
+                                            {
+                                                var time = ComboContext.Value;
+                                                var gmtHour = time.Hour + (int)Math.Floor(TimeZoneOffset / 60f);
+                                                gmtHour = gmtHour < 0 ? 24 - gmtHour : gmtHour;
+                                                gmtHour %= 24;
+
+                                                var gmtTime = new TimeOnly(gmtHour, 0);
+
+                                                if (TimeZoneOffset == 0)
+                                                {
+                                                    <span>@gmtTime.ToShortTimeString() GMT</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>@time.ToShortTimeString() (@gmtTime.ToShortTimeString() GMT)</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span>Any Time</span>
+                                            }
+                                        </ItemTemplate>
+                                        <EditBoxTemplate>
+                                            @if (ComboContext.HasValue)
+                                            {
+                                                var time = ComboContext.Value;
+                                                var gmtHour = time.Hour + (int)Math.Floor(TimeZoneOffset / 60f);
+                                                gmtHour = gmtHour < 0 ? 24 - gmtHour : gmtHour;
+                                                gmtHour %= 24;
+
+                                                var gmtTime = new TimeOnly(gmtHour, 0);
+
+                                                if (TimeZoneOffset == 0)
+                                                {
+                                                    <span>@gmtTime.ToShortTimeString() GMT</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>@time.ToShortTimeString() (@gmtTime.ToShortTimeString() GMT)</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span>Any Time</span>
+                                            }
+                                        </EditBoxTemplate>
+                                    </DxComboBox>
+                                </Template>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem ColSpanMd="6" Visible="@(Server.AutomaticUpdateFrequency == "Weekly")">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-calendar text-warning me-2" title="Update Day"></i>
+                                        <span class="fw-bold">Update Day</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxComboBox Data="@UpdateDays" @bind-Value="Server.AutomaticUpdateDay" NullText="Any Day" Context="ComboContext" CssClass="form-control form-control-sm">
+                                        <ItemTemplate>
+                                            @{
+                                                var dayIndex = UpdateDays.IndexOf(ComboContext);
+                                                var nextIndex = dayIndex + 1;
+                                                if (nextIndex == 8) nextIndex = 1;
+                                                var prevIndex = dayIndex - 1;
+                                                if (prevIndex == 0) prevIndex = 7;
+
+                                                <span>
+                                                    @(ComboContext ?? "Any Day")
+                                                    @if (Server.AutomaticUpdateHour + (TimeZoneOffset / 60) < 0)
+                                                    {
+                                                        <span> (@UpdateDays[prevIndex] GMT)</span>
+                                                    }
+                                                    else if (Server.AutomaticUpdateHour + (TimeZoneOffset / 60) > 24)
+                                                    {
+                                                        <span> (@UpdateDays[nextIndex] GMT)</span>
+                                                    }
+                                                </span>
+                                            }
+                                        </ItemTemplate>
+                                        <EditBoxTemplate>
+                                            @{
+                                                var dayIndex = UpdateDays.IndexOf(ComboContext);
+                                                var nextIndex = dayIndex + 1;
+                                                if (nextIndex == 8) nextIndex = 1;
+                                                var prevIndex = dayIndex - 1;
+                                                if (prevIndex == 0) prevIndex = 7;
+
+                                                <span>
+                                                    @(ComboContext ?? "Any Day")
+                                                    @if (Server.AutomaticUpdateHour + (TimeZoneOffset / 60) < 0)
+                                                    {
+                                                        <span> (@UpdateDays[prevIndex] GMT)</span>
+                                                    }
+                                                    else if (Server.AutomaticUpdateHour + (TimeZoneOffset / 60) > 24)
+                                                    {
+                                                        <span> (@UpdateDays[nextIndex] GMT)</span>
+                                                    }
+                                                </span>
+                                            }
+                                        </EditBoxTemplate>
+                                    </DxComboBox>
+                                </Template>
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+
+                        <!-- Server Message Group with Tooltip -->
+                        <DxFormLayoutGroup Caption="Server Message" CaptionCssClass="fs-5">
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-envelope text-warning me-2" style="cursor: help" title="This message will display to all users who connect to this server on the Sign-In App"></i>
+                                        <span class="fw-bold">Message</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxMemo @bind-Text="@Server.AdminMessage" CssClass="w-100 no-resize" />
+                                </Template>
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+
+                        <!-- Server Notes -->
+                        <DxFormLayoutGroup Caption="Server Notes" CaptionCssClass="fs-5">
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-envelope text-warning me-2"></i>
+                                        <span class="fw-bold">Notes</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxMemo @bind-Text="@Server.Notes" CssClass="w-100 no-resize" Rows="3" />
+                                </Template>
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+
+                        <!-- Default Instance SSO Settings Group -->
+                        <DxFormLayoutGroup Caption="Default Instance SSO Settings" CaptionCssClass="fs-5">
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-globe text-primary me-2" title="SSO Domain"></i>
+                                        <span class="fw-bold">SSO Domain</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxTextBox @bind-Text="@Server.SsoDomain" CssClass="form-control form-control-sm" />
+                                </Template>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-id-card text-info me-2" title="SSO ClientId"></i>
+                                        <span class="fw-bold">SSO ClientId</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxTextBox @bind-Text="@Server.SsoClientId" CssClass="form-control form-control-sm" />
+                                </Template>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-fingerprint text-info me-2" title="SSO Certificate"></i>
+                                        <span class="fw-bold">SSO Certificate</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxTextBox @bind-Text="@Server.SsoThumbprint" CssClass="form-control form-control-sm" />
+                                </Template>
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+
+
+                        <!-- Advanced Settings (Read-only) Group -->
+                        <DxFormLayoutGroup Caption="Advanced Settings" CaptionCssClass="fs-5">
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-fingerprint text-muted me-2" title="Thumbprint"></i>
+                                        <span class="fw-bold">Thumbprint</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxTextBox @bind-Text="@Server.Thumbprint" ReadOnly="true" CssClass="form-control form-control-sm readonly-field" />
+                                </Template>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem ColSpanMd="6">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-key text-warning me-2" title="Auth Token"></i>
+                                        <span class="fw-bold">Auth Token</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxTextBox @bind-Text="@Server.AuthToken" ReadOnly="true" CssClass="form-control form-control-sm readonly-field" />
+                                </Template>
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+
+                        <!-- Using Companies Group -->
+                        <DxFormLayoutGroup Caption="Using Companies" CaptionCssClass="fs-5">
+                            <DxFormLayoutItem ColSpanMd="12">
+                                <CaptionTemplate>
+                                    <div style="min-width: 190px; margin-top: 7px;">
+                                        <i class="fas fa-building text-primary me-2" title="Using Companies"></i>
+                                        <span class="fw-bold">Using Companies</span>
+                                    </div>
+                                </CaptionTemplate>
+                                <Template>
+                                    <DxTagBox Data="@companies"
+                                              @bind-Values="selectedCompanies"
+                                              @key="Server.UsingCompanies.GetHashCode()"
+                                              NullText="Select Companies"
+                                              FilteringMode="DataGridFilteringMode.Contains"
+                                              CssClass="dxtagbox-custom" />
+                                </Template>
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+
+                        <!-- Save Button -->
+                        <DxFormLayoutItem ColSpanMd="12">
+                            <div class="d-flex w-100 flex-row-reverse">
+                                <DxButton Text="Save" SizeMode="SizeMode.Large" IconCssClass="fa fa-floppy-disk" RenderStyle="ButtonRenderStyle.Primary" Click="@SaveSettingsAsync" />
+                            </div>
+                        </DxFormLayoutItem>
+                    </DxFormLayout>
+
+                    <CertificateSelector @bind-ShowPopup="ShowCertificateSelector" OnCertificateSelected="HandleCertificateSelected" Server="Server" />
+                }
+            </Items>
+        </DxFormLayoutGroup>
+        <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Danger"></ConfirmationDialog>
+    </DxFormLayout>
+</div>
+@code {
+    [Inject]
+    IToastNotificationService toastService { get; set; }
+    [Inject]
+    IServerActionsService actionsService { get; set; }
+    [Inject]
+    ICompanyService companyService { get; set; }
+    [Parameter] public string ServerId { get; set; }
+
+    private ConfirmationDialog Dialog { get; set; }
+    private CompanyServer Server = new();
+    private CompanyServer OldServer = new();
+    private List<string> errorMessages = new();
+    private bool isLoading = true;
+    private bool ShowCertificateSelector = false;
+    private User User { get; set; }
+    private List<User> Users { get; set; }
+    private List<Company> companies { get; set; } = new();
+    private IEnumerable<Company> selectedCompanies { get; set; } = Enumerable.Empty<Company>();
+
+    private List<string> UpdateFrequency = null;
+    private List<string> UpdateDays = null;
+    private List<TimeOnly?> UpdateTimes = null;
+    private int TimeZoneOffset = 0;
+
+    private bool DisableHTTPS
+    {
+        get => Server.Thumbprint.IsNullOrEmpty();
+        set
+        {
+            Server.Thumbprint = value ? Server.Thumbprint = "" : "Choose Thumbprint";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await ServiceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.AdministrateServers, NavigationManager, true)) return;
+
+        var currentServerState = ServiceContainer.ScopedAppStateService.Server;
+
+        Server = currentServerState ?? Server;
+        OldServer = Server.Copy();
+
+        Users = await ServiceContainer.UserService.GetUsersAsync(null, User.CompanyId);
+        companies = await ServiceContainer.CompanyService.GetCompaniesAsync();
+        selectedCompanies = Server.UsingCompanies.Select(usingCompany => usingCompany.Company);
+
+        isLoading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Server.Id < 1 && firstRender)
+        {
+            // Page not valid without a server to use, return to list
+            NavigateTo();
+        }
+
+        if (firstRender)
+        {
+            await using var module = await jsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/timezone.js");
+            TimeZoneOffset = await module.InvokeAsync<int>("getBrowserTimeZoneOffset");
+
+            UpdateFrequency = new List<string>()
+            {
+                null,
+                "Daily",
+                "Weekly"
+            };
+            UpdateDays = new List<string>()
+            {
+                null,
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday",
+            };
+
+            // Ensure update always happens on GMT hour by adding minutes to local time
+            // Most timezones don't have a minute component, so will be on the hour in both
+            var timeZoneMinutes = TimeZoneOffset % 60;
+            if (timeZoneMinutes < 0) timeZoneMinutes += 60;
+            TimeZoneOffset -= timeZoneMinutes;
+            UpdateTimes = new List<TimeOnly?> {
+                null,
+                new TimeOnly(0, timeZoneMinutes),
+                new TimeOnly(1, timeZoneMinutes),
+                new TimeOnly(2, timeZoneMinutes),
+                new TimeOnly(3, timeZoneMinutes),
+                new TimeOnly(4, timeZoneMinutes),
+                new TimeOnly(5, timeZoneMinutes),
+                new TimeOnly(6, timeZoneMinutes),
+                new TimeOnly(7, timeZoneMinutes),
+                new TimeOnly(8, timeZoneMinutes),
+                new TimeOnly(9, timeZoneMinutes),
+                new TimeOnly(10, timeZoneMinutes),
+                new TimeOnly(11, timeZoneMinutes),
+                new TimeOnly(12, timeZoneMinutes),
+                new TimeOnly(13, timeZoneMinutes),
+                new TimeOnly(14, timeZoneMinutes),
+                new TimeOnly(15, timeZoneMinutes),
+                new TimeOnly(16, timeZoneMinutes),
+                new TimeOnly(17, timeZoneMinutes),
+                new TimeOnly(18, timeZoneMinutes),
+                new TimeOnly(19, timeZoneMinutes),
+                new TimeOnly(20, timeZoneMinutes),
+                new TimeOnly(21, timeZoneMinutes),
+                new TimeOnly(22, timeZoneMinutes),
+                new TimeOnly(23, timeZoneMinutes),
+            };
+
+            StateHasChanged();
+        }
+    }
+
+    private void ShowingCertificateSelector()
+    {
+        ShowCertificateSelector = true;
+    }
+
+    private static string[] ThingsThatDontNeedARestartWhenChanged =
+    [
+        "Notes",
+        "SsoThumbprint",
+        "SsoClientId",
+        "SsoDomain",
+        "AdminMessage",
+        "Name",
+        "IPAddress",
+        "Location",
+        "OwningUserId",
+        "AutomaticUpdateFrequency",
+        "AutomaticUpdateHour",
+        "AutomaticUpdateDay"
+    ];
+
+    private async Task SaveSettingsAsync()
+    {
+        bool restartRequired = false;
+        PropertyInfo[] props = typeof(CompanyServer).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        foreach (PropertyInfo prop in props)
+        {
+            if (!ThingsThatDontNeedARestartWhenChanged.Any(str => prop.Name == str))
+            {
+                //need to restart
+                object? oldValue = prop.GetValue(OldServer);
+                object? Value = prop.GetValue(Server);
+                if (oldValue == null && Value == null)
+                {
+                    continue;
+                }
+                if (Value == null) //oldValue is not null here
+                {
+                    restartRequired = true;
+                    continue;
+                }
+                if ((prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string)) && !(Value.Equals(oldValue)))
+                {
+                    restartRequired = true;
+                }
+            }
+        }
+        isLoading = true;
+        if (Server.Thumbprint == "Choose Certificate")
+        {
+            toastService.ShowToast("Error", "Please select a certificate.", ToastRenderStyle.Danger);
+            isLoading = false;
+            return;
+        }
+        try
+        {
+            if (restartRequired)
+            {
+                if (!await Dialog.ConfirmOperation("Restart Required",
+                        "Changing these server settings requires a Server Agent restart. This may cause planning areas to become briefly unavailable, and will start any Planning Areas configured with auto-start. Do you want to continue?"))
+                {
+                    isLoading = false;
+                    return;
+                }
+            }
+
+            // Update Using Companies
+            Server.UsingCompanies = selectedCompanies
+                .Select(company => new ServerUsingCompany { CompanyServerId = Server.Id, CompanyId = company.Id })
+                .ToList();
+
+            await ServiceContainer.ServerManagerService.AddOrUpdateServerAsync(Server);
+
+            if (restartRequired)
+            {
+                await actionsService.RequestServerRestart(Server.Id, User);
+            }
+
+            toastService.ShowToast("Saved", "Server Settings successfully saved.", ToastRenderStyle.Success);
+            OldServer = Server.Copy();
+        }
+        catch (Exception e)
+        {
+            errorMessages.Add(e.Message + " " + e.InnerException);
+            toastService.ShowToast("Error", "Server Settings failed to save.", ToastRenderStyle.Danger);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleCertificateSelected(string thumbprint)
+    {
+        Server.Thumbprint = thumbprint;
+        ShowCertificateSelector = false;
+    }
+
+    private void NavigateTo()
+    {
+        NavigationManager.NavigateTo("servermanager/" + @ServiceContainer.ScopedAppStateService.BackPath);
+    }
+}

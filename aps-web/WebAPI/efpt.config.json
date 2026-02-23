@@ -1,0 +1,273 @@
+﻿{
+  "CodeGenerationMode": 4,
+  "ContextClassName": "ImportDB2Context",
+  "ContextNamespace": null,
+  "DefaultDacpacSchema": null,
+  "FilterSchemas": false,
+  "IncludeConnectionString": false,
+  "ModelNamespace": null,
+  "OutputContextPath": null,
+  "OutputPath": "Models\\V1",
+  "PreserveCasingWithRegex": true,
+  "ProjectRootNamespace": "WebAPI",
+  "Schemas": null,
+  "SelectedHandlebarsLanguage": 2,
+  "SelectedToBeGenerated": 0,
+  "T4TemplatePath": null,
+  "Tables": [
+    {
+      "Name": "[dbo].[Capabilities]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[CapacityIntervalResourceAssignments]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[CapacityIntervals]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[Departments]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[Forecasts]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[ForecastShipmentInventoryAdjustments]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[ForecastShipments]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[Inventories]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[Items]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobActivities]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobActivityInventoryAdjustments]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobMaterials]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobMaterialSupplyingActivities]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobOperationAttributes]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobOperations]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobPathNodes]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobPaths]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobProductDeletedDemands]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobProductForecastDemands]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobProducts]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobProductSafetyStockDemands]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobProductSalesOrderDemands]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobProductTransferOrderDemands]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobResourceBlockIntervals]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobResourceBlocks]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobResourceCapabilities]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobResources]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[Jobs]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[JobSuccessorManufacturingOrders]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[KPIs]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[Lots]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[ManufacturingOrders]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[Metrics]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[Plants]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[PlantWarehouses]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[ProductRules]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[PurchasesToStock]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[PurchaseToStockDeletedDemands]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[PurchaseToStockForecastDemands]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[PurchaseToStockInventoryAdjustments]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[PurchaseToStockSafetyStockDemands]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[PurchaseToStockSalesOrderDemands]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[PurchaseToStockTransferOrderDemands]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[RecurringCapacityIntervalRecurrences]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[RecurringCapacityIntervalResourceAssignments]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[RecurringCapacityIntervals]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[ReportBlocks]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[ResourceCapabilities]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[SalesOrderDistributionInventoryAdjustments]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[SalesOrderLineDistributions]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[SalesOrderLines]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[SalesOrders]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[Schedules]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[SystemData]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[TransferOrderDistributionInventoryAdjustments]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[TransferOrderDistributions]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[TransferOrders]",
+      "ObjectType": 0
+    },
+    {
+      "Name": "[dbo].[Warehouses]",
+      "ObjectType": 0
+    }
+  ],
+  "UiHint": "desktop-1etafej\\sqlexpress.ImportDB2.dbo",
+  "UncountableWords": null,
+  "UseBoolPropertiesWithoutDefaultSql": false,
+  "UseDatabaseNames": true,
+  "UseDateOnlyTimeOnly": true,
+  "UseDbContextSplitting": false,
+  "UseDecimalDataAnnotationForSprocResult": true,
+  "UseFluentApiOnly": true,
+  "UseHandleBars": false,
+  "UseHierarchyId": false,
+  "UseInflector": true,
+  "UseLegacyPluralizer": false,
+  "UseManyToManyEntity": false,
+  "UseNoDefaultConstructor": false,
+  "UseNoNavigations": false,
+  "UseNoObjectFilter": false,
+  "UseNodaTime": false,
+  "UseNullableReferences": false,
+  "UseSchemaFolders": false,
+  "UseSchemaNamespaces": false,
+  "UseSpatial": false,
+  "UseT4": false
+}

@@ -1,0 +1,156 @@
+﻿@inject ShortcutService ShortcutService
+@inject PopupManagerService PopupManager
+
+<div class="toolbar bg-body">
+    @foreach (var button in toolbarButtons)
+    {
+        if (button.ToolbarAction.GetShowValue())
+        {
+            <DxButton Attributes="@(new Dictionary<string, object> { ["title"] = button.ToolbarAction.GetDisplayText() + " (" + ShortcutService.GetKeyByAction(button.ToolbarAction)+ ")" })"
+                      CssClass="toolbar-button"
+                      IconCssClass="@(button.ToolbarAction.GetIconValue())"
+                      Click="() => InvokeButtonAction(button.Action)" />
+        }
+    }
+    <DxTextBox CssClass="search-box" NullText="Find jobs by name" Text="@searchText"
+               TextChanged="FilterChanged" BindValueMode="BindValueMode.OnDelayedInput"/>
+    <DxTextBox CssClass="search-box" NullText="Highlight jobs" Text="@highlightText"
+               TextChanged="HighlightChanged" BindValueMode="BindValueMode.OnDelayedInput"/>
+    <div id="dropdown-customization-target-container">
+        <DxButton CssClass="toolbar-button mx-1" IconCssClass="fa-solid fa-circle-a" Click="() => IsOpen = !IsOpen"></DxButton>
+    </div>
+</div>
+<DxDropDown @bind-IsOpen="@IsOpen"
+            MinWidth="max(25vw, 50px)"
+            PositionMode="DropDownPositionMode.Bottom"
+            PositionTarget="#dropdown-customization-target-container"
+            RestrictionTarget="#Navigation-DropDown-Customization"
+            CloseMode="DropDownCloseMode.Close"
+            PreventCloseOnPositionTargetClick="true"
+            HeaderVisible="true"
+            HeaderText="Adjust view"
+            FooterVisible="true">
+    <BodyContentTemplate>
+        <div class="w-100">
+            <span>Adjust Block Font Size</span>
+            <DxSpinEdit NullText="0px" Value="blockFontSize" ValueChanged="((int newValue) => BlockFontSizeChanged(newValue))" />
+            <GanttZoomControls SchedulerInterop="SchedulerInterop" />
+        </div>
+    </BodyContentTemplate>
+</DxDropDown>
+
+@code {
+    [Parameter]
+    public SchedulerInterop SchedulerInterop { get; set; }
+    [Parameter]
+    public Func<Task> TaskShowAddCTPRequest { get; set; }
+    [Parameter]
+    public Func<Task> TaskManageCTPRequests { get; set; }
+    [Parameter]
+    public ToolbarAction PredefinedAction { get; set; }
+    [Parameter]
+    public EventCallback<ToolbarAction> PredefinedActionChanged { get; set; }
+
+    private string searchText = "";
+    private string highlightText = "";
+    private IEnumerable<ToolbarButton> toolbarButtons = new List<ToolbarButton>();
+    private bool isInitialized = false;
+    private int blockFontSize = 13;
+    bool IsOpen { get; set; } = false; 
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (PopupManager == null)
+        {
+            throw new ArgumentNullException(nameof(PopupManager), "PopupManager is not initialized.");
+        }
+
+        PopupManager.ResetPopups();
+        isInitialized = true;
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (isInitialized && SchedulerInterop != null)
+        {
+            if (toolbarButtons.ToList().Count == 0)
+            {
+                toolbarButtons = GetToolbarButtons();
+                StateHasChanged();
+            }
+            var button = toolbarButtons?.FirstOrDefault(b => b.ToolbarAction == PredefinedAction);
+            if (PredefinedAction != ToolbarAction.Zero)
+            {
+                if (button != null)
+                {
+                    InvokeButtonAction(button.Action);
+                }
+                PredefinedAction = ToolbarAction.Zero;
+                PredefinedActionChanged.InvokeAsync(ToolbarAction.Zero);
+            }
+        }
+    }
+
+    private async Task BlockFontSizeChanged(int e)
+    {
+        blockFontSize = e;
+        await SchedulerInterop.ChangeBlockFontSize(blockFontSize);
+    }
+
+    private async Task FilterChanged(string e)
+    {
+        searchText = e;
+        await SchedulerInterop.FilterEvents(searchText);
+    }
+
+    private async Task HighlightChanged(string e)
+    {
+        highlightText = e;
+        await SchedulerInterop.HighlightEvents(highlightText);
+    }
+
+    private async Task InvokeButtonAction(Func<Task> action)
+    {
+        if (action != null)
+        {
+            PopupManager.ResetPopups();
+            await action.Invoke();
+        }
+    }
+
+    private IEnumerable<ToolbarButton> GetToolbarButtons()
+    {
+        return Enum.GetValues(typeof(ToolbarAction))
+                   .Cast<ToolbarAction>()
+                   .Select(action => new ToolbarButton(action, GetAction(action)))
+                   .ToList();
+    }
+
+    private Func<Task> GetAction(ToolbarAction action)
+    {
+        if (SchedulerInterop == null || PopupManager == null)
+        {
+            throw new InvalidOperationException("SchedulerInterop or PopupManager is not initialized.");
+        }
+
+        return action switch
+        {
+            ToolbarAction.Zero => SchedulerInterop.Empty,
+            ToolbarAction.FullScreen => SchedulerInterop.SetFullScreen,
+            ToolbarAction.ResizeRowsToFit => SchedulerInterop.ResizeRowsToFit,
+            ToolbarAction.ZoomIn => SchedulerInterop.ZoomIn,
+            ToolbarAction.ZoomOut => SchedulerInterop.ZoomOut,
+            ToolbarAction.IncreaseBlockHeight => SchedulerInterop.IncreaseEventHeight,
+            ToolbarAction.DecreaseBlockHeight => SchedulerInterop.DecreaseEventHeight,
+            ToolbarAction.ActivityDisplayOptions => PopupManager.OnShowActivityPopup,
+            ToolbarAction.HierarchyFilter => PopupManager.OnShowHierarchyFilterPopup,
+            ToolbarAction.ManageResources => PopupManager.OnShowResourceManagementPopup,
+            ToolbarAction.SaveToFavorites => PopupManager.OnShowFavoritesPopup,
+            ToolbarAction.KeyboardShortcuts => PopupManager.OnShowKeyboardShortcutsPopup,
+            ToolbarAction.AddCTPRequest => TaskShowAddCTPRequest,
+            ToolbarAction.CTPRequests => TaskManageCTPRequests,
+            ToolbarAction.DevModeOn => ShortcutService.TurnOnDevMode,
+            _ => throw new ArgumentOutOfRangeException(nameof(action), "Not implemented action"),
+        };
+    }
+}

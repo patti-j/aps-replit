@@ -1,0 +1,132 @@
+@namespace ReportsWebApp.Shared
+@using System.Collections
+@using DevExpress.Blazor
+
+<div>
+    
+</div>
+
+@code 
+{
+    public static Util Utils = new (); //you cant do mixed cs/html in static contexts for some reason
+    public class Util
+    {
+        /// <summary>
+        /// Static (sort of) helper method for updating the filter cell editors of DxGrid's to have placeholder text
+        /// </summary>
+        /// <param name="grid">The grid to be updated</param>
+        /// <remarks>
+        /// Sometimes grids are initialized by the end of the OnInitializeAsync function of its parent, but sometimes
+        /// you need to call this in OnAfterRender to ensure your grids ain't null
+        /// </remarks>
+        // UGLY HACK ALERT!!!
+        public void UpdateGridStyling(IGrid? grid)
+        {
+            if (grid == null)
+            {
+                return;
+            }
+
+            var columns = grid.GetDataColumns();
+            grid.BeginUpdate();
+            
+            Type? subType = null;
+            if (grid.Data is IEnumerable enumerable)
+            {
+                subType = enumerable.GetType().GetGenericArguments()[0];
+            }
+
+            foreach (IGridDataColumn col in columns)
+            {
+                if (col.FilterRowCellTemplate != null)
+                {
+                    continue;
+                }
+                if (col.UnboundType is GridUnboundColumnType.String or GridUnboundColumnType.Object)
+                {
+                    col.FilterRowCellTemplate = new RenderFragment<GridDataColumnFilterRowCellTemplateContext>((context) =>
+                        @<FilterRowCellTemplate>
+                            <DxTextBox Text="@((string)context.FilterRowValue)" BindValueMode=BindValueMode.OnInput
+                                       TextChanged="(string v) => context.FilterRowValue = v" style="border: none;" NullText="Filter..."/>
+                        </FilterRowCellTemplate>);
+                }
+                else
+                {
+                    if (col.UnboundType == GridUnboundColumnType.Bound)
+                    {
+                        if (subType != null)
+                        {
+                            Type? type = GetTypeFromTypeAndString(subType, col.FieldName);
+                            if (type != null)
+                            {
+                                //not sure all of what types normally use a regular text input for their editor, but these should do
+                                if (type == typeof(string)
+                                    || type == typeof(byte)
+                                    || type == typeof(sbyte)
+                                    || type == typeof(short)
+                                    || type == typeof(ushort)
+                                    || type == typeof(int)
+                                    || type == typeof(uint)
+                                    || type == typeof(long)
+                                    || type == typeof(ulong)
+                                    || type == typeof(float)
+                                    || type == typeof(double)
+                                    || type == typeof(decimal))
+                                {
+                                    col.FilterRowCellTemplate = new RenderFragment<GridDataColumnFilterRowCellTemplateContext>((context) =>
+                                        @<FilterRowCellTemplate>
+                                            <DxTextBox Text="@((string)context.FilterRowValue)" BindValueMode=BindValueMode.OnInput
+                                                       TextChanged="(string v) => context.FilterRowValue = v" style="border: none;" NullText="Filter..."/>
+                                        </FilterRowCellTemplate>);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            grid.EndUpdate();
+        }
+
+        /// <summary>
+        /// Attempts to obtain the type specified by <c>a_fieldStr</c> from <c>a_type</c> where <c>a_fieldStr</c> may
+        /// be period separated to indicate subtypes e.g. <c>"field1.subField2"</c>
+        /// </summary>
+        private static Type? GetTypeFromTypeAndString(Type a_type, string a_fieldStr)
+        {
+            if (a_fieldStr.Contains('.'))
+            {
+                string[] fields = a_fieldStr.Split('.');
+                FieldInfo? field = a_type.GetField(fields[0]);
+                if (field != null)
+                {
+                    return GetTypeFromTypeAndString(field.FieldType, string.Concat(fields[1..]));
+                }
+                else
+                {
+                    PropertyInfo? prop = a_type.GetProperty(fields[0]);
+                    if (prop != null)
+                    {
+                        return GetTypeFromTypeAndString(prop.PropertyType, string.Concat(fields[1..]));
+                    }
+                }    
+            }
+            
+            FieldInfo? afield = a_type.GetField(a_fieldStr);
+            if (afield != null)
+            {
+                return afield.FieldType;
+            }
+            else
+            {
+                PropertyInfo? prop = a_type.GetProperty(a_fieldStr);
+                if (prop != null)
+                {
+                    return prop.PropertyType;
+                }
+            }
+
+            return null;
+        }
+    }
+}

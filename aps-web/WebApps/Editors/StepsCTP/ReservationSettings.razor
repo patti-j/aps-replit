@@ -1,0 +1,33 @@
+﻿@using ReportsWebApp.DB.Models
+@using DevExpress.Blazor
+
+<DxFormLayout>
+    <DxFormLayoutGroup Caption="Reservation Settings">
+        <Items>
+            <DxFormLayoutItem Field="Request.InventoryInquiry" Caption="Inventory Inquiry">
+                <DxCheckBox @bind-Checked="Request.InventoryInquiry" />
+            </DxFormLayoutItem>
+
+            <DxFormLayoutItem Field="Request.ReserveCapacityAndMaterialsUntil" Caption="Reserve Capacity & Materials Until">
+                <DxDateEdit @bind-Date="Request.ReserveCapacityAndMaterialsUntil" />
+            </DxFormLayoutItem>
+
+            <DxFormLayoutItem Field="Request.SchedulingType" Caption="Scheduling Type">
+                <DxComboBox @bind-Value="Request.SchedulingType" Data="@SchedulingTypes" />
+            </DxFormLayoutItem>
+        </Items>
+    </DxFormLayoutGroup>
+</DxFormLayout>
+
+@code {
+    [Parameter] public bool IsReadOnly { get; set; }
+
+    [Parameter] public CtpRequest Request { get; set; } = new();
+
+    private List<string> SchedulingTypes = new List<string>
+    {
+        "Optimize",
+        "Expedite to Clock",
+        "Expedite to JIT"
+    };
+}

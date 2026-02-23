@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargetsWindows.props" />
+  <PropertyGroup>
+    <RootNamespace>PT.PackageDefinitionsUI</RootNamespace>
+    <AssemblyName>PT.PackageDefinitionsUI</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+      <Link>Properties\AssemblyInfoShared.cs</Link>
+    </Compile>
+    <Compile Update="DataSources\EditableUnboundDataSourceModule.cs" />
+    <Compile Update="DataSources\UnboundDataSourceModule.cs" />
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerData\SchedulerData.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerExtentions\SchedulerExtensions.csproj" />
+    <ProjectReference Include="..\..\Scheduling\Scheduler\Scheduler.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\ERPTransmissions\ERPTransmissions.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\Transmissions\Transmissions.csproj" />
+    <ProjectReference Include="..\..\UserInterface\UIData\UIData.csproj" />
+    <ProjectReference Include="..\..\UserInterface\UIDefinitions\UIDefinitions.csproj" />
+    <ProjectReference Include="..\APSCommon.Windows\APSCommon.Windows.csproj" />
+    <ProjectReference Include="..\PackageDefinitions\PackageDefinitions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DevExpress.Win.Design" Version="25.2.3" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="PlexityHide.GTP" Version="1.1.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3296.44" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+	  <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,242 @@
+﻿@page "/components/pausergrid"
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.Helpers
+@inject NavMenuUpdateService NavMenuUpdateService
+@inject IPlanningAreaLoginService m_paUserService
+@inject IUserService m_userService
+
+<h3>Planning Area Logins</h3>
+
+@if (PAUsers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+	<DxGrid ShowFilterRow="true"
+	        Data="@WebUsers"
+	        UnboundColumnData="Grid_CustomUnboundColumnData"
+	        EditModelSaving="OnEditModelSaving"
+	        EditMode="GridEditMode.PopupEditForm"
+	        @ref="MyGrid"
+	        EditStart="OnEditStart"
+	        PageSize="10"
+	        CssClass="ch-480"
+	        PagerPosition="GridPagerPosition.TopAndBottom"
+	        PageSizeSelectorVisible="true"
+	        PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+	        PageSizeSelectorAllRowsItemVisible="false"
+	        PagerSwitchToInputBoxButtonCount="10"
+	        PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+		<Columns>
+			<DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+				<HeaderTemplate>
+				</HeaderTemplate>
+				<CellDisplayTemplate>
+					@{
+                        var dataItem = (User)context.DataItem;
+                    }
+                    <ActionDropdown DataItem="dataItem" Actions="_actions" />
+				</CellDisplayTemplate>
+			</DxGridCommandColumn>
+            <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" />
+            <DxGridDataColumn FieldName="FullName" Caption="Name" MinWidth="200" />
+            <DxGridDataColumn FieldName="Planning Areas" UnboundType="GridUnboundColumnType.String" MinWidth="200" />
+            <DxGridDataColumn FieldName="Email" Caption="Email" MinWidth="200" />
+		</Columns>
+		<EditFormTemplate Context="EditFormContext">
+			@{
+				var user = (User)EditFormContext.EditModel;
+			}
+			<ValidationSummary />
+			<DxFormLayout CssClass="w-100">
+                <LegacyPATreeSelector PlanningAreas="AvailablePlanningAreas" SelectedPlanningAreas="SelectedPlanningAreas" PermissionGroups="PermissionGroups" OnChange="OnPASelectionChanged"/>
+			</DxFormLayout>
+		</EditFormTemplate>
+        <CustomValidators>
+            <CustomValidator DataItemValidating="DataItemValidating"></CustomValidator>
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+        </CustomValidators>
+	</DxGrid>
+}    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+
+@code {
+    IGrid? MyGrid { get; set; }
+    [Parameter]
+    public Company Company { get; set; }
+    [Parameter]
+    public List<User> WebUsers { get; set; }
+    [Parameter]
+    public List<PlanningAreaAccess> PAUsers { get; set; }
+    [Parameter]
+    public List<PADetails> AvailablePlanningAreas { get; set; }
+    [Parameter]
+    public List<PAPermissionGroup> PermissionGroups { get; set; }
+    [Parameter]
+    public User User { get; set; }
+    [Parameter]
+    public Action OnSave { get; set; }
+
+    public IEnumerable<Company> SelectedCompanies { get; set; }
+    private List<User> AvailableWebUsers { get; set; } = new();
+    private IEnumerable<ActionItem<User>> _actions { get; set; }
+    private List<(PADetails, PAPermissionGroup)> SelectedPlanningAreas { get; set; } = new List<(PADetails, PAPermissionGroup)>();
+    private ConfirmationDialog Dialog;
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        _actions = new List<ActionItem<User>>
+        {
+            new ActionItem<User>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-pencil",
+                Action = async (user) => await MyGrid?.StartEditDataItemAsync(user)
+            },
+            new ActionItem<User>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fa fa-trash",
+                Action = async (item) =>
+                {
+                    if (await Dialog.ConfirmDeleteOperation("Are you sure?", $"You are about to delete all of the PA logins for this user. Are you sure you want to continue?", "Delete"))
+                    {
+                        await DeleteItem(item);
+                    }
+                },
+            }
+        };
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(MyGrid);
+        base.OnAfterRender(firstRender);
+    }
+
+    private record PlanningAreaDisplay(string Name, string Version, string DisplayText, string InstanceIdentifier, bool connected);
+
+    private async Task OnEditStart(GridEditStartEventArgs args)
+    {
+        if (!args.IsNew)
+        {
+            var user = args.DataItem as User;
+            var userPas = await m_paUserService.GetPlanningAreaAccessesForUserAsync(user.Id);
+            SelectedPlanningAreas = userPas.Select(x => (x.PlanningArea, x.PermissionGroup)).ToList();
+        }
+
+        var assignedUserIds = System.Linq.Enumerable.ToHashSet(PAUsers.Select(x => x.UserId));
+        AvailableWebUsers = WebUsers.Where(u => !assignedUserIds.Contains(u.Id))
+                                    .OrderBy(u => u.Email)
+                                    .ToList();
+    }
+
+    private async Task OnPASelectionChanged(List<(PADetails, PAPermissionGroup)> newSelection)
+    {
+        SelectedPlanningAreas = newSelection;
+    }
+
+    protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        var editModel = (e.EditModel as User);
+        if (editModel != null)
+        {
+            var pas = await m_paUserService.GetPlanningAreaAccessesForUserAsync(editModel.Id);
+
+            List<PlanningAreaAccess> AddedOrUpdated = new ();
+            List<PlanningAreaAccess> Removed = new ();
+            
+            foreach (var selectedPlanningArea in SelectedPlanningAreas)
+            {
+                if (AddedOrUpdated.Any(x => x.PlanningAreaId == selectedPlanningArea.Item1.Id))
+                {
+                    continue; //shouldnt happen but just in case
+                }
+                if (pas.Any(x => x.PlanningAreaId == selectedPlanningArea.Item1.Id))
+                {
+                    PlanningAreaAccess existing = pas.First(x => x.PlanningAreaId == selectedPlanningArea.Item1.Id);
+                    existing.PlanningAreaId = selectedPlanningArea.Item1.Id;
+                    existing.PermissionGroupId = selectedPlanningArea.Item2.Id;
+                    AddedOrUpdated.Add(existing);
+                }
+                else
+                {
+                    var access = new PlanningAreaAccess()
+                    {
+                        UserId = editModel.Id,
+                        PlanningAreaId = selectedPlanningArea.Item1.Id,
+                        PermissionGroupId = selectedPlanningArea.Item2.Id
+                    };
+                    AddedOrUpdated.Add(access);
+                }
+            }
+            
+            foreach (PlanningAreaAccess access in pas)
+            {
+                if (!AddedOrUpdated.Any(x => x.PlanningAreaId == access.PlanningAreaId))
+                {
+                    Removed.Add(access);
+                }
+            }
+            
+            foreach (PlanningAreaAccess access in Removed)
+            {
+                await m_paUserService.DeletePlanningAreaAccessAsync(access);
+            }
+            
+            foreach (var access in AddedOrUpdated)
+            {
+                await m_paUserService.AddOrUpdatePlanningAreaAccessAsync(access);
+            }
+
+            OnSave();
+            NavMenuUpdateService.TriggerUpdate();
+        }
+
+    }
+
+    protected async Task DeleteItem(object a_item)
+    {
+        var editModel = (a_item as User);
+        if (editModel != null)
+        {
+            await m_paUserService.DeletePlanningAreaAccessesForUserAsync(editModel.Id);
+            WebUsers.Remove(editModel);
+            StateHasChanged();
+        }
+    }
+
+    void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+        if (e.FieldName == "Planning Areas")
+        {
+            var id = Convert.ToDecimal(e.GetRowValue("Id"));
+
+            var dataItem = PAUsers.Where(c => c.UserId == id).ToList();
+            if (dataItem != null)
+            {
+                List<string> w = dataItem.Select(x => x.PlanningArea.Name).ToList(); 
+                e.Value = CommonUtils.ListToString(w);
+            }
+        }
+    }
+
+    private void DataItemValidating(ValidationMessageStoreEventArgs a_obj)
+    {
+        bool missingGroup = false;
+        foreach (var selectedPlanningArea in SelectedPlanningAreas)
+        {
+            if (selectedPlanningArea.Item2 == null)
+            {
+                missingGroup = true;
+            }
+        }
+
+        if (missingGroup)
+        {
+            a_obj.AddError("Planning Areas", "Selected Planning Areas must have an assigned Permission group");
+        }
+    }
+}

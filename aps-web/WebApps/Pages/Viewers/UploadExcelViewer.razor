@@ -1,0 +1,256 @@
+﻿@page "/uploadExcelViewer"
+@using Newtonsoft.Json.Linq
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Text.RegularExpressions
+@using Azure.Identity;
+@using Azure.Security.KeyVault.Secrets;
+@using ReportsWebApp.Controllers.Models;
+@using ReportsWebApp.Shared;
+@using System.Text.Json;
+@using System.Text
+@inject NavigationManager NavigationManager
+@if (viewPermission)
+{
+    <h3>Upload Excel</h3>
+    <div class="col-md-6" style="padding-bottom: 12px">
+        <label for="tbInputBinding" class="demo-text cw-320 mb-1">
+            Planning Area Name
+        </label>
+        <DxComboBox Data="@companyDbs"
+        TextFieldName="@nameof(CompanyDb.Name)"
+        @bind-Value="@selectedDb"
+        AllowUserInput="false"
+        />
+    </div>
+    <div class="col-md-6" style="padding-bottom: 12px">
+        <div id="overviewDemoDropZone" class="card custom-drop-zone rounded-3 w-100 m-0">
+            <span class="drop-file-icon mb-3"></span>
+            <span class="m-1">Drag and Drop File Here</span><span class="m-1">or</span>
+            <button id="overviewDemoSelectButton" class="btn border-primary btn-primary m-1">Select File</button>
+        </div>
+        @* <DxUpload Name="myFile"
+        Visible="@UploadVisible"
+        ExternalSelectButtonCssSelector="#overviewDemoSelectButton"
+        ExternalDropZoneCssSelector="#overviewDemoDropZone"
+        ExternalDropZoneDragOverCssClass="border-secondary text-dark"
+        MaxFileSize="629145600"
+        UploadUrl="@GetUploadUrl("api/Upload/Upload?companyId="+User.CompanyId+"&environment="+selectedDb?.Environment+"&instanceName="+selectedDb?.Name+"&userEmail="+User.Email)"
+        SelectedFilesChanged="@SelectedFilesChanged"
+        CssClass="w-100"
+        FileUploadError="@OnUploadError"
+        AllowedFileExtensions="@(new List<string> { ".xlsx", ".zip" })">
+        </DxUpload> *@
+        <DxFileInput 
+            @ref="FileInput"
+            MaxFileSize="629145600"
+            MaxFileCount="1"
+            ExternalSelectButtonCssSelector="#overviewDemoSelectButton"
+            ExternalDropZoneCssSelector="#overviewDemoDropZone"
+            ExternalDropZoneDragOverCssClass="border-secondary text-dark"
+            CssClass="w-100 hide-bar"
+            AllowedFileExtensions="@(new List<string> { ".xlsx", ".zip" })"
+            SelectedFilesChanged="@SelectedFilesChanged"
+            AllowMultiFileUpload="false"
+            FilesUploading="OnFilesUploading"
+            >
+        </DxFileInput>
+    </div>
+    <DxButton CssClass="col-md-6" Click="UploadFile" Enabled="selectedFile != null && selectedDb != null && !uploadInProgress">Upload File</DxButton>
+    <div class="col-md-6" style="padding-bottom: 12px">
+        @if(progressMessage != "")
+        {
+            <DxProgressBar 
+                Status="GetStatus(progressMessage, currentProgress)" 
+                Size="100%"  
+                Value="@currentProgress" 
+                Label="@(progressMessage.StartsWith("Error") ? "An Error ocurred during the Import:" : progressMessage)" MaxValue="1" MinValue="0"></DxProgressBar>
+            if (progressMessage.StartsWith("Error"))
+            {
+                var list = progressMessage.Split('\n');
+                foreach (var item in list)
+                {
+                    <p>@item</p>
+                }
+            }
+        }
+    </div>
+
+    <DxPopup
+    HeaderText="Error"
+    @bind-Visible="@PopupVisible"
+    BodyText="@ErrorMessage">
+    </DxPopup>
+}
+
+@code {
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    ICompanyDbService m_companyService { get; set; }
+    [Inject]
+    IConfiguration _configuration { get; set; }
+    DxFileInput FileInput { get; set; }
+    private DB.Models.User User { get; set; }
+    private List<CompanyDb> companyDbs = new();
+    private CompanyDb selectedDb;
+    bool PopupVisible { get; set; } = false;
+    string ErrorMessage = "";
+    private bool viewPermission = false;
+    private double currentProgress { get; set; } = 0;
+    private string progressMessage { get; set; } = "";
+    private IFileInputSelectedFile? selectedFile { get; set; }
+    private string uploadFileName { get; set; }
+    private bool uploadInProgress { get; set; }
+    private HubConnection? hubConnection;
+    [Inject]
+    IAppInsightsLogger logger { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.ManageIntegration, NavigationManager)) return;
+        viewPermission = true;
+
+        hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("notificationhub")).Build();
+
+        Type[] paramTypes = new Type[] { typeof(string), typeof(double), typeof(string) };
+        hubConnection.On("UploadProgressUpdate", paramTypes, async (arg) =>
+            {
+                if (currentProgress < 1)
+                {
+                    var id = (string)arg[0];
+
+                    // If id doesn't match, this update is about a different file
+                    if (id != uploadFileName) return;
+
+                    currentProgress = (double)arg[1];
+                    progressMessage = (string)arg[2];
+                }
+
+                // Clear files on success or failure
+                if (currentProgress >= 1 || progressMessage.StartsWith("Error")) 
+                {
+                    selectedFile = null;
+                    uploadInProgress = false;
+                    currentProgress = (double)arg[1];
+                    progressMessage = (string)arg[2];
+                    FileInput.RemoveAllFiles();
+                }
+
+                await InvokeAsync(StateHasChanged);
+            });
+
+        await hubConnection.StartAsync();
+        await hubConnection.SendCoreAsync("JoinGroup", new[] { User.Email });
+
+        companyDbs = m_companyService.GetImportDbs(User.CompanyId);
+    }
+
+    private ProgressBarStatus GetStatus(string message, double progress)
+    {
+        if (message.StartsWith("Error"))
+        {
+            return ProgressBarStatus.Error;
+        }
+        else if (progress >= 1)
+        {
+            return ProgressBarStatus.Success;
+        }
+        else
+        {
+            return ProgressBarStatus.InProgress;
+        }
+    }
+
+    protected void SelectedFilesChanged(IEnumerable<UploadFileInfo> files) {
+        // Reset progress bar when a new excel file is uploaded
+        if (files.Any())
+        {
+            progressMessage = "";
+            currentProgress = 0;
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    protected async Task OnFilesUploading(FilesUploadingEventArgs args)
+    {
+        selectedFile = args.Files.FirstOrDefault();
+        progressMessage = "";
+        currentProgress = 0;
+    }
+
+    protected async Task UploadFile()
+    {
+        if (!uploadInProgress)
+        {
+            uploadInProgress = true;
+            progressMessage = "Tranferring Files...";
+
+            var guid = Guid.NewGuid();
+            uploadFileName = guid.ToString() + ".xlsx";
+            var x = User.CompanyId;
+
+            var fileShareConnectionString = _configuration["AzureSMBStorageConnectionString"];
+            string shareName = _configuration["AzureSMBStorageName"];
+            string directoryName = _configuration["AzureSMBStorageInDirectory"];
+            QueueManager queueManager = new QueueManager(fileShareConnectionString, _configuration["AzureImportQueueName"]);
+
+            // Create a temporary MemoryStream to hold the file content
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                // Copy the content of the IFormFile to the MemoryStream
+                await selectedFile.OpenReadStream(selectedFile.Size).CopyToAsync(memoryStream);
+
+                // Reset the position of the MemoryStream to the beginning
+                memoryStream.Position = 0;
+
+                AzureSMBStorageManager storageManager = new AzureSMBStorageManager(fileShareConnectionString, shareName, directoryName);
+                await storageManager.CopyExcelToAzureSMBStorage(memoryStream, guid.ToString() + ".xlsx");
+
+                ImportInitiatedMessage message = new ImportInitiatedMessage()
+                    {
+                        MessageType = "ExcelImport",
+                        FileName = guid.ToString() + ".xlsx",
+                        ImportCompletedDateTime = DateTime.UtcNow,
+                        Message = "Import file copied to Azure storage",
+                        Sender = User.Email,
+                        CompanyId = User.CompanyId.ToString(),
+                        InstanceName = selectedDb.Name,
+                        Environment = selectedDb.Environment,
+                        OriginalFileName = selectedFile.Name
+                    };
+                queueManager.SendMessageAsync(Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message))));
+            }
+            progressMessage = "";
+        }
+    }
+
+    protected string GetUploadUrl(string url) {
+        return NavigationManager.ToAbsoluteUri(url).AbsoluteUri;
+    }
+
+    bool ErrorVisible { get; set; } = false;
+    string MyError { get; set; }
+
+    void OnUploadError(FileUploadErrorEventArgs e)
+    {
+        MyError = e.RequestInfo.ResponseText;
+        ErrorVisible = true;
+        PopupVisible = true;
+        List<string> values = new List<string>();
+        JObject jsonObject = JObject.Parse(e.RequestInfo.ResponseText);
+        var node = jsonObject["errors"];
+        if (node is JObject obj)
+        {
+            foreach (var property in obj.Properties())
+            {
+                values.Add(Regex.Replace(property.Value.ToString(), @"[\[\]\n]", "")); 
+            }
+        }
+            ErrorMessage = string.Join("\n", values);
+        
+        InvokeAsync(StateHasChanged);
+    }
+}

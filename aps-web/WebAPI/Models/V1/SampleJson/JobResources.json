@@ -1,0 +1,18 @@
+[
+  {
+    "importDate": "2024-02-05T12:00:00Z",
+    "JobId": 12345,
+    "ManufacturingOrderId": 67890,
+    "OperationId": 54321,
+    "ResourceRequirementId": 98765,
+    "Description": "Sample Job Resource",
+    "ExternalId": "XYZ123",
+    "UsageStart": "2024-02-05T08:00:00Z",
+    "UsageEnd": "2024-02-05T16:00:00Z",
+    "AttentionPercent": 80,
+    "IsPrimary": true,
+    "DefaultResourceJITLimitHrs": 24.5,
+    "UseDefaultResourceJITLimit": false,
+    "DefaultResourceId": 555
+  }
+]

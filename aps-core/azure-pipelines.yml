@@ -1,0 +1,467 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+  branches:
+    include: 
+      - dev
+    exclude:
+      - 12.2.1-Neptune
+      - 12.3.0-hydrogen
+  paths:
+    include:
+      - SolutionMiscFiles/AssemblyInfoShared.cs
+
+# Using the classic schedules instead since this cron schedule triggers the other branches too
+# schedules:
+#   - cron : '30 5 * * 2-6'
+#     displayName : Nightly Build and Internal Deployment
+#     branches: 
+#      include:
+#        - dev
+#      exclude:
+#        - 12.1.4
+#        - 12.2.1-Neptune
+#        - 12.2.0
+#        - dev-testing-pipeline
+
+parameters:
+  #Agent name allows us to match a capability on a local agent, effectively targeting a specific build machine
+- name: 'DeveloperName'
+  displayName: 'Specify target dev whose agent to use, or Any'
+  type: string
+  default: 'Any'
+
+- name: 'CoreBranch'
+  displayName: 'Specify core repo branch to use'
+  type: string
+  default: 'dev'
+
+- name: 'PackagesBranch'
+  displayName: 'Specify package repo branch to use'
+  type: string
+  default: 'dev'
+
+- name: 'ExtensionsBranch'
+  displayName: 'Specify extension repo branch to use'
+  type: string
+  default: 'dev'
+
+- name: 'destination'
+  displayName: 'Select which storage container to deploy the build to'
+  type: string
+  default: 'none'
+  values:
+    - 'none'
+    - 'scheduled'
+    - 'builds'
+
+variables:
+  solution: '**/APSCore.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release' #'Debug' 'Release'
+  CoreSolutionFolderName: 'aps-core' #The relative path to the core solution when referenced by aps-packages projects
+  PackagesSolutionFolderName: 'aps-packages'
+  ExtensionsSolutionFolderName: 'aps-extensions'
+  ExtensionsSolution: 'APSExtensions.sln' 
+  #assumption is that the origin path is starting from where this yaml is located
+  currentDate: $[ format('{0:yyyy}_{0:MM}_{0:dd}_{0:HH}_{0:mm}', pipeline.startTime) ]
+
+  Major: '12'
+  Minor: '3'
+  Patch: '0'
+  Macule: '12'
+  
+#use We have to create a Job so we can use logic to validate the parameters
+jobs:
+- job: BuildJob
+
+  pool:
+    name: 'PTBuildMachines'
+    ${{ if ne(parameters.DeveloperName, 'Any') }}:
+        demands:
+        - Developer -equals ${{ parameters.DeveloperName }}
+  # demands:
+  # - Developer -equals Cavan
+
+  steps:
+  - checkout: git://APS/aps-core@${{ parameters.CoreBranch }} #use git://APS/aps-core@branch to specify a specific branch, otherwise uses default
+  - checkout: git://APS/aps-packages@${{ parameters.PackagesBranch }}
+  - checkout: git://APS/aps-extensions@${{ parameters.ExtensionsBranch }}
+
+  #Declare build variables not stored in source control
+  - task: PowerShell@2
+    displayName: Create pipelines .props file in Packages
+    inputs:
+      targetType: 'inline'
+      script: |
+        Write-Host "Updating SolutionDefinitions.props file in $(Build.SourcesDirectory)\aps-packages\SolutionMiscFiles"
+        Write-Host Using "$(Build.SourcesDirectory)\$(CoreSolutionFolderName)"
+        Set-Content aps-packages\SolutionMiscFiles\SolutionDefinitions.props '<Project> <PropertyGroup>	<!--An override for the default C:\aps-core repo path--> <CoreSolutionPath>$(Build.SourcesDirectory)\$(CoreSolutionFolderName)</CoreSolutionPath>	</PropertyGroup>  </Project>'
+
+  - task: PowerShell@2
+    displayName: Create pipelines .props file Extensions
+    inputs:
+      targetType: 'inline'
+      script: |
+        Write-Host "Updating SolutionDefinitions.props file in $(Build.SourcesDirectory)\aps-extensions\SolutionMiscFiles"
+        Write-Host Using "$(Build.SourcesDirectory)\$(CoreSolutionFolderName)"
+        Set-Content aps-extensions\SolutionMiscFiles\SolutionDefinitions.props '<Project> <PropertyGroup>	<!--An override for the default C:\aps-core repo path--> <CoreSolutionPath>$(Build.SourcesDirectory)\$(CoreSolutionFolderName)</CoreSolutionPath> <PackagesSolutionPath>$(Build.SourcesDirectory)\$(PackagesSolutionFolderName)</PackagesSolutionPath>	</PropertyGroup>  </Project>'
+
+  - task: NuGetToolInstaller@1
+
+  #Use a local nuget.config file to specify more than one feed source
+  - task: NuGetCommand@2
+    displayName: 'Restoring NuGet packages'
+    inputs:
+      restoreSolution: '$(solution)'
+      feedsToUse: config
+      nugetConfigPath: $(CoreSolutionFolderName)\nuget.config
+      restoreDirectory: $(Build.SourcesDirectory)\$(CoreSolutionFolderName)\packages 
+
+ #Use a special project file that is not in the solution to restore the dotfuscator package. Restore did not work with a pacakges.config.
+  - task: NuGetCommand@2
+    displayName: 'Restoring Dotfuscator package'
+    inputs:
+      restoreSolution: $(CoreSolutionFolderName)\SolutionMiscFiles\DotfuscatorRestore.csproj
+      feedsToUse: config
+      nugetConfigPath: $(CoreSolutionFolderName)\nuget.config
+      restoreDirectory: $(Build.SourcesDirectory)\$(CoreSolutionFolderName)\packages
+
+#SNYK Integration
+  # - task: SnykSecurityScan@1
+  #   displayName: 'Snyk Security Dependency Scan '
+  #   inputs:
+  #     serviceConnectionEndpoint: 'Snyk Integration'
+  #     testType: 'app'
+  #     monitorWhen: 'always'
+  #     targetFile: '$(CoreSolutionFolderName)\APSCore.sln'
+  #     failOnIssues: false
+  #     organization: '0a8ce441-b7c6-4365-8c85-fe85ecbde7af'
+      # additionalArguments: '--all-projects'
+      # this above line use to be in the task, and it's recommended to have for .NET projects in Snyk's documentation,
+      # but it causes the task to fail for me cause it doesn't seem to recognize it for some reason
+
+  # - task: SnykSecurityScan@1
+  #   displayName: 'Snyk Security Code Scan'
+  #   inputs:
+  #     serviceConnectionEndpoint: 'Snyk Integration'
+  #     testType: 'code'
+  #     monitorWhen: 'always'
+  #     targetFile: '$(CoreSolutionFolderName)\APSCore.sln'
+  #     failOnIssues: false
+  #     organization: '0a8ce441-b7c6-4365-8c85-fe85ecbde7af'
+
+#TODO: I marked release builds to optimize and not output symbols. Is this right? Dotfuscator seemed to warn that symbols where not there.
+  - task: MSBuild@1
+    displayName: 'MSBuild with Core Solution'
+    inputs:
+      solution: '$(solution)'
+      msbuildArguments: '/p:DeployOnBuild=false /p:WebPublishMethod=Package /p:SelfContained=true /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+
+#TODO: Clean outputs before copy if needed
+  - task: NuGetCommand@2
+    displayName: 'Restoring NuGet packages'
+    inputs:
+      restoreSolution: '$(ExtensionsSolutionFolderName)\$(ExtensionsSolution)'
+      feedsToUse: config
+      nugetConfigPath: $(ExtensionsSolutionFolderName)\SolutionMiscFiles\nuget.config
+      restoreDirectory: $(ExtensionsSolutionFolderName) 
+      
+  #building Extensions solution
+  # I feel like this step should be unnecessary, but I also feel like I put it in for some reason.
+  # I should come back and test this at some point to verify whether or not this task is needed
+  - task: MSBuild@1
+    displayName: 'MSBuild with Extensions Solution'
+    inputs:
+      solution: '$(Build.SourcesDirectory)\$(ExtensionsSolutionFolderName)\$(ExtensionsSolution)'
+      msbuildArguments: '/p:DeployOnBuild=false /p:WebPublishMethod=Package /p:SelfContained=true /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\ExtensionsWebApp.zip" /p:DeployIisAppPath="Default Web Site"'
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+      
+#Publish nuget packages if PublishNugetPackages parameter set
+# We stopped using these Nuget Packages so this shouldn't be necessary anymore
+  # - task: NuGetCommand@2
+  #   displayName: 'Make PT Common Nuget'
+  #   inputs:
+  #     command: 'pack'
+  #     packagesToPack: '$(CoreSolutionFolderName)\SolutionMiscFiles\pt.common.nuspec'
+  #     packDestination: $(Build.ArtifactStagingDirectory)\deploy\nuget
+  #     versioningScheme: 'byPrereleaseNumber'
+  #     majorVersion: '$(Major)'
+  #     minorVersion: '$(Minor)'
+  #     patchVersion: '$(Patch)'
+      
+  # - task: NuGetCommand@2
+  #   displayName: 'Make PT SDK Nuget'
+  #   inputs:
+  #     command: 'pack'
+  #     packagesToPack: '$(CoreSolutionFolderName)\SolutionMiscFiles\pt.sdk.nuspec'
+  #     packDestination: $(Build.ArtifactStagingDirectory)\deploy\nuget
+  #     versioningScheme: 'byPrereleaseNumber'
+  #     majorVersion: '$(Major)'
+  #     minorVersion: '$(Minor)'
+  #     patchVersion: '$(Patch)'
+    
+    
+  # - task: NuGetCommand@2
+  #   displayName: 'Make PT SDK Packages Nuget'
+  #   inputs:
+  #     command: 'pack'
+  #     packagesToPack: '$(CoreSolutionFolderName)\SolutionMiscFiles\pt.sdk.packages.nuspec'
+  #     packDestination: $(Build.ArtifactStagingDirectory)\deploy\nuget
+  #     versioningScheme: 'byPrereleaseNumber'
+  #     majorVersion: '$(Major)'
+  #     minorVersion: '$(Minor)'
+  #     patchVersion: '$(Patch)'
+
+  # - task: NuGetCommand@2
+  #   displayName: 'Make PT SDK Extensions Nuget'
+  #   inputs:
+  #     command: 'pack'
+  #     packagesToPack: '$(CoreSolutionFolderName)\SolutionMiscFiles\pt.sdk.extensions.nuspec'
+  #     packDestination: $(Build.ArtifactStagingDirectory)\deploy\nuget
+  #     versioningScheme: 'byPrereleaseNumber'
+  #     majorVersion: '$(Major)'
+  #     minorVersion: '$(Minor)'
+  #     patchVersion: '$(Patch)'
+
+#Copy all of the build outputs to the artifacts folder. Client, Software, Packages, 
+#Client
+  - task: CopyFiles@2
+    displayName: 'Copy Client'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\$(CoreSolutionFolderName)\UserInterface\PlanetTogetherClient\bin\$(buildConfiguration)'
+      Contents: '**'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\Client\'
+#System Service
+  - task: CopyFiles@2
+    displayName: 'Copy System Service'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\$(CoreSolutionFolderName)\Services\SystemService\SystemServiceWinService\bin\$(buildConfiguration)'
+      Contents: '**'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\Software\'
+      
+#Packages
+  - task: CopyFiles@2
+    displayName: 'Copy Package Projects'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\aps-packages\PackageProjects'
+      Contents: '**'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\Packages\'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Extensions Projects'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\$(ExtensionsSolutionFolderName)'
+      Contents: '**\bin\$(buildConfiguration)\*Package.dll'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\Extensions\'
+
+#UpdateFiles.config 
+  - task: CopyFiles@2
+    displayName: 'Copy UpdateFiles Files'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\$(CoreSolutionFolderName)\DeploymentFiles\'
+      Contents: 'UpdateFiles.config'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\UpdateFiles\'
+
+#Update files/reports
+  - task: CopyFiles@2
+    displayName: 'Copy Reports'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\$(CoreSolutionFolderName)\DeploymentFiles\UpdateFiles\Reports\StandardReports'
+      Contents: '*'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\UpdateFiles\Reports\StandardReports'
+
+#Update usersettings
+  - task: CopyFiles@2
+    displayName: 'Copy User Settings'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\$(CoreSolutionFolderName)\DeploymentFiles\UpdateFiles\UserSettings'
+      Contents: '*'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\UpdateFiles\Reports\UserSettings'
+
+# #PlantTogether Integration Files
+#   - task: CopyFiles@2
+#     displayName: 'Copy Integration Files'
+#     inputs:
+#       SourceFolder: '$(Build.SourcesDirectory)\$(CoreSolutionFolderName)\DeploymentFiles\IntegrationFiles'
+#       Contents: '**' #copy everything and all subfolders
+#       TargetFolder: '$(Build.ArtifactStagingDirectory)\DeploymentFiles\IntegrationFiles'
+    
+# #PlantTogether Integration Files
+#   - task: CopyFiles@2
+#     displayName: 'Copy shared files into each integration'
+#     inputs:
+#       SourceFolder: '$(Build.SourcesDirectory)\$(CoreSolutionFolderName)\DeploymentFiles\IntegrationFiles'
+#       Contents: '*' #copy only files, no subfolders into the integrations (Only PT for now)
+#       TargetFolder: '$(Build.ArtifactStagingDirectory)\DeploymentFiles\IntegrationFiles\PlanetTogether'
+
+#Pipeline Publisher
+  - task: CopyFiles@2
+    displayName: 'Copy Pipeline Publisher'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\$(CoreSolutionFolderName)\BuildAndInstallation\PipelinesPublisher\bin\$(buildConfiguration)'
+      Contents: '**'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\PipelinePublisher\'
+
+  - task: AzureKeyVault@2
+    displayName: 'Azure Key Vault: pt-codesign'
+    inputs:
+      azureSubscription: PTSignToolServiceConnection
+      KeyVaultName: 'pt-codesign'
+      SecretsFilter: SignAppSecret
+
+  - script: '$(Build.ArtifactStagingDirectory)\PipelinePublisher\PipelinesPublisher.exe software $(Build.ArtifactStagingDirectory) $(SignAppSecret)'
+    displayName: 'Publish Software'
+    env:
+      CERTIFICATEPASSWORD: $(CertificatePassword)
+
+# This task is most likely unnecessary
+  # - task: CopyFiles@2
+  #   displayName: 'Copy Software'
+  #   inputs:
+  #     SourceFolder: '$(Build.ArtifactStagingDirectory)\Publish\PTLocalInstallationFiles'
+  #     TargetFolder: '$(Build.ArtifactStagingDirectory)\deploy\'
+  #     Contents: '**'
+    # The script from the previous step puts things into the Publish folder
+
+#Publish build results for use in the release pipelines
+# This task can probably also be deleted too since I've combined the build and deployment pipeline. 
+  # - task: PublishBuildArtifacts@1
+  #   inputs:
+  #     PathtoPublish: '$(Build.ArtifactStagingDirectory)\deploy'
+  #     ArtifactName: 'drop'
+  #     publishLocation: 'Container'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Software'
+    inputs:
+      SourceFolder: '$(Build.ArtifactStagingDirectory)\Publish\PTLocalInstallationFiles'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\release\PTLocalInstallationFiles'
+      Contents: |
+        IntegrationFiles\**
+        Software\**
+        CustomerPackages\**
+
+# We are going to stop bundling the ServerManager/Sign-in App/Webinstaller with the core product
+# so these DownloadBuildArtifacts tasks are no longer needed. 
+#WEBINSTALLER
+#   - task: DownloadBuildArtifacts@1
+#     displayName: 'Download Webinstaller Artifacts'
+#     inputs:
+#       buildType: 'specific'
+#       project: '01e4fd74-d148-468c-8d24-430c03a091d9' #APS
+#       pipeline: '35' #Webinstaller
+#       buildVersionToDownload: 'latest'
+#       downloadType: 'single'
+#       artifactName: 'drop'
+#       downloadPath: '$(System.ArtifactsDirectory)\WebInstaller'
+  
+#   - task: CopyFiles@2
+#     displayName: 'Copy Webinstaller exes'
+#     inputs:
+#       SourceFolder: '$(System.ArtifactsDirectory)\WebInstaller\drop'
+#       TargetFolder: '$(Build.ArtifactStagingDirectory)\release\'
+#       Contents: '**'
+
+# #CLIENT MANAGER
+#   - task: DownloadBuildArtifacts@1
+#     displayName: 'Download Client Manager Artifacts'
+#     inputs:
+#       buildType: 'specific'
+#       project: '01e4fd74-d148-468c-8d24-430c03a091d9'  #APS
+#       pipeline: '33' #Client Manager
+#       buildVersionToDownload: 'latest'
+#       downloadType: 'single'
+#       artifactName: 'drop'
+#       downloadPath: '$(System.ArtifactsDirectory)\ClientManager'
+
+#   - task: CopyFiles@2
+#     displayName: 'Copy Client Manager Zip'
+#     inputs:
+#       SourceFolder: '$(System.ArtifactsDirectory)\ClientManager\drop'
+#       TargetFolder: '$(Build.ArtifactStagingDirectory)\release\PTLocalInstallationFiles'
+#       Contents: '**'
+
+#   #SERVER MANAGER
+#   - task: DownloadBuildArtifacts@1
+#     displayName: 'Download Server Manager Artifacts'
+#     inputs:
+#       buildType: 'specific'
+#       project: '01e4fd74-d148-468c-8d24-430c03a091d9' #APS
+#       pipeline: '31' #Server Manager
+#       buildVersionToDownload: 'latest'
+#       downloadType: 'single'
+#       artifactName: 'drop'
+#       downloadPath: '$(System.ArtifactsDirectory)\ServerManager'
+
+#   - task: CopyFiles@2
+#     displayName: 'Copy Server Manager exes'
+#     inputs:
+#       SourceFolder: '$(System.ArtifactsDirectory)\ServerManager\drop'
+#       TargetFolder: '$(Build.ArtifactStagingDirectory)\release\PTLocalInstallationFiles'
+#       Contents: 'ServerManager\**'
+  
+  # The assumption forthis task is that the previous steps that download the software only produce one zip. 
+  # If multiple zips are produced for some reason, then this script may grab multiple names 
+  - task: PowerShell@2
+    displayName: GetVersionNumberTask
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd "$(Build.ArtifactStagingDirectory)\release\PTLocalInstallationFiles\Software"
+        $fileName = dir *.zip | select BaseName
+        $fileBaseName = $fileName.BaseName
+        Write-Output $fileBaseName
+        Write-Host "##vso[task.setvariable variable=versionNumber;]$fileBaseName"
+        
+  - task: ArchiveFiles@2
+    condition: and(succeeded(), or(eq('${{ parameters.destination }}', 'builds'), eq(variables['Build.Reason'], 'IndividualCI')))
+    displayName: 'Zip bundle for manual or CI-triggered builds'
+    inputs:
+      rootFolderOrFile: '$(System.ArtifactsDirectory)\release'
+      includeRootFolder: false
+      archiveFile: '$(System.ArtifactsDirectory)\$(versionNumber).zip'
+
+  - task: ArchiveFiles@2
+    displayName: 'Zip bundle for scheduled builds'
+    condition: and(succeeded(), or(eq('${{ parameters.destination }}', 'scheduled'), eq(variables['Build.Reason'], 'Schedule')))
+    inputs:
+      rootFolderOrFile: '$(System.ArtifactsDirectory)\release'
+      includeRootFolder: false
+      archiveFile: '$(System.ArtifactsDirectory)\$(versionNumber)_$(currentDate).zip'
+      
+  # Just moving the zip file to make it easier to find
+  # This task only runs if the build was triggered by incrementing AssemblyVersion
+  - task: CopyFiles@2
+    condition: and(succeeded(), or(eq('${{ parameters.destination }}', 'builds'), eq(variables['Build.Reason'], 'IndividualCI')))
+    displayName: 'Copy Files to local release'
+    inputs:
+      SourceFolder: '$(System.ArtifactsDirectory)\'
+      Contents: '$(versionNumber).zip'
+      TargetFolder: 'C:\Releases\'
+
+  - task: AzureFileCopy@5
+    displayName: 'Copy to blob storage for manual or CI-triggered builds'
+    condition: and(succeeded(), or(eq('${{ parameters.destination }}', 'builds'), eq(variables['Build.Reason'], 'IndividualCI')))
+    inputs:
+      SourcePath: '$(System.ArtifactsDirectory)\$(versionNumber).zip'
+      azureSubscription: 'Internal Release Storage (ptbuild)'
+      Destination: AzureBlob
+      storage: ptbuild
+      ContainerName: builds # container for builds that are meant to be tested and potentially released
+
+  - task: AzureFileCopy@5
+    displayName: 'Copy to blob storage for scheduled builds'
+    condition: and(succeeded(), or(eq('${{ parameters.destination }}', 'scheduled'), eq(variables['Build.Reason'], 'Schedule')))
+    inputs:
+      SourcePath: '$(System.ArtifactsDirectory)\$(versionNumber)_$(currentDate).zip'
+      azureSubscription: 'Internal Release Storage (ptbuild)'
+      Destination: AzureBlob
+      storage: ptbuild
+      ContainerName: scheduled # 'scheduled' for scheduled builds which are just mean for QA testing, not to be released

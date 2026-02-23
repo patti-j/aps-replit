@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="InventoryTransferRuleDataSet" targetNamespace="http://tempuri.org/InventoryTransferRuleDataSet.xsd" xmlns:mstns="http://tempuri.org/InventoryTransferRuleDataSet.xsd" xmlns="http://tempuri.org/InventoryTransferRuleDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="InventoryTransferRuleDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="InventoryTransferRuleDataSet" msprop:Generator_UserDSName="InventoryTransferRuleDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="InventoryTransferRule" msprop:Generator_TableClassName="InventoryTransferRuleDataTable" msprop:Generator_TableVarName="tableInventoryTransferRule" msprop:Generator_RowChangedName="InventoryTransferRuleRowChanged" msprop:Generator_TablePropName="InventoryTransferRule" msprop:Generator_RowDeletingName="InventoryTransferRuleRowDeleting" msprop:Generator_RowChangingName="InventoryTransferRuleRowChanging" msprop:Generator_RowEvHandlerName="InventoryTransferRuleRowChangeEventHandler" msprop:Generator_RowDeletedName="InventoryTransferRuleRowDeleted" msprop:Generator_RowClassName="InventoryTransferRuleRow" msprop:Generator_UserTableName="InventoryTransferRule" msprop:Generator_RowEvArgName="InventoryTransferRuleRowChangeEvent">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="FromWarehouse" msprop:Generator_ColumnVarNameInTable="columnFromWarehouse" msprop:Generator_ColumnPropNameInRow="FromWarehouse" msprop:Generator_ColumnPropNameInTable="FromWarehouseColumn" msprop:Generator_UserColumnName="FromWarehouse" type="xs:long" minOccurs="0" />
+              <xs:element name="ToWarehouse" msprop:Generator_ColumnVarNameInTable="columnToWarehouse" msprop:Generator_ColumnPropNameInRow="ToWarehouse" msprop:Generator_ColumnPropNameInTable="ToWarehouseColumn" msprop:Generator_UserColumnName="ToWarehouse" type="xs:long" minOccurs="0" />
+              <xs:element name="TransferHrs" msprop:Generator_ColumnVarNameInTable="columnTransferHrs" msprop:Generator_ColumnPropNameInRow="TransferHrs" msprop:Generator_ColumnPropNameInTable="TransferHrsColumn" msprop:Generator_UserColumnName="TransferHrs" type="xs:decimal" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Warehouse" msprop:Generator_TableClassName="WarehouseDataTable" msprop:Generator_TableVarName="tableWarehouse" msprop:Generator_RowChangedName="WarehouseRowChanged" msprop:Generator_TablePropName="Warehouse" msprop:Generator_RowDeletingName="WarehouseRowDeleting" msprop:Generator_RowChangingName="WarehouseRowChanging" msprop:Generator_RowEvHandlerName="WarehouseRowChangeEventHandler" msprop:Generator_RowDeletedName="WarehouseRowDeleted" msprop:Generator_RowClassName="WarehouseRow" msprop:Generator_UserTableName="Warehouse" msprop:Generator_RowEvArgName="WarehouseRowChangeEvent">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="WarehouseId" msprop:Generator_ColumnVarNameInTable="columnWarehouseId" msprop:Generator_ColumnPropNameInRow="WarehouseId" msprop:Generator_ColumnPropNameInTable="WarehouseIdColumn" msprop:Generator_UserColumnName="WarehouseId" type="xs:long" minOccurs="0" />
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

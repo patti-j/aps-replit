@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<TestLists xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <TestList name="APSTestList" id="6388e0ed-3443-4d65-ac1b-9c92f5b777f3" parentListId="8c43106b-9dc1-4907-a29f-aa66a61bf5b6">
+    <TestLinks>
+      <TestLink id="650535ae-a65a-40e4-a886-f21db8765bef" name="MassRecording" storage="massrecordingtest\massrecording.generictest" type="Microsoft.VisualStudio.TestTools.TestTypes.Generic.GenericTest, Microsoft.VisualStudio.QualityTools.Tips.GenericTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+    </TestLinks>
+  </TestList>
+  <TestList name="Lists of Tests" id="8c43106b-9dc1-4907-a29f-aa66a61bf5b6">
+    <RunConfiguration id="184ccfd0-2398-4734-b950-02c9139ff6c3" name="Local" storage="local.testsettings" type="Microsoft.VisualStudio.TestTools.Common.TestRunConfiguration, Microsoft.VisualStudio.QualityTools.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  </TestList>
+</TestLists>

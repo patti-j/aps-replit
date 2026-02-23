@@ -1,0 +1,114 @@
+﻿@using ReportsWebApp.DB.Models
+@inject IJSRuntime JSRuntime
+
+<DxAccordionItem Text="Service Configuration" Expanded=false>
+    <HeaderTextTemplate>
+        <i class="fas fas fa-play m-2"></i>Start-up Configurations
+    </HeaderTextTemplate>
+    <ContentTemplate Context="accordionContext">
+        <DxFormLayout CssClass="w-100 p-3">
+            <DxFormLayoutItem Caption="System Start-up Type" ColSpanMd="6">
+                <DxComboBox Data="@StartUpTypes" @bind-Value="SystemStartUpType" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Starting Scenario number" ColSpanMd="6">
+                <DxSpinEdit @bind-Value="StartingScenarioNumber" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Start-up Folder" ColSpanMd="10">
+                <DxTextBox @bind-Text="StartUpFolder" ReadOnly="true" CssClass="form-control" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem ColSpanMd="2">
+                <DxButton Text="Copy Path" Click="CopyPath" RenderStyle="ButtonRenderStyle.Secondary" IconCssClass="fa fa-solid fa-copy" />
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </ContentTemplate>
+</DxAccordionItem>
+
+@code {
+    [Parameter]
+    public PADetails Model { get; set; }
+    
+    [Parameter]
+    public EventCallback<PADetails> ModelChanged { get; set; }
+    
+    private List<EStartType> StartUpTypes;
+
+    protected override void OnInitialized()
+    {
+        StartUpTypes = new List<EStartType> { EStartType.NotSet, EStartType.Normal, EStartType.Fresh, EStartType.Recording, EStartType.RecordingClientDelayed, EStartType.UnitTestBase, EStartType.UnitTest, EStartType.Prune, EStartType.Scenario };
+    }
+
+    public EStartType SystemStartUpType
+    {
+        get => Model.PlanningArea.Settings.SystemServiceSettings.SystemEStartType;
+        set
+        {
+            if (Model?.PlanningArea?.Settings?.SystemServiceSettings != null)
+            {
+                Model.PlanningArea.Settings.SystemServiceSettings.SystemEStartType = value;
+                ModelChanged.InvokeAsync(Model);
+            }
+        }
+    }
+
+    public int StartingScenarioNumber
+    {
+        get => Model.PlanningArea.Settings.SystemServiceSettings.StartingScenarioNumber;
+        set
+        {
+            if (Model?.PlanningArea?.Settings?.SystemServiceSettings != null)
+            {
+                Model.PlanningArea.Settings.SystemServiceSettings.StartingScenarioNumber = value;
+                ModelChanged.InvokeAsync(Model);
+            }
+        }
+    }
+
+    public string StartUpFolder
+    {
+        get
+        {
+            switch (SystemStartUpType) {
+                case EStartType.Normal:
+                    return Model.PlanningArea.ServicePaths.SystemServiceRecordingsFolder;
+                case EStartType.Scenario:
+                    return Model.PlanningArea.ServicePaths.SystemServiceScenariosFolder; 
+                case EStartType.Recording:
+                case EStartType.RecordingClientDelayed:
+                    return Model.PlanningArea.ServicePaths.SystemServiceStartupRecordingsFolder; 
+
+                // Add cases for other startup types as needed
+                default:
+                    return "N/A";
+            }
+        }
+        set {} // Readonly field, no need to support update
+    }
+
+    public bool NonSequencedTransmissionProcessing
+    {
+        get => Model.PlanningArea.Settings.SystemServiceSettings.NonSequencedTransmissionPlayback;
+        set
+        {
+            Model.PlanningArea.Settings.SystemServiceSettings.NonSequencedTransmissionPlayback = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public bool SingleThreadedTransmissionProcessing
+    {
+        get => Model.PlanningArea.Settings.SystemServiceSettings.SingleThreadedTransmissionProcessing;
+        set
+        {
+            Model.PlanningArea.Settings.SystemServiceSettings.SingleThreadedTransmissionProcessing = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    private async Task CopyPath()
+    {
+        if (!string.IsNullOrEmpty(StartUpFolder))
+        {
+            await JSRuntime.InvokeVoidAsync("copyToClipboard", StartUpFolder);
+        }
+    }
+}

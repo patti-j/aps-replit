@@ -1,0 +1,101 @@
+﻿@page "/timeinterval-management"
+@using ReportsWebApp.DB.Models
+
+<DxPopup Visible="true" CloseOnOutsideClick="true" Width="700px" HeaderText="Manage Capacity Colors" Closed="OnClose">
+    @if (Settings.IntervalColors != null && Settings.IntervalColors.Count > 0)
+    {
+        <div class="row">
+            @foreach (var interval in Settings.IntervalColors)
+            {
+                <div class="col-md-4">
+                    <div class="color-card mb-1 p-1 shadow-sm">
+                        <div class="d-flex align-items-center mb-2">
+                            <DxButton RenderStyle="ButtonRenderStyle.Link" IconCssClass="fa fa-pencil" Click="() => EditInterval(interval.Key)" />
+                            <CustomColorPicker Color="@interval.Value.Color" Label="@interval.Value.Type"
+                                               ColorChanged="@(async color => await UpdateColor(interval.Key, color))" />
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p>No interval colors set. Add new intervals.</p>
+    }
+
+    <DxButton Visible="false" RenderStyle="ButtonRenderStyle.Link" CssClass="pl-3" IconCssClass="fa fa-eye" Text="@(_showEditForm ? "Close Form" : "Add/Edit Interval")" Click="ToggleEditForm" />
+
+    @if (_showEditForm)
+    {
+        <div class="card mt-3">
+            <div class="card-body">
+                <EditForm Model="@_currentInterval" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <DxTextBox @bind-Text="@_currentInterval.Type" Placeholder="Type" />
+                        <CustomColorPicker Color="@_currentInterval.Color" Label="Select Color"
+                                           ColorChanged="@(color => _currentInterval.Color = color)" />
+                        <DxButton SubmitFormOnClick="true" CssClass="pl-3" IconCssClass="fa fa-floppy-o" Text="Save" />
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+</DxPopup>
+@code {
+    [Parameter]
+    public BryntumSettings Settings { get; set; }
+
+    [Parameter]
+    public EventCallback<BryntumSettings> SettingsChanged { get; set; }
+
+    private IntervalColor _currentInterval = new IntervalColor() { Color = "#000000" };
+    private bool _showEditForm = false;
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            Settings.IntervalColors[_currentInterval.Id] = _currentInterval; 
+            _showEditForm = false;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error updating color: {ex.Message}");
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnClose()
+    {
+        await SettingsChanged.InvokeAsync(Settings);
+    }
+
+    private void EditInterval(int id)
+    {
+        _currentInterval = Settings.IntervalColors[id];
+        _showEditForm = true;
+    }
+
+    private async Task UpdateColor(int id, string newColor)
+    {
+        if (!string.IsNullOrEmpty(newColor))
+        {
+            Settings.IntervalColors[id].Color = newColor;
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleEditForm()
+    {
+        _showEditForm = !_showEditForm;
+        if (!_showEditForm)
+        {
+            _currentInterval = new IntervalColor { Color = "#000000" };
+        }
+    }
+}

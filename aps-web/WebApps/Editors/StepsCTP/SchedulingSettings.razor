@@ -1,0 +1,33 @@
+﻿@using ReportsWebApp.DB.Models
+@using DevExpress.Blazor
+
+<DxFormLayout>
+    <DxFormLayoutGroup Caption="Scheduling Settings">
+        <Items>
+            <DxFormLayoutItem Field="Request.ScheduledStart" Caption="Scheduled Start">
+                <DxDateEdit @bind-Date="Request.ScheduledStart" />
+            </DxFormLayoutItem>
+
+            <DxFormLayoutItem Field="Request.ScheduledFinish" Caption="Scheduled Finish">
+                <DxDateEdit @bind-Date="Request.ScheduledFinish" />
+            </DxFormLayoutItem>
+
+            <DxFormLayoutItem Field="Request.Priority" Caption="Priority">
+                <DxSpinEdit @bind-Value="Request.Priority" />
+            </DxFormLayoutItem>
+
+            <DxFormLayoutItem Field="Request.ScheduledPath" Caption="Scheduled Path">
+                <DxTextBox @bind-Text="Request.ScheduledPath" />
+            </DxFormLayoutItem>
+            @* <DxFormLayoutItem Field="Request.ScheduledPath" Caption="Scheduled Path">
+                <DxCheckBox @bind-Value="Request.HotOff" />
+            </DxFormLayoutItem> *@
+        </Items>
+    </DxFormLayoutGroup>
+</DxFormLayout>
+
+@code {
+    [Parameter] public bool IsReadOnly { get; set; }
+
+    [Parameter] public CtpRequest Request { get; set; } = new();
+}

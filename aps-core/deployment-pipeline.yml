@@ -1,0 +1,112 @@
+# ASP.NET
+# Build and test ASP.NET projects.
+# Add steps that publish symbols, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+
+
+parameters:
+  #Agent name allows us to match a capability on a local agent, effectively targeting a specific build machine
+- name: 'DeveloperName'
+  displayName: 'Specifty target dev whose agent to use, or Any'
+  type: string
+  default: 'Any'
+  
+  #This version corresponds to the AssemblyInfoShared in ServerManager repo
+variables:
+  Major: '12'
+  Minor: '3'
+  Patch: '0'
+  Macule: '4'
+
+name: $(TeamProject)_$(Major).$(Minor).$(Patch).$(Macule)_$(Date:yyyyMMdd)$(Rev:r)
+
+jobs:
+- job: PushToPtBuilds
+
+  pool:
+    name: 'PTBuildMachines'
+    ${{ if ne(parameters.DeveloperName, 'Any') }}:
+        demands:
+        - Developer -equals ${{ parameters.DeveloperName }}
+
+  steps:
+#WEBINSTALLER
+  - task: DownloadBuildArtifacts@1
+    displayName: 'Download Webinstaller Artifacts'
+    inputs:
+      buildType: 'specific'
+      project: '01e4fd74-d148-468c-8d24-430c03a091d9' #APS
+      pipeline: '75' #Webinstaller Build
+      buildVersionToDownload: 'latest'
+      downloadType: 'single'
+      artifactName: 'drop'
+      downloadPath: '$(System.ArtifactsDirectory)\WebInstaller'
+  
+  - task: CopyFiles@2
+    displayName: 'Copy Webinstaller exes'
+    inputs:
+      SourceFolder: '$(System.ArtifactsDirectory)\WebInstaller\drop'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\release\'
+      Contents: '**'
+
+#CLIENT AGENT
+  - task: DownloadBuildArtifacts@1
+    displayName: 'Download Client Agent Artifacts'
+    inputs:
+      buildType: 'specific'
+      project: '01e4fd74-d148-468c-8d24-430c03a091d9'  #APS
+      pipeline: '76' #Client Agent Build
+      buildVersionToDownload: 'latest'
+      downloadType: 'single'
+      artifactName: 'drop'
+      downloadPath: '$(System.ArtifactsDirectory)\ClientAgent'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Client Agent Zip'
+    inputs:
+      SourceFolder: '$(System.ArtifactsDirectory)\ClientAgent\drop'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\release\PTLocalInstallationFiles'
+      Contents: '**'
+
+  #SERVER AGENT
+  - task: DownloadBuildArtifacts@1
+    displayName: 'Download Server Agent Artifacts'
+    inputs:
+      buildType: 'specific'
+      project: '01e4fd74-d148-468c-8d24-430c03a091d9' #APS
+      pipeline: '74' #Server Agent
+      buildVersionToDownload: 'latest'
+      downloadType: 'single'
+      artifactName: 'drop'
+      downloadPath: '$(System.ArtifactsDirectory)\ServerAgent'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Server Agent exes'
+    inputs:
+      SourceFolder: '$(System.ArtifactsDirectory)\ServerAgent\drop'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)\release\PTLocalInstallationFiles'
+      Contents: 'ServerAgent\**'
+        
+  - task: ArchiveFiles@2
+    displayName: 'Zip bundle'
+    inputs:
+      rootFolderOrFile: '$(System.ArtifactsDirectory)\release'
+      includeRootFolder: false
+      archiveFile: '$(System.ArtifactsDirectory)\PTServerAgentBundle_$(Major).$(Minor).$(Patch).$(Macule).zip'
+      
+  # Just moving the zip file to make it easier to find
+  - task: CopyFiles@2
+    displayName: 'Copy Files to local release'
+    inputs:
+      SourceFolder: '$(System.ArtifactsDirectory)\'
+      Contents: 'PTServerAgentBundle_$(Major).$(Minor).$(Patch).$(Macule).zip'
+      TargetFolder: 'C:\Releases\'
+
+  - task: AzureFileCopy@5
+    displayName: 'Copy to blob storage'
+    inputs:
+      SourcePath: '$(System.ArtifactsDirectory)\PTServerAgentBundle_$(Major).$(Minor).$(Patch).$(Macule).zip'
+      azureSubscription: 'Internal Release Storage (ptbuild)'
+      Destination: AzureBlob
+      storage: ptbuild
+      ContainerName: builds

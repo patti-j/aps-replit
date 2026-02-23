@@ -1,0 +1,87 @@
+﻿@using ReportsWebApp.DB.Models
+
+<DxAccordionItem Text="Data Publish" Expanded=false>
+    <HeaderTextTemplate>
+        <i class="fas fas fa-upload m-2"></i> Data Publish
+    </HeaderTextTemplate>
+    <ContentTemplate Context="accordionContext">
+        <DxFormLayout CssClass="w-100 p-3">
+            <DxFormLayoutItem ColSpanMd="12">
+                <DxButton RenderStyle="ButtonRenderStyle.Secondary" IconCssClass="fa fa-database" Text="Publish Database Settings" Click="@(() => ShowDatabaseSettings("publish"))" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Pre-Export URL" ColSpanLg="6">
+                <DxTextBox @bind-Text="@PreExportURL"/>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Post-Export URL" ColSpanLg="6">
+                <DxTextBox @bind-Text="@PostExportURL"/>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem ColSpanMd="12">
+                <DxButton RenderStyle="ButtonRenderStyle.Secondary" IconCssClass="fa fa-database" Text="Analytics Database Settings" Click="@(() => ShowDatabaseSettings("analytics"))" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="SQL Command to Run after Publish" ColSpanLg="6">
+                <DxTextBox @bind-Text="@DashboardSqlToRun"/>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Analytics URL" ColSpanLg="6">
+                <DxTextBox @bind-Text="@DashboardReportURL"/>
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </ContentTemplate>
+</DxAccordionItem>
+
+@code {
+    [Parameter]
+    public PADetails Model { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnShowDatabaseSettings { get; set; }
+    
+    [Parameter]
+    public EventCallback<PADetails> ModelChanged { get; set; }
+
+    // Define properties to bind the fields
+    public string PreExportURL
+    {
+        get => Model.PlanningArea.Settings.PreExportURL;
+        set
+        {
+            Model.PlanningArea.Settings.PreExportURL = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string PostExportURL
+    {
+        get => Model.PlanningArea.Settings.PostExportURL;
+        set
+        {
+            Model.PlanningArea.Settings.PostExportURL = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string DashboardSqlToRun
+    {
+        get => Model.PlanningArea.Settings.DashboardSqlToRun;
+        set
+        {
+            Model.PlanningArea.Settings.DashboardSqlToRun = value; 
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string DashboardReportURL
+    {
+        get => Model.PlanningArea.Settings.DashboardReportURL;
+        set
+        {
+            Model.PlanningArea.Settings.DashboardReportURL = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    private void ShowDatabaseSettings(string a_dbType)
+    {
+        OnShowDatabaseSettings.InvokeAsync(a_dbType);
+    }
+
+}

@@ -1,0 +1,306 @@
+﻿@using System.Diagnostics
+@using DevExpress.Blazor
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.DB.Services.SchedulerHelpers
+@using System.Drawing
+@inject ICosmosDbService<GanttFavoriteData> cosmosDbService
+@inject IGanttService GanttService
+
+<DxPopup @bind-Visible="ShowPopup" Width="1000px" CloseOnOutsideClick="false" CloseOnEscape="false">
+    <HeaderTemplate>
+        <ServerContextHeader BigTitle=false Title="Activity Display Options" OnClose="@ClosePopup" OnSave="@SaveSettingsAsync" ConfirmOnClose="Modified" />
+    </HeaderTemplate>
+    <Content>
+        <EditForm Model="@Settings.SegmentTypes">
+            <DxGridLayout>
+                <Rows>
+                    <DxGridLayoutRow Height="5px" />
+                    <DxGridLayoutRow Height="20px" />
+                    @foreach (var segment in Settings.SegmentTypes)
+                    {
+                        <DxGridLayoutRow Height="auto" />
+                    }
+                    <DxGridLayoutRow Height="auto" />
+                    <DxGridLayoutRow Height="auto" />
+                    <DxGridLayoutRow Height="auto" />
+                    <DxGridLayoutRow Height="auto" />
+                    <DxGridLayoutRow Height="auto" />
+                    <DxGridLayoutRow Height="auto" />
+                    <DxGridLayoutRow Height="auto" />
+                </Rows>
+                <Columns>
+                    <DxGridLayoutColumn Width="60px" />
+                    <DxGridLayoutColumn Width="180px" />
+                    <DxGridLayoutColumn Width="700px" />
+                </Columns>
+                <Items>
+                    <SegmentHeader />
+                    @foreach (var segment in Settings.SegmentTypes)
+                    {
+                        <SegmentItem Segment="segment" Row="@(Settings.SegmentTypes.IndexOf(segment) + 2)"
+                        OnToggleVisibility="@(value => UpdateSegmentVisibility(segment, value))"
+                        OnConfigPopup="ToggleConfigPopup"
+                        OnColorChange="UpdateColor"
+                        PenetrationTypes="PenetrationTypes"
+                        PenetrationType="PenetrationType"
+                        FormatPenetrationType="FormatPenetrationType" />
+                    }
+                    <OptionalFeatures @bind-Settings="Settings"
+                    OnActivityTitleToggle="UpdateActivityTitle"
+                    OnEventTooltipsToggle="UpdateShowEventTooltips"
+                    OnCustomizeTooltips="CustomizeTooltips"
+                    OnCapacityLabelsToggle="UpdateShowCapacityLabels"
+                    OnCustomizeCapacityLabels="CustomizeCapacityLabels"
+                    OnCustomizeLinkActivityLabels="CustomizeLinkActivityLabels"
+                    OnCustomizeLinkMaterialLabels="CustomizeLinkMaterialLabels"
+                    OnColorChanged="@(value => OnColorChanged(value.Item1, value.Item2))" 
+                    OnHourIntervalChanged="HourIntervalChanged"/>
+                </Items>
+            </DxGridLayout>
+        </EditForm>
+    </Content>
+</DxPopup>
+
+@if (IsConfigPopupVisible)
+{
+    <TemplatesCreator TreeNodeType="TreeNodeType" SegmentType="@segmentType" Template="@Template" TemplateChanged="CloseTemplatePopup" />
+}
+
+@code {
+    private bool Modified { get; set; } = false;
+    private bool _showPopup;
+    [Parameter]
+    public bool ShowPopup
+    {
+        get => _showPopup;
+        set
+        {
+            if (_showPopup != value)
+            {
+                if (value) Modified = false;
+                Settings = CommonUtils.DeepClone(GanttService.ActiveSettings);
+                _showPopup = value;
+                StateHasChanged();
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<bool> ShowPopupChanged { get; set; }
+
+    [Parameter]
+    public EventCallback SegmentTypesChanged { get; set; }
+
+    private Scenario __scenario;
+    
+    [Parameter] 
+    public Scenario Scenario {
+        get
+        {
+            return __scenario;
+        }
+        set
+        {
+            __scenario = value;
+        } 
+    }
+
+    public BryntumSettings Settings { get; set; } = new();
+    public TreeNodeType TreeNodeType { get; set; } 
+
+    public bool IsConfigPopupVisible { get; set; }
+    public SegmentType segmentType { get; set; }
+    public string Template { get; set; }
+
+    private void UpdateActivityTitle(bool isVisible)
+    {
+        Settings.ShowActivityTitle = isVisible;
+        Modified = true; 
+    }
+
+    private void UpdateShowEventTooltips(bool isVisible)
+    {
+        Settings.ShowEventTooltips = isVisible;
+        Modified = true;
+        StateHasChanged(); // Ensure UI updates to reflect conditional button display
+    }
+
+    private void UpdateShowCapacityLabels(bool isVisible)
+    {
+        Settings.ShowCapacityLabels = isVisible;
+        Modified = true;
+        StateHasChanged(); // Ensure UI updates to reflect conditional button display
+    }
+
+    private async Task CustomizeTooltips()
+    {
+        segmentType = null;
+        Template = Settings.TooltipDetailsTemplate;
+        IsConfigPopupVisible = true;
+        Modified = true;
+        StateHasChanged();
+    }
+
+    private async Task CustomizeLinkActivityLabels()
+    {
+        segmentType = null;
+        Template = Settings.ActivityLinksLabelsTemplate;
+        TreeNodeType = TreeNodeType.ActivityLink;
+        IsConfigPopupVisible = true;
+        Modified = true;
+        StateHasChanged();
+    }
+
+    private async Task CustomizeLinkMaterialLabels()
+    {
+        segmentType = null;
+        Template = Settings.MaterialsLinksLabelsTemplate;
+        TreeNodeType = TreeNodeType.MaterialLink;
+        IsConfigPopupVisible = true;
+        Modified = true;
+        StateHasChanged();
+    }
+
+    private async Task CustomizeCapacityLabels()
+    {
+        segmentType = null;
+        Template = Settings.CapacityLabelsTemplate;
+        TreeNodeType = TreeNodeType.CapacityLabel;
+        IsConfigPopupVisible = true;
+        Modified = true;
+        StateHasChanged();
+    }
+
+    private void ToggleConfigPopup(SegmentType segment)
+    {
+        Template = "";
+        segmentType = segment;
+        TreeNodeType = TreeNodeType.Default;
+        IsConfigPopupVisible = true;
+        Modified = true;
+        StateHasChanged();
+    }
+    
+    private void HourIntervalChanged()
+    {
+        Modified = true;
+    }
+
+    private void CloseTemplatePopup(string template)
+    {
+        IsConfigPopupVisible = false;
+        Template = template;
+        Modified = true;
+
+        if (segmentType == null)
+        {
+            switch (TreeNodeType)
+            {
+                case TreeNodeType.Default:
+                    Settings.TooltipDetailsTemplate = template;
+                    break;
+                case TreeNodeType.ActivityLink:
+                    Settings.ActivityLinksLabelsTemplate = template;
+                    break;
+                case TreeNodeType.CapacityLabel:
+                    Settings.CapacityLabelsTemplate = template;
+                    break;
+                case TreeNodeType.MaterialLink:
+                    Settings.MaterialsLinksLabelsTemplate = template;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        else
+        {
+            segmentType.Template = template;
+        }
+        TreeNodeType = TreeNodeType.Default;
+        StateHasChanged();
+    }
+
+    private void OnColorChanged(string newColor, string colorProperty)
+    {
+        GetType().GetProperty(colorProperty)?.SetValue(this, newColor);
+        var propertyInfo = Settings.GetType().GetProperty(colorProperty);
+        if (propertyInfo != null && propertyInfo.PropertyType == typeof(string))
+        {
+            propertyInfo.SetValue(Settings, newColor);
+        }
+        Modified = true;
+    }
+
+    private void UpdateSegmentVisibility(SegmentType segment, bool isEnabled)
+    {
+        var shownSegmentsCount = Settings.SegmentTypes.Count(st => st.Show);
+
+        // If trying to disable and only one segment is shown, ignore the toggle off action
+        if (!isEnabled && shownSegmentsCount == 1 && segment.Show)
+        {
+            return;
+        }
+        segment.Show = isEnabled;
+        Modified = true;
+    }
+
+    private void UpdateColor((SegmentType segment, ColorMeaning colorMeaning, string newColor) change)
+    {
+        var targetColorMeaning = change.segment.ColorMeanings.FirstOrDefault(cm => cm == change.colorMeaning);
+        if (targetColorMeaning != null)
+        {
+            targetColorMeaning.Color = change.newColor;
+        }
+        Modified = true;
+    }
+
+    // Buffer section for penetration
+    PenetrationType PenetrationType { get; set; }
+    IEnumerable<PenetrationType> PenetrationTypes = new List<PenetrationType>() {
+        PenetrationType.ProjectedPenetration,
+        PenetrationType.CurrentPenetration
+    };
+
+    private string FormatPenetrationType(PenetrationType type)
+    {
+        return type.ToString().Replace("Penetration", " Penetration");
+    }
+
+    private void ClosePopup()
+    {
+        ShowPopup = false;
+        ShowPopupChanged.InvokeAsync(_showPopup);
+    }
+
+    private async Task SaveSettingsAsync()
+    {
+        if (GanttService.ActiveFavorite == null)
+        {
+            GanttFavoriteData data = new();
+            data.FavoriteName = Scenario.Name;
+            data.ScenarioId = Scenario.Id;
+            data.Settings = Settings;
+            data.id = Scenario.Id;
+            Scenario.BryntumSettings = Settings;
+            GanttService.ActiveSettings = Settings;
+            GanttService.ActiveProject.Settings = Settings;
+        }
+        else
+        {
+            GanttFavoriteData fav = GanttService.ActiveFavorite.Copy();
+            fav.Settings = Settings;
+            GanttService.ActiveSettings = Settings;
+            GanttService.ActiveFavorite = fav;
+            GanttService.ActiveProject.Settings = Settings;
+        }
+
+        if (GanttService.ActiveGridSettings == null)
+        {
+            GanttService.ActiveGridSettings = new BryntumGridSettings();
+        }
+        ShowPopup = false;
+        GanttService.GanttConfigModified = true;
+        await ShowPopupChanged.InvokeAsync(ShowPopup);  
+        await SegmentTypesChanged.InvokeAsync();  
+    }
+}

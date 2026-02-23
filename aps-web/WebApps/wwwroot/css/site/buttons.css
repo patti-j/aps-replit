@@ -1,0 +1,28 @@
+﻿.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    margin: 2px 3px !important;
+    background-color: transparent;
+    color: #48a5e8;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    border: 1px solid #48a5e8;
+}
+
+    .btn-icon:hover {
+        background-color: #f0f0f0;
+        color: #007bff;
+    }
+
+    .btn-icon:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0,123,255,.5); /* Adds a border or shadow on focus for accessibility */
+    }
+
+.three-buttons .btn-icon {
+    margin: 0 0px !important;
+}

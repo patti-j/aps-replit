@@ -1,0 +1,215 @@
+﻿@page "/components/companyservergrid"
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.Helpers
+@inject NavMenuUpdateService NavMenuUpdateService
+@inject IUserService m_userService
+@inject ICompanyService m_companyService
+@inject IPlanningAreaDataService m_planningAreaDataService
+
+<h3>Company Servers</h3>
+
+@if (Servers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid ShowFilterRow="true" 
+            Data="@Servers" 
+            EditModelSaving="OnEditModelSaving" 
+            EditMode="GridEditMode.PopupEditForm"
+            @ref="MyGrid"
+            PageSize="10"
+            CssClass="ch-480"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+        <Columns>
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                <HeaderTemplate>
+                     <DxButton IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1" Text="Add" Click="() => MyGrid.StartEditNewRowAsync()" />
+                </HeaderTemplate>
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = context.DataItem;
+                    }
+                    <ActionDropdown DataItem="dataItem as CompanyServer" Actions="_actions" />
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+            <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" />
+            <DxGridDataColumn FieldName="Name" Caption="Server Name" MinWidth="200" />
+            <DxGridDataColumn FieldName="Url" Caption="Server Url" MinWidth="200" />
+        </Columns>
+        <EditFormTemplate Context="EditFormContext">
+            @{
+                var server = (CompanyServer)EditFormContext.EditModel;
+                server.ManagingCompany = User.Company;
+            }
+            <DxFormLayout CssClass="w-100">
+                <ValidationSummary />
+
+                <DxFormLayoutItem Caption="Name:" ColSpanMd="12">
+                    <DxTextBox @bind-Text="@server.Name"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="URL:" ColSpanMd="12">
+                    <DxTextBox @bind-Text="@server.Url"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Thumbprint:" ColSpanMd="12">
+                    <DxTextBox @bind-Text="@server.Thumbprint"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Token:" ColSpanMd="12">
+                    <DxTextBox @bind-Text="@server.AuthToken" Password="true" NullText="********************"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Test:" ColSpanMd="12">
+                    <DxButton Click="() => CheckStatus(server, true)" Text="Check Connection"></DxButton>
+                </DxFormLayoutItem>
+
+            </DxFormLayout>
+            <DxPopup @bind-Visible="@displayPopup">
+                <div class="history-popup">
+                    <h4>Planning Areas</h4>
+                    @foreach (var item in planningAreas)
+                    {
+                        <div class="history-row">
+                            <div class="history-file">@item.PublicInfo.InstanceName</div>
+                            <div class="history-user">Version: @item.PublicInfo.SoftwareVersion</div>
+                            <div class="history-id">Users Online: @item.Status.UsersOnline</div>
+                            <span class="history-date">@item.Status.LastLogon</span>
+                        </div>
+                    }
+                    @if (!planningAreas.Any())
+                    {
+                        <span>This server has no planning areas.</span>
+                    }
+                </div>
+            </DxPopup>
+        </EditFormTemplate>
+        <CustomValidators>
+            <CustomValidator DataItemValidating="ValidateData"></CustomValidator>
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+        </CustomValidators>
+    </DxGrid>
+    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+}
+
+@code {
+    IGrid? MyGrid { get; set; }
+
+    [Parameter]
+    public List<CompanyServer> Servers { get; set; }
+    [Parameter]
+    public Company Company { get; set; }
+    [Parameter]
+    public Func<CompanyServer, Task<CompanyServer>> OnSave { get; set; }
+
+    private ConfirmationDialog Dialog;
+    private List<PlanningAreaLiteModel> planningAreas { get; set; }
+    private bool displayPopup { get; set; }
+    private IEnumerable<ActionItem<CompanyServer>> _actions;
+    private User User { get; set; }
+    private bool DisableHTTPS { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        _actions = new List<ActionItem<CompanyServer>>
+        {
+            new ActionItem<CompanyServer>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-info-circle",
+                Action = async (item) => await MyGrid?.StartEditDataItemAsync(item)
+            },
+            new ActionItem<CompanyServer>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fa fa-trash",
+                Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog),
+            }
+        };
+    }
+
+    protected void OnEditStart(CompanyServer server)
+    {
+        DisableHTTPS = server.Thumbprint.IsNullOrEmpty();
+    }
+
+    protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        var editModel = (e.EditModel as CompanyServer);
+        if (editModel != null)
+        {
+            var dataItem = e.IsNew ? new CompanyServer() : Servers.Find(category => category.Id == editModel.Id);
+            if (dataItem != null)
+            {
+                dataItem.Name = editModel.Name;
+                dataItem.Url = editModel.Url;
+                dataItem.Thumbprint = DisableHTTPS ? "" : editModel.Thumbprint;
+                dataItem.AuthToken = editModel.AuthToken;
+                dataItem.ManagingCompanyId = Company.Id;
+
+                if (planningAreas.IsNullOrEmpty())
+                {
+                    await CheckStatus(dataItem);
+                }
+
+                var savedCategoryRelationed = await OnSave(dataItem);
+
+                if (e.IsNew)
+                {
+                    Servers.Add(savedCategoryRelationed);
+                } 
+                else
+                {
+                    Servers.Replace(savedCategoryRelationed); 
+                }
+
+                NavMenuUpdateService.TriggerUpdate();
+            }
+        }
+    }
+
+    protected async Task DeleteItem(object a_item)
+    {
+        var editModel = (a_item as CompanyServer);
+        if (editModel != null)
+        {
+            // var dataItem = Categories.Find(group => group.Id == editModel.Id);
+            await m_companyService.DeleteServerAsync(editModel.Id);
+            Servers.Remove(editModel);
+            NavMenuUpdateService.TriggerUpdate();
+        }
+        StateHasChanged();
+    }
+
+    private async Task CheckStatus(CompanyServer server, bool showList = false)
+    {
+        planningAreas = await m_planningAreaDataService.GetPlanningAreaStatusesForServerAsync(server.Id);
+        if (showList)
+        {
+            displayPopup = true;
+            StateHasChanged();
+        }
+    }
+
+    void ValidateData(ValidationMessageStoreEventArgs e)
+    {
+        var server = (CompanyServer)e.EditModel;
+        if (server.Url.IsNullOrEmpty())
+        {
+            e.AddError(nameof(server.Url), "The URL field is required.");
+        }
+        if (server.Thumbprint.IsNullOrEmpty())
+        {
+            e.AddError(nameof(server.Thumbprint), "You must include the server's Thumbprint.");
+        }
+        if (server.AuthToken.IsNullOrEmpty())
+        {
+            e.AddError(nameof(server.AuthToken), "You must include the server's Authentication Token.");
+        }
+    }
+}

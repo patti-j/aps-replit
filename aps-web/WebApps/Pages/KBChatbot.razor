@@ -1,0 +1,24 @@
+﻿@page "/kbchat"
+
+<div>
+    <iframe src="https://embed.chatnode.ai/112cdb78-80d5-4b66-837a-55156b39e63e" width="100%" height="700" style="visibility: hidden; border: none;" onload="this.style.visibility='visible';" allow="autoplay; clipboard-read; clipboard-write"></iframe>
+</div>
+
+
+@code {
+    private User User { get; set; }
+    private bool hasLoaded;
+    private string Picture = string.Empty;
+
+    [Inject]
+    private IUserService m_userService { get; set; }
+    [Inject]
+    IAppInsightsLogger logger { get; set; }
+    [Inject]
+    IJSRuntime js { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+    }
+}

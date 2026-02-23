@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargetsWindows.props" />
+  <PropertyGroup>
+    <RootNamespace>PT.SchedulerData</RootNamespace>
+    <AssemblyName>PT.SchedulerData</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+      <Link>Properties\AssemblyInfoShared.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\PackageDefinitions\PackageDefinitions.csproj" />
+    <ProjectReference Include="..\..\ImportAndPublishing\CustomInterface\CustomInterface.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\ERPTransmissions\ERPTransmissions.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\Transmissions\Transmissions.csproj" />
+    <ProjectReference Include="..\..\UserInterface\UIData\UIData.csproj" />
+    <ProjectReference Include="..\..\UserInterface\UIDefinitions\UIDefinitions.csproj" />
+    <ProjectReference Include="..\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+    <ProjectReference Include="..\SchedulerExtentions\SchedulerExtensions.csproj" />
+    <ProjectReference Include="..\Scheduler\Scheduler.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+  </ItemGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

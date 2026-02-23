@@ -1,0 +1,135 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <RootNamespace>PT.ServerManagerSharedLib</RootNamespace>
+    <AssemblyName>PT.ServerManagerSharedLib</AssemblyName>
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs" Link="Properties\AssemblyInfoShared.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Azure.Data.Tables" Version="12.11.0" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+    <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
+    <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
+    <PackageReference Include="System.Management" Version="9.0.6" />
+    <PackageReference Include="System.Runtime.Extensions" Version="4.3.1" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+    <PackageReference Include="System.ServiceModel.Http" Version="8.1.2" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.6" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Serilog" Version="4.3.1-dev-02373" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\Common.Sql\Common.Sql.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Data\APS_InstancesDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>APS_InstancesDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="Service References\KeyService\Reference.cs">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Service References\LicenseService\Reference.cs">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Data\APS_InstancesDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>APS_InstancesDataSet.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="Service References\KeyService\KeyService.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Service References\KeyService\KeyService1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Service References\KeyService\KeyService2.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Service References\KeyService\KeyService3.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Service References\KeyService\KeyService4.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Service References\KeyService\KeyService5.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Service References\KeyService\Reference.svcmap">
+      <LastGenOutput>Reference.cs</LastGenOutput>
+      <Generator>WCF Proxy Generator</Generator>
+    </None>
+    <None Update="Service References\KeyService\ServerManagerWebLibrary.KeyService.ConvertKeyResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Service References\KeyService\ServerManagerWebLibrary.KeyService.GetCompanyLicenseDataResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Service References\KeyService\ServerManagerWebLibrary.KeyService.GetLastKeyUpdateTimeResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Service References\KeyService\ServerManagerWebLibrary.KeyService.GetLatestKeyResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Service References\KeyService\ServerManagerWebLibrary.KeyService.UpdateLicenseIdResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Service References\LicenseService\APSLicenseServicesCommon.Contracts.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Service References\LicenseService\LicenseServices.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Service References\LicenseService\Reference.svcmap">
+      <LastGenOutput>Reference.cs</LastGenOutput>
+      <Generator>WCF Proxy Generator</Generator>
+    </None>
+    <None Update="Service References\LicenseService\ServerManagerWebLibrary.LicenseService.GetLicenseInfoResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Service References\LicenseService\ServerManagerWebLibrary.LicenseService.LockLicenseResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Service References\LicenseService\ServerManagerWebLibrary.LicenseService.PingResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Service References\LicenseService\ServerManagerWebLibrary.LicenseService.ReleaseLicenseResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Service References\LicenseService\service.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Service References\LicenseService\service1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <PropertyGroup>
+    <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;CA1416</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;CA1416</NoWarn>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,33 @@
+  <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+	    <TargetFramework>net8.0</TargetFramework>
+        <AssemblySearchPaths>$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+	    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	    <LangVersion>latest</LangVersion>
+		<!--These can be used to reduce the subfolders and names of the output dir-->
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<!--<AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>-->
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+	  <ItemGroup>
+		  <Using Remove="System.Windows.Forms" /> <!--Not needed for all projects. For example Scheduler.-->
+		  <Using Remove="System.Drawing" /> <!--Not needed for all projects. For example Scheduler.-->
+		  <Using Include="PT.Common" />
+		  <Using Include="PT.Common.Runtime" />
+	  </ItemGroup>
+		<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+	  	</ItemGroup>
+	  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		  <DefineConstants>RELEASE</DefineConstants>
+		  <Optimize>true</Optimize>
+		  <DebugType>none</DebugType>
+	  </PropertyGroup>
+	<Target Name="CleanExcess" AfterTargets="Clean"> <!-- common vars https://msdn.microsoft.com/en-us/library/c02as0cs.aspx?f=255&MSPPError=-2147217396 -->
+            <RemoveDir Directories="$(TargetDir)" /> <!-- bin -->
+            <!-- <RemoveDir Directories="$(ProjectDir)$(BaseIntermediateOutputPath)" />--> <!-- obj folder. VS now cleans on Rebuild which breaks nuget files during build -->
+       </Target>
+	  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+            <!-- Update this version when a new package is installed in SolutionMiscFiles\DotfuscatorRestore.csproj -->
+            <DotfuscatorPath>preemptive.protection.dotfuscator.pro\7.2.2-releases-v7.2.2.5\tools\msbuilddir</DotfuscatorPath>
+	  </PropertyGroup>
+  </Project>

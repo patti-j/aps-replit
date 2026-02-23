@@ -1,0 +1,63 @@
+﻿@page "/icon-search"
+@using Microsoft.AspNetCore.Components
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@using DevExpress.Blazor
+
+<div style="display: flex; align-items: center; gap: 10px;justify-content: space-between;">
+    <strong>Icons List</strong>
+    <DxButton RenderStyleMode="ButtonRenderStyleMode.Outline" Click="OpenURL">Icons Web List</DxButton>
+</div>
+<div id="icon-carousel" class="owl-carousel owl-theme">
+    @foreach (var icon in filteredIcons)
+    {
+        <div class="icon-item @GetSelectedClass(icon)" @onclick="() => OnIconClicked(icon)">
+            <i class="fa @icon"></i>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<string> Icons { get; set; }
+
+    [Parameter]
+    public EventCallback<string> IconClicked { get; set; }
+
+    private List<string> filteredIcons = new();
+    private string searchTerm { get; set; } = string.Empty;
+    private string selectedIcon;
+
+    protected override async Task OnInitializedAsync()
+    {
+        filteredIcons = Icons;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("initializeOwlCarousel");
+        }
+    }
+
+    private async Task OnIconClicked(string icon)
+    {
+        selectedIcon = icon;
+        if (IconClicked.HasDelegate)
+        {
+            await IconClicked.InvokeAsync(icon);
+        }
+        StateHasChanged();
+    }
+
+    private string GetSelectedClass(string icon)
+    {
+        return selectedIcon == icon ? "selected" : string.Empty;
+    }
+
+    private async Task OpenURL()
+    {
+        await JSRuntime.InvokeVoidAsync("open", "https://fontawesome.com/v6/icons/", "_blank");
+    }
+}

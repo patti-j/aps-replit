@@ -1,0 +1,99 @@
+﻿<DxPopup @ref="ColumnSelectorPopup"
+         ShowCloseButton="true"
+         HeaderText="Select Filters"
+         Width="700px"
+         Visible="@ColumnSelectorVisible"
+         Closed="UpdateFilters">
+    <DxFormLayout>
+        <DxFormLayoutGroup Caption="Columns">
+            <div class="pills-container">
+                @foreach (var column in SelectedColumns)
+                {
+                    <DxCheckBox @bind-Checked="@column.IsChecked">
+                        @column.ColumnName
+                    </DxCheckBox>
+                }
+            </div>
+        </DxFormLayoutGroup>
+        <DxFormLayoutGroup Caption="Servers">
+            <DxButton CssClass="check-all-button" Text="@(ServersShown.Values.All(x => x) ? "Uncheck All" : "Check All")" Click="() => CheckAllServers(!ServersShown.Values.All(x => x))"></DxButton>
+            <div class="pills-container">
+                @foreach (var server in AllServers)
+                {
+                    // Ensure dict has all keys
+                    ServersShown.TryAdd(server.Id, true);
+
+                    <DxCheckBox @bind-Checked="ServersShown[server.Id]">
+                        @server.Name
+                    </DxCheckBox>
+                }
+            </div>
+        </DxFormLayoutGroup>
+    </DxFormLayout>
+    
+</DxPopup>
+<style>
+    .pills-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        padding: 5px;
+    }
+
+    .pills-container dxbl-check {
+        border-radius: 10px;
+        padding: 2px 7px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+    }
+</style>
+@code {
+    [Parameter]
+    public List<ColumnOption> SelectedColumns { get; set; }
+
+    [Parameter]
+    public EventCallback<List<ColumnOption>> SelectedColumnsChanged { get; set; }
+
+    [Parameter]
+    public List<CompanyServer> AllServers { get; set; }
+
+    [Parameter]
+    public Dictionary<int, bool> ServersShown { get; set; }
+
+    [Parameter]
+    public EventCallback<Dictionary<int, bool>> ServersShownChanged { get; set; }
+
+    [Parameter]
+    public EventCallback FiltersChanged { get; set; }
+
+    private DxPopup ColumnSelectorPopup { get; set; }
+
+    private bool ColumnSelectorVisible { get; set; }
+
+    public void Show()
+    {
+        ColumnSelectorVisible = true;
+    }
+
+    private async Task CheckAllServers(bool isChecked)
+    {
+        foreach (var id in ServersShown.Keys)
+        {
+            ServersShown[id] = isChecked;
+        }
+    }
+
+    private async Task UpdateFilters()
+    {
+        ColumnSelectorVisible = false;
+        await SelectedColumnsChanged.InvokeAsync(SelectedColumns);
+        await ServersShownChanged.InvokeAsync(ServersShown);
+        await FiltersChanged.InvokeAsync();
+    }
+
+    private void ServerChecked(bool isChecked)
+    {
+        throw new NotImplementedException();
+    }
+}

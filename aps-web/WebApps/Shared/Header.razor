@@ -1,0 +1,318 @@
+﻿@using Microsoft.AspNetCore.SignalR.Client
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.Events
+@using ReportsWebApp.Shared
+@inject AuthenticationStateProvider AuthState
+@inject NavigationManager NavigationManager
+@inject INavigationStateService NavigationStateService
+@inject IToastNotificationService ToastService
+@inject IRoleService RoleService
+
+<AuthorizeView>
+	<Authorized>
+		<nav class="navbar" style="height: 56px;background-color: var(--bs-body-bg)">
+			<button class="mx-2 navbar-toggler d-block" @onclick="OnToggleClick">
+				<i class="fa fa-bars" style="color: var(--bs-body-color);"></i>
+			</button>
+			<div class="me-auto" style="display: flex; cursor: pointer">
+				<a @onclick="GoHome">
+					<img src="images/logo.svg" class="logo-name">
+				</a>
+				<SimpleBreadcrumbs />
+			</div>
+			<span class="company-header">
+				@if (AuthorizedCompanies.Count > 1)
+				{
+					<DxComboBox TData="Company" TValue="int?"
+					            Data="AuthorizedCompanies"
+					            TextFieldName="Name"
+					            ValueFieldName="Id"
+					            Value="currentCompany?.Id"
+					            ValueChanged="@(a_id => { NavigationStateService.ExecutePreemption("/", true, () => 
+											  {
+												  m_userService.SwitchUserCompany(UserEmail, a_id!.Value);
+						                          NavigationManager.NavigateTo("/", true);
+					                          }); })"
+					            NullText="Unknown"
+					            CssClass="company-header-cbox"/>
+				}
+				else
+				{
+					@(currentCompany?.Name ?? "Unknown")
+				}
+			</span>
+			<div class="notification-bell px-2" @onclick="ToggleNotificationsPanel">
+				@if (isLoadingNotifs)
+				{
+					<i class="fa fa-spinner fa-spin"></i>
+				}
+				else
+				{
+					<i class="fa fa-bell"></i>
+					@if (totalNotifs > 0)
+					{
+						<span class="badge @(unreadNotifs > 0 ? "new" : "")">
+							@(unreadNotifs > 0 ?
+														(unreadNotifs < 10 ? unreadNotifs : "+")
+														:
+														(totalNotifs < 10 ? totalNotifs : "+"))
+						</span>
+					}
+				}
+			</div>
+			@if (ShowNotificationBox) //close notifications viewer when user clicks outside the viewer
+			{
+				<div class="overlay-noti" @onclick="CloseNotificationsPanel"></div>
+				<NotificationsViewer Notifications="@(notifs ?? new List<Notification>())" OnNotificationRead="NotificationRead" OnNotificationDeleted="NotificationDeleted" />
+			}
+			<img class="rounded-circle image-fluid p-1 img-profile" style="cursor: pointer" src="@Picture" @onclick="GoToProfile">
+			<div class="px-2 header-dropdown">
+				<DxMenu DropDownActionMode="MenuDropDownActionMode.Click"
+						CollapseItemToIconMode="MenuCollapseItemToIconMode.Sequentially"
+						DisplayMode="MenuDisplayMode.Desktop">
+					<Items>
+						<DxMenuItem Text="" IconCssClass="menu-icon-home menu-icon">
+							<Items>
+								<DxMenuItem Text="Profile" Click="GoToProfile" />
+								<DxMenuItem Text="Notification Settings" Click="GoToNotifications" />
+								<DxMenuItem Text="Log out" Click="LogOut" />
+							</Items>
+						</DxMenuItem>
+					</Items>
+				</DxMenu>
+			</div>
+		</nav>
+	</Authorized>
+	<NotAuthorized>
+		<div class="logout-overlay">
+			<!-- You can add a loading spinner or message here -->
+			@*             <div class="loading-spinner">
+                <i class="fa fa-spinner fa-spin"></i>
+                Logging out...
+            </div> *@
+			<div>
+				<DxButton RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained"
+						  Text="Login" Click="LogIn" />
+			</div>
+		</div>
+	</NotAuthorized>
+</AuthorizeView>
+
+@code {
+	[Parameter] public bool ToggleOn { get; set; }
+	[Parameter] public EventCallback<bool> ActiveChanged { get; set; }
+	[Parameter] public EventCallback<bool> ToggleOnChanged { get; set; }
+	private string UserName = string.Empty;
+	private string UserEmail = string.Empty;
+	private string Picture = string.Empty;
+	private bool ShowNotificationBox = false;
+	private HubConnection? hubConnection;
+	private List<string> messages = new List<string>();
+	private List<Notification>? notifs = null;
+	private int unreadNotifs = 0;
+	private int totalNotifs = 0;
+	private bool isLoadingNotifs = false;
+	private List<NotificationType> subscribedNotificationTypes = new();
+	private Company? currentCompany;
+	private List<Company> AuthorizedCompanies = new();
+	[Inject]
+	private IUserService m_userService { get; set; }
+	[Inject]
+	INotificationService NotificationService { get; set; }
+	[Inject]
+	IServiceScopeFactory ScopeFactory { get; set; }
+	[Inject]
+	NavMenuUpdateService NavMenuUpdateService { get; set; }
+
+	async Task OnToggleClick() => await Toggle();
+
+	async Task Toggle(bool? value = null)
+	{
+		var newValue = value ?? !ToggleOn;
+		if (ToggleOn != newValue)
+		{
+			ToggleOn = newValue;
+			await ToggleOnChanged.InvokeAsync(ToggleOn);
+		}
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		var state = await AuthState.GetAuthenticationStateAsync();
+
+		NavMenuUpdateService.OnNavMenuUpdate += RefreshSwitchList;
+
+		UserName = state.User.Identity?.Name ?? string.Empty;
+		UserEmail = AuthUtils.GetEmailFromClaim(state.User);
+
+		Picture = state.User.Claims
+			.Where(c => c.Type.Equals("picture"))
+			.Select(c => c.Value)
+			.FirstOrDefault() ?? string.Empty;
+
+		AuthorizedCompanies = (await m_userService.GetAvailableCompaniesForUser(UserEmail))
+			.OrderBy(c => c.Name)
+			.ToList();
+		
+		foreach (Company company in AuthorizedCompanies)
+		{
+			if (company.SoftMigrationStatus == 0)
+			{
+				await RoleService.UpdateRolesInCompanyToNewPermissions(company.Id);
+			}
+		}
+
+		currentCompany = await m_userService.GetUserSelectedCompany(UserEmail);
+
+		await base.OnInitializedAsync();
+	}
+
+	private async void RefreshSwitchList(bool refreshUser)
+	{
+		AuthorizedCompanies = (await m_userService.GetAvailableCompaniesForUser(UserEmail))
+			.OrderBy(c => c.Name)
+			.ToList();
+
+		StateHasChanged();
+	}
+
+	private async Task RefreshSubscriptions()
+	{
+		subscribedNotificationTypes = await NotificationService.GetSubscribedNotificationTypesAsync(UserEmail);
+		await RefreshNotifications();
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+
+		if (firstRender)
+		{
+			hubConnection = new HubConnectionBuilder()
+				.WithUrl(NavigationManager.ToAbsoluteUri("notificationhub")).Build();
+
+			NotificationEvents.SubscriptionsChanged += RefreshSubscriptions;
+
+			hubConnection.On("NewNotification", async () =>
+			{
+				await RefreshNotifications();
+			});
+
+			await RefreshSubscriptions();
+			hubConnection.Reconnected += OnConnect;
+
+			await hubConnection.StartAsync();
+			await hubConnection.SendCoreAsync("JoinGroup", new[] { UserEmail });
+
+		}
+	}
+
+	private async Task OnConnect(string? id)
+	{
+		await hubConnection?.SendCoreAsync("JoinGroup", new[] { UserEmail });
+		await RefreshNotifications();
+	}
+
+	private async Task RefreshNotifications()
+	{
+		var user = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+		if (!user.Exists())
+		{
+			return;
+		}
+
+		var tempNotifications = await NotificationService.GetNotificationsAsync(user.Id);
+		if (notifs != null)
+		{
+			var newNotifs = notifs.Synchronize(tempNotifications).added;
+			foreach (Notification notif in newNotifs)
+			{
+				ToastService.ShowToast("Notification", notif.Text, ToastRenderStyle.Info, 30);
+			}
+		}
+
+		notifs = tempNotifications;
+		totalNotifs = notifs.Count;
+		unreadNotifs = notifs.Count(x => !x.Read);
+		isLoadingNotifs = false;
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private void GoToProfile()
+	{
+		// Redirect to the profile page
+		NavigationStateService.NavigateTo("/profile");
+	}
+
+	private void LogOut()
+	{
+		// Redirect to the logout page
+		NavigationStateService.NavigateTo("/logout", true);
+	}
+	private void LogIn()
+	{
+		var redirect = NavigationManager.Uri;
+		// Avoid redirecting the user back to usernotfound
+		if (redirect.Contains("usernotfound"))
+		{
+			redirect = "/";
+		}
+		// Redirect to the logout page
+		NavigationManager.NavigateTo($"/login?redirectUri=/{NavigationManager.GetLocalRoute()}", true);
+	}
+	private async Task ToggleNotificationsPanel()
+	{
+		ShowNotificationBox = !ShowNotificationBox; //this is not changing help
+		if (!ShowNotificationBox)
+		{
+			await NotificationService.MarkAllAsReadAsync(notifs ?? new());
+			await RefreshNotifications();
+		}
+		StateHasChanged(); // Update the UI after loading notifications
+	}
+
+	private async Task CloseNotificationsPanel()
+	{
+		ShowNotificationBox = false;
+		if (!ShowNotificationBox)
+		{
+			await NotificationService.MarkAllAsReadAsync(notifs ?? new());
+			await RefreshNotifications();
+		}
+		else
+		{
+			StateHasChanged();
+		}
+	}
+
+	private async Task NotificationRead(Notification notification)
+	{
+		await NotificationService.MarkAsReadAsync(notification);
+		await RefreshNotifications();
+	}
+
+	private async Task NotificationDeleted(Notification notification)
+	{
+		await NotificationService.DeleteAsync(notification);
+		await RefreshNotifications();
+	}
+
+	private async Task GoToNotifications()
+	{
+		NavigationStateService.NavigateTo("/notifications", true);
+	}
+
+	public async Task SwitchToCompany(Company company)
+	{
+		if (await m_userService.SwitchUserCompany(UserEmail, company.Id))
+		{
+			NavigationManager.NavigateTo("/", true);
+		}
+
+	}
+
+	private void GoHome()
+	{
+		NavigationStateService.NavigateTo("/", true);
+	}
+
+}

@@ -1,0 +1,51 @@
+﻿@page "/addReportsViewer"
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+
+@if(viewPermission) {
+    <ReportGrid @ref="reportGrid" OnSave=" OnSave" OnDelete="OnDelete" AvailableWorkspaces="Workspaces" Reports="Reports" Categories="Categories" RefreshComponent="RefreshComponent" />
+}
+
+@code {
+    private User User { get; set; }
+    public List<Report> Reports { get; set; } = new List<Report>();
+    public List<Category> Categories { get; set; } = new List<Category>();
+    public List<PBIWorkspace> Workspaces { get; set; } = new List<PBIWorkspace>();
+    public bool viewPermission = false;
+    private ReportGrid reportGrid;
+
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    IReportService reportService { get; set; }
+    [Inject]
+    ICategoryService categoryService { get; set; }
+    [Inject]
+    NavigationManager Navigation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.ManageReports, NavigationManager)) return;
+        viewPermission = true;
+
+        if (User.Exists())
+        {
+            Reports = reportService.GetReports(User.CompanyId);
+            Categories = categoryService.GetCategories(User.CompanyId);
+            Workspaces = reportService.GetWorkspaces(User.CompanyId);
+        }
+    }
+
+    private async Task<Report> OnSave(Report report)
+    {
+        return await reportService.SaveAsync(report);
+    }
+    private async Task<bool> OnDelete(int reportId)
+    {
+        return await reportService.DeleteAsync(reportId);
+    }
+    private async Task RefreshComponent()
+    {
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+}

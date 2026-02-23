@@ -1,0 +1,534 @@
+﻿/* Custom styles for DevExpress Menu components */
+.dxbl-menu .dxbl-menu-item-list > .dxbl-menu-list-item > .dxbl-menu-item > .dxbl-btn > svg.dxbl-image {
+    margin: 0 !important;
+}
+
+/* Custom styles for DevExpress TreeView components */
+.dxbl-treeview .dxbl-treeview-item > .dxbl-treeview-item-content > .dxbl-treeview-item-container > .dxbl-image {
+    margin-right: var(--dxbl-treeview-image-spacing);
+}
+
+/* Define custom spacing for TreeView images */
+.dxbl-treeview-items-container {
+    --dxbl-treeview-image-spacing: 0.225rem !important;
+}
+
+.dx-icon {
+    font-size: 14px; /* Smaller icons */
+}
+
+.pa-root {
+    background: #d5d5d5;
+    border-radius: 15px;
+    display: flex;
+    flex-flow: row wrap;
+    padding: 15px;
+    gap: 15px;
+}
+.pa-container {
+    width: 400px;
+    border-radius: 15px;
+}
+
+.pa-container .dxbl-loading-panel-shading {
+    border-radius: 15px;
+}
+
+.pa-container .dxbl-loading-panel-target-content {
+    background: var(--bs-secondary-bg);
+    border-radius: 15px;
+    display: flex;
+    flex-flow: row wrap;
+    padding: 15px;
+    padding-bottom: 8px;
+    width: 400px;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.pa-container .dxbl-loading-panel-shading {
+    border-radius: 15px;
+}
+
+[data-bs-theme=dark] .pa-root {
+    background: var(--bs-tertiary-bg);
+}
+
+[data-bs-theme=dark] .pa-container {
+    background: var(--bs-secondary-bg);
+}
+
+.pa-name {
+    font-size: 16pt;
+    color: var(--bs-primary);
+    overflow-wrap: anywhere;
+}
+
+.pa-version {
+    max-width: 80%;
+    padding-bottom: 5px;
+}
+
+.pa-login {
+    font-style: italic;
+    font-size: 10pt;
+    color: var(--bs-gray);
+}
+
+.pa-controls {
+    display: flex;
+    flex-flow: column nowrap;
+    width: 50%;
+    justify-content: space-between;
+    align-content: center;
+}
+
+.pa-controls > * {
+    margin-right: 5px;
+}
+
+.pa-controls > button {
+    font-size: 16pt;
+    padding: 8px;
+    border-radius: 26px;
+}
+
+.pa-controls > button.launch-param-button {
+    font-size: 10pt;
+    background: #ffffff00;
+    border: none;
+    text-decoration: underline;
+    padding: 4px;
+}
+
+.pa-controls > button.launch-param-button:not(.dxbl-disabled):not(:disabled):hover {
+    background: #ffffff00;
+}
+
+.pa-remove {
+    color: red;
+}
+
+dxbl-scroll-viewer.code-display {
+    text-align: left;
+    overflow-wrap: anywhere;
+    max-height: 200px;
+}
+
+.pa-info {
+    width: 50%;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 8px;
+    justify-content: space-between;
+}
+
+.pa-users {
+    text-align: right;
+    cursor: pointer;
+}
+
+.pa-users.online i {
+    color: green;
+}
+
+.pa-users.start i {
+    color: yellow;
+}
+
+.pa-users.stop i {
+    color: red;
+}
+
+.pa-users.unknown i {
+    color: gray;
+}
+
+.floating-notification {
+    background: #5fc4ffcc;
+    border: 2px solid var(--bs-heading-color);
+    border-radius: 14px;
+    color: #34a;
+    padding: 8px 52px 8px 12px;
+    position: absolute;
+    top: 8px;
+    left: 20%;
+    right: 20%;
+    z-index: 1300;
+}
+
+.floating-notification.error {
+    background: #ff343fcc;
+    border: 2px solid #ff141f;
+    color: #fee;
+}
+
+.floating-notification a {
+    color: #4f74e7;
+}
+
+.floating-notification.error a {
+    color: #7f44f7;
+}
+
+.floating-notification.hide {
+    opacity: 0;
+    transition: .3s;
+}
+
+.floating-notification.show {
+    opacity: 1;
+    transition: .3s;
+}
+
+.floating-notification button {
+    position: absolute;
+    cursor: pointer;
+    top: 10%;
+    bottom: 10%;
+    right: 15px;
+    background: #00000000;
+    font-size: 22px;
+    border: none;
+}
+
+.floating-notification button:hover {
+    background: #00000000 !important;
+    color: #ddd !important;
+    transition: .2s;
+}
+
+.server-details i {
+    width: 20px;
+    text-align: center;
+}
+
+dxbl-progress-bar.error.error .dxbl-progress-bar-indicator {
+    background-color: red;
+}
+
+.hide-bar dxbl-file-input dxbl-progress-bar {
+    display: none;
+}
+
+.hide-bar dxbl-file-input .dxbl-upload-file-view-details {
+    justify-content: center !important;
+    margin-top: 4px;
+}
+
+.confirmation-dialog-content {
+    display: flex;
+    justify-content: end;
+    gap: 5px;
+}
+
+.bulk-grid {
+    height: 100%;
+    max-height: 65vh;
+    overflow-y: auto;
+}
+
+.import-grid .bulk-grid {
+    height: 50vh;
+}
+
+.bulk-destination-grid {
+    height: 100%;
+    overflow-y: auto;
+}
+
+.tranfer-arrow {
+    text-align: center;
+    font-size: 24pt;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: column !important;
+}
+
+.tranfer-arrow > .dxbl-fl-ctrl.dxbl-fl-ctrl-nc {
+    margin-top: unset;
+}
+
+.fa-arrow-responsive:before {
+    content: ""
+}
+
+.bulk-tab-form .dxbl-upload-panel {
+    display: none;
+}
+
+@media (max-width: 1199px) {
+    .fa-arrow-responsive:before {
+        content: ""
+    }
+
+    .bulk-grid {
+        height: 100%;
+        max-height: 100%;
+        overflow-y: auto;
+    }
+
+    .import-grid .bulk-grid {
+        height: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .bulk-tab-form {
+        padding: 0 10px 10px 10px;
+    }
+
+    .bulk-tab-form .dxbl-fl-item-horizontal .dxbl-fl-ctrl {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-around;
+        gap: 15px;
+    }
+
+    .bulk-tab-form .dxbl-fl-item-horizontal .dxbl-fl-ctrl button {
+        flex-grow: 1;
+        height: 50px;
+    }
+}
+.tagbox-item-template {
+    display: flex;
+    align-items: center;
+}
+
+.tagbox-tag-template {
+    display: flex;
+    align-items: center;
+    padding: 0.125em 0.5em 0.125em .4em;
+    position: relative;
+    color: var(--dxbl-tag-box-tag-color);
+}
+
+.tagbox-tag-template .tag-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    padding: 0 var(--dxbl-tag-box-tag-text-padding-right) 0 var(--dxbl-tag-box-tag-text-padding-left);
+}
+
+.tagbox-tag-template:before {
+    content: " ";
+    position: absolute;
+    background-color: currentColor;
+    opacity: .1;
+    border-radius: 16px;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0; 
+    pointer-events: none;
+    z-index: -1;
+}
+
+.feature-flag-item {
+    background-color: #5fc4ff77;
+}
+
+.pt-admin-item {
+    background-color: #c71c2277;
+}
+
+.dxbl-btn.dxbl-tag-btn-close {
+    --dxbl-btn-padding-x: 0;
+    --dxbl-btn-padding-y: 0;
+    --dxbl-btn-border-width: 0;
+    --dxbl-btn-border-radius: 50%;
+    --dxbl-btn-color: white;
+    --dxbl-btn-hover-color: white;
+    --dxbl-btn-disabled-color: white;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.tagbox-tag-template .dxbl-btn.dxbl-tag-btn-close > svg.dxbl-image {
+    color: var(--dxbl-tag-box-tag-close-btn-color,var(--dxbl-image-color,currentcolor));
+    opacity: var(--dxbl-tag-box-tag-close-btn-color,var(--dxbl-image-color,70%));
+}
+
+.tagbox-tag-template .dxbl-btn.dxbl-tag-btn-close > .dxbl-image {
+    border-radius: 50%;
+}
+
+.tagbox-tag-template .dxbl-btn.dxbl-tag-btn-close > .dxbl-image {
+    background-color: var(--dxbl-tag-box-tag-close-btn-bg,var(--dxbl-image-secondary-color,rgba(0 0 0/25%)));
+}
+
+.tagbox-tag-template .dxbl-btn.dxbl-tag-btn-close:not(.dxbl-disabled):not(:disabled):hover > .dxbl-image {
+    background-color: var(--dxbl-tag-box-tag-close-btn-hover-bg,var(--dxbl-image-secondary-hover-color,rgba(0 0 0/50%)));
+}
+
+.tagbox-tag-template .dxbl-btn.dxbl-tag-btn-close {
+    --dxbl-btn-padding-x: 0;
+    --dxbl-btn-padding-y: 0;
+    --dxbl-btn-border-width: 0;
+    --dxbl-btn-border-radius: 50%;
+    --dxbl-btn-color: white;
+    --dxbl-btn-hover-color: white;
+    --dxbl-btn-disabled-color: white;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.tagbox-item-template.admin-item {
+    color: var(--bs-primary)
+}
+
+.tagbox-item-template.pt-admin-item {
+    color: var(--bs-danger)
+}
+
+.install-server-manager {
+    display: inline-block;
+    float: right;
+    margin-right: 1px;
+    margin-bottom: 12px;
+}
+
+.code-display {
+    background: var(--bs-light);
+    padding: 5px;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+[data-bs-theme=dark] .code-display {
+    background: var(--bs-dark);
+}
+
+.no-pad-dropdown li {
+    padding: 0 !important; 
+}
+
+.padded-dropdown-item {
+    padding: 6px 4px;
+}
+
+.server-edit-form {
+    max-width: 700px !important;
+    width: 50% !important;
+}
+
+.error-log-page {
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+.error-log-type {
+    font-size: 16pt;
+    font-weight: bold;
+}
+
+.error-log-header {
+    font-size: 13pt;
+    font-weight: bold;
+}
+
+.error-log-stacktrace-container {
+    display: flex;
+    flex-flow: row nowrap;
+    height: 600px;
+}
+
+.error-log-stacktrace-panel {
+    min-width: 50%;
+    flex-grow: 1;
+    border: 1px solid #aaa;
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+dxbl-scroll-viewer.error-log-message.error-log-message {
+    font-size: 10pt;
+    font-weight: bold;
+    margin-bottom: 10px;
+    flex-grow: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed;
+}
+
+.error-log-timestamp {
+    font-style: italic;
+    margin-right: 15px;
+    margin-left: auto;
+}
+
+.error-log-controls {
+    margin: auto;
+    display: flex;
+    gap: 5px;
+}
+
+.error-log-controls dxbl-spinedit {
+    width: 90px;
+}
+
+.error-log-controls > .dxbl-btn {
+    width: 60px;
+}
+
+.error-log-max {
+    font-weight: bold;
+    padding-top: 7px;
+}
+
+.error-log-page dxbl-scroll-viewer {
+    flex-grow: 1;
+}
+
+.error-log-spacer {
+    height: 700px;
+    padding-top: 20px;
+    text-align: center;
+    font-size: 20pt;
+    line-height: 500px;
+}
+
+.error-log-controls > .dxbl-btn.error-log-copy-button {
+    width: 35px;
+    margin-left: 20px;
+}
+
+.error-log-input {
+    width: 80px;
+}
+
+.pa-no-updates-span {
+    padding: 14px;
+}
+
+.password-update-form {
+    width: 600px;
+    padding-top: 24px;
+    padding-bottom: 10px;
+}
+
+.password-update-form button {
+    width: 100%;
+    margin: 12px;
+    margin-top: 16px;
+}
+
+.popup-body {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.popup-header {
+    padding-left: 10px;
+    padding-top: 10px;
+}
+
+.check-all-button {
+    position: absolute;
+    top: 5px;
+    z-index: 1000;
+    right: 5px;
+}

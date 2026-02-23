@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ResourceSelectionList" targetNamespace="http://tempuri.org/ResourceSelectionList.xsd" xmlns:mstns="http://tempuri.org/ResourceSelectionList.xsd" xmlns="http://tempuri.org/ResourceSelectionList.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="ResourceSelectionList" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="ResourceSelectionList" msprop:Generator_DataSetName="ResourceSelectionList">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Resources" msprop:Generator_RowEvHandlerName="ResourcesRowChangeEventHandler" msprop:Generator_RowDeletedName="ResourcesRowDeleted" msprop:Generator_RowDeletingName="ResourcesRowDeleting" msprop:Generator_RowEvArgName="ResourcesRowChangeEvent" msprop:Generator_TablePropName="Resources" msprop:Generator_RowChangedName="ResourcesRowChanged" msprop:Generator_RowChangingName="ResourcesRowChanging" msprop:Generator_TableClassName="ResourcesDataTable" msprop:Generator_RowClassName="ResourcesRow" msprop:Generator_TableVarName="tableResources" msprop:Generator_UserTableName="Resources">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Selected" msprop:Generator_ColumnPropNameInRow="Selected" msprop:Generator_ColumnPropNameInTable="SelectedColumn" msprop:Generator_ColumnVarNameInTable="columnSelected" msprop:Generator_UserColumnName="Selected" type="xs:boolean" minOccurs="0" />
+              <xs:element name="PlantId" msprop:Generator_ColumnPropNameInRow="PlantId" msprop:Generator_ColumnPropNameInTable="PlantIdColumn" msprop:Generator_ColumnVarNameInTable="columnPlantId" msprop:Generator_UserColumnName="PlantId" type="xs:long" />
+              <xs:element name="Plant" msprop:Generator_ColumnPropNameInRow="Plant" msprop:Generator_ColumnPropNameInTable="PlantColumn" msprop:Generator_ColumnVarNameInTable="columnPlant" msprop:Generator_UserColumnName="Plant" type="xs:string" minOccurs="0" />
+              <xs:element name="DepartmentId" msprop:Generator_ColumnPropNameInRow="DepartmentId" msprop:Generator_ColumnPropNameInTable="DepartmentIdColumn" msprop:Generator_ColumnVarNameInTable="columnDepartmentId" msprop:Generator_UserColumnName="DepartmentId" type="xs:long" />
+              <xs:element name="Department" msprop:Generator_ColumnPropNameInRow="Department" msprop:Generator_ColumnPropNameInTable="DepartmentColumn" msprop:Generator_ColumnVarNameInTable="columnDepartment" msprop:Generator_UserColumnName="Department" type="xs:string" minOccurs="0" />
+              <xs:element name="ResourceId" msprop:Generator_ColumnPropNameInRow="ResourceId" msprop:Generator_ColumnPropNameInTable="ResourceIdColumn" msprop:Generator_ColumnVarNameInTable="columnResourceId" msprop:Generator_UserColumnName="ResourceId" type="xs:long" />
+              <xs:element name="Resource" msprop:Generator_ColumnPropNameInRow="Resource" msprop:Generator_ColumnPropNameInTable="ResourceColumn" msprop:Generator_ColumnVarNameInTable="columnResource" msprop:Generator_UserColumnName="Resource" type="xs:string" minOccurs="0" />
+              <xs:element name="Description" msprop:Generator_ColumnPropNameInRow="Description" msprop:Generator_ColumnPropNameInTable="DescriptionColumn" msprop:Generator_ColumnVarNameInTable="columnDescription" msprop:Generator_UserColumnName="Description" type="xs:string" minOccurs="0" />
+              <xs:element name="Active" msprop:Generator_ColumnPropNameInRow="Active" msprop:Generator_ColumnPropNameInTable="ActiveColumn" msprop:Generator_ColumnVarNameInTable="columnActive" msprop:Generator_UserColumnName="Active" type="xs:boolean" minOccurs="0" />
+              <xs:element name="WorkCenter" msprop:Generator_ColumnPropNameInRow="WorkCenter" msprop:Generator_ColumnPropNameInTable="WorkCenterColumn" msprop:Generator_ColumnVarNameInTable="columnWorkCenter" msprop:Generator_UserColumnName="WorkCenter" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="ResourceSelectionListKey1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:Resources" />
+      <xs:field xpath="mstns:PlantId" />
+      <xs:field xpath="mstns:DepartmentId" />
+      <xs:field xpath="mstns:ResourceId" />
+    </xs:unique>
+  </xs:element>
+</xs:schema>

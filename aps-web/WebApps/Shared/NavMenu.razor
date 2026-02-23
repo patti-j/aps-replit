@@ -1,0 +1,159 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Extensions.Localization
+@using ReportsWebApp.DB.Services.Interfaces
+@inject NavigationManager NavigationManager
+@inject NavMenuUpdateService NavMenuUpdateService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IDarkModeService darkModeService
+@inject IStringLocalizer<NavMenu> Localizer
+@inject INavigationStateService NavigationStateService
+
+<div class="sidebar @StateCssClass">
+    <DxTreeView @ref="treeView" AllowSelectNodes="false" NodeClick="@OnClick">
+        <Nodes>
+            @if (User.Exists() && User.UserType == EUserType.Web)
+            {
+	            @foreach (var item in HandleNavigationItems())
+	            {
+		            @CreateNode(item)
+	            }
+            }
+        </Nodes>
+        <NodeTemplate>
+            <div class="@(context.IsLeaf && IsUrlCurrent(context.NavigateUrl) ? "menu-item selected" : "menu-item")">
+                <div class="menu-item-details flex-grow-1">
+                    <i class="@context.IconCssClass"></i>
+                    <div class="@(context.IsLeaf ? "menu-title long" : "menu-title")">@context.Text</div>
+                </div>
+                @if (!context.IsLeaf)
+                {
+                    @if (context.Expanded)
+                    {
+                        <span class="fa fa-chevron-down"></span>
+                    }
+                    else
+                    {
+                        <span class="fa fa-chevron-right"></span>
+                    }
+                }
+            </div>
+
+        </NodeTemplate>
+    </DxTreeView>
+</div>
+
+
+@code {
+    [Parameter] public string? StateCssClass { get; set; }
+    public List<Category> Categories { get; set; } = new List<Category>();
+    private User User { get; set; }
+    private bool blockMenu = false;
+    private DxTreeView treeView;
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    ICategoryService categoryService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+
+        if (User.Exists())
+        {
+            Categories = categoryService.GetCategoriesForGroups(User.CompanyId, User.Roles);
+            darkModeService.IsDarkMode = User.DarkModeActive;//apply theme in system
+        }
+        else
+        {
+            blockMenu = true;
+        }
+        NavMenuUpdateService.OnNavMenuUpdate += RefreshNavMenu;
+        NavigationManager.LocationChanged += RefreshNavSelected;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            treeView.ExpandToNode(node => node.NavigateUrl.Replace("./", "") == NavigationManager.GetLocalRoute());
+        }
+    }
+
+    private async void RefreshNavMenu(bool refreshUser)
+    {
+        if (refreshUser)
+        {
+            // Current user has been modified so we should refresh permissions
+            User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        }
+        if (User.Exists())
+        {
+            Categories = categoryService.GetCategoriesForNav(User.CompanyId, User.Roles);
+            darkModeService.IsDarkMode = User.DarkModeActive;//apply theme in system
+            StateHasChanged();
+        }
+    }
+
+    private void RefreshNavSelected(object sender, LocationChangedEventArgs e) => StateHasChanged();
+
+    private RenderFragment CreateNode(NavigationItem item)
+    {
+        return builder =>
+        {
+            int seq = 0;
+            builder.OpenComponent<DxTreeViewNode>(seq++);
+            builder.AddAttribute(seq++, "Text", item.Text);
+            builder.AddAttribute(seq++, "NavigateUrl", item.NavigateUrl);
+            builder.AddAttribute(seq++, "IconCssClass", item.IconCssClass + " nav-icon");
+
+            if (item.Children != null && item.Children.Any())
+            {
+                builder.AddAttribute(seq++, "Nodes", (RenderFragment)(innerBuilder =>
+                {
+                    foreach (var item1 in item.Children)
+                    {
+                        CreateNode(item1)(innerBuilder); // Call the CreateNode function recursively
+                    }
+                }));
+            } 
+            else
+            {
+                builder.AddAttribute(seq++, "Nodes", default(RenderFragment));
+            }
+
+            builder.CloseComponent();
+        };
+    }
+
+    private bool IsUrlCurrent(string url)
+    {
+        return NavigationManager.GetLocalRoute() == url.Replace("./", "");
+    }
+
+    void OnClick(TreeViewNodeClickEventArgs args)
+    {
+        var node = args.NodeInfo;
+        var navigateUrl = node.NavigateUrl;
+
+        if (!string.IsNullOrWhiteSpace(navigateUrl))
+        {
+            var current = new Uri(NavigationManager.Uri);
+            var next = new Uri(NavigationManager.BaseUri + navigateUrl);
+
+            // If navigating to the same page, force a reload
+            var reload = current.LocalPath == next.LocalPath;
+
+            NavigationStateService.NavigateTo(navigateUrl, reload);
+        }
+    }
+    private List<NavigationItem> HandleNavigationItems()
+    {
+        return !User.Exists() ? new List<NavigationItem>() : NavigationStateService.GetNavigationItems(blockMenu, User.Company.Active, User, Categories, User.Roles);
+    }
+
+    public void Dispose()
+    {
+        // Unsubscribe from the update event when the component is disposed
+        NavMenuUpdateService.OnNavMenuUpdate -= RefreshNavMenu;
+    }
+}

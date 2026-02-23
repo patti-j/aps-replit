@@ -1,0 +1,5 @@
+{
+  "InstanceDataConnectionString": "Data Source=(local)\\SQLEXPRESS;Initial Catalog=APS_Instances;Integrated Security=true;Encrypt=False",
+  "WebAppEnv": "qa",
+  "InstanceIdentifier": "{InstanceIdGuidFromInstanceSettingsBlob}"
+}

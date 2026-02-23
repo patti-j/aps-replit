@@ -1,0 +1,32 @@
+﻿@page "/importHistoryViewer"
+
+@if (viewPermission)
+{
+    <InstanceGrid Instances="Instances" EditInstances="false"/> 
+}
+
+@code {
+    private User User { get; set; }
+
+    public List<CompanyDb> Instances { get; set; } = new List<CompanyDb>();
+    public List<Role> Groups { get; set; } = new List<Role>();
+    public List<User> Users { get; set; } = new List<User>();
+    private bool viewPermission = false;
+
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    ICompanyDbService instanceService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.ManageIntegration, NavigationManager)) return;
+        viewPermission = true;
+
+        if (User.Exists())
+        {
+            Instances = instanceService.GetImportDbs(User.CompanyId);
+        }
+    }
+}

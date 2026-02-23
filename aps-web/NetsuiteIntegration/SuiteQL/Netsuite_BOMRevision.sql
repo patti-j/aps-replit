@@ -1,0 +1,1 @@
+﻿select name, billofmaterials, id from bomrevision

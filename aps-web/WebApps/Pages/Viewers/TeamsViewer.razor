@@ -1,0 +1,57 @@
+﻿@page "/teamsViewer"
+
+@if (viewPermission)
+{
+    <TeamGrid @ref="scopeGrid" Teams="Teams" Scopes="Scopes" Roles="Roles" RefreshComponent="RefreshComponent" />
+}
+
+@code {
+
+    private User User { get; set; }
+
+    public List<Category> Categories { get; set; } = new List<Category>();
+    public List<Team> Teams { get; set; } = null;
+    public List<User> Users { get; set; } = new List<User>();
+    public List<PlanningAreaScope> Scopes { get; set; }
+    public List<Role> Roles { get; set; }
+    private bool viewPermission = false;
+    private TeamGrid scopeGrid;
+
+    [Inject]
+    IUserService userService { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    TeamService TeamService { get; set; }
+    [Inject] IAuthorizationService m_authService { get; set; }
+    [Inject]
+    NavigationManager Navigation { get; set; }
+
+    [Inject] IRoleService RoleService { get; set; }
+    [Inject] ScopeService ScopeService { get; set; }
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.EditUsers, NavigationManager)) return;
+        viewPermission = true;
+        await ReloadData();
+    }
+
+    private async Task ReloadData()
+    {
+        if (User.Exists())
+        {
+            Teams = await TeamService.GetAllTeamsForCompany(User.CompanyId);
+            Roles = await RoleService.GetRoles(User.CompanyId);
+            Scopes = await ScopeService.GetAllScopesForCompany(User.CompanyId);
+        }
+        StateHasChanged();
+    }
+
+    private async Task RefreshComponent()
+    {
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+}

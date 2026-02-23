@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema id="SubassembliesDataSet" targetNamespace="http://tempuri.org/SubassembliesDataSet.xsd"
+	elementFormDefault="qualified" attributeFormDefault="qualified" xmlns="http://tempuri.org/SubassembliesDataSet.xsd"
+	xmlns:mstns="http://tempuri.org/SubassembliesDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+	<xs:element name="SubassembliesDataSet" msdata:IsDataSet="true">
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element name="Subassemblies">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="JobName" type="xs:string" minOccurs="0" />
+							<xs:element name="MoName" type="xs:string" minOccurs="0" />
+							<xs:element name="ProductName" type="xs:string" minOccurs="0" />
+							<xs:element name="ProductDescription" type="xs:string" minOccurs="0" />
+							<xs:element name="Available" type="xs:boolean" minOccurs="0" />
+							<xs:element name="AvailableDate" type="xs:dateTime" minOccurs="0" />
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

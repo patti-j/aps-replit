@@ -1,0 +1,1 @@
+MassRecordingsTest is used by MR. It is the test function that starts the executable to run recordings and determine if it past or failed.

@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="WhereUsedDataSet" targetNamespace="http://tempuri.org/WhereUsedDataSet.xsd" xmlns:mstns="http://tempuri.org/WhereUsedDataSet.xsd" xmlns="http://tempuri.org/WhereUsedDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="WhereUsedDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="WhereUsedDataSet" msprop:Generator_UserDSName="WhereUsedDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Usages" msprop:Generator_UserTableName="Usages" msprop:Generator_RowEvArgName="UsagesRowChangeEvent" msprop:Generator_TableVarName="tableUsages" msprop:Generator_TablePropName="Usages" msprop:Generator_RowDeletingName="UsagesRowDeleting" msprop:Generator_RowChangingName="UsagesRowChanging" msprop:Generator_RowDeletedName="UsagesRowDeleted" msprop:Generator_RowEvHandlerName="UsagesRowChangeEventHandler" msprop:Generator_TableClassName="UsagesDataTable" msprop:Generator_RowChangedName="UsagesRowChanged" msprop:Generator_RowClassName="UsagesRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Supplying_x0020_Job" msprop:Generator_ColumnVarNameInTable="columnSupplying_Job" msprop:Generator_ColumnPropNameInRow="Supplying_Job" msprop:Generator_ColumnPropNameInTable="Supplying_JobColumn" msprop:Generator_UserColumnName="Supplying Job" type="xs:string" minOccurs="0" />
+              <xs:element name="Supplying_x0020_Op" msprop:Generator_ColumnVarNameInTable="columnSupplying_Op" msprop:Generator_ColumnPropNameInRow="Supplying_Op" msprop:Generator_ColumnPropNameInTable="Supplying_OpColumn" msprop:Generator_UserColumnName="Supplying Op" type="xs:string" minOccurs="0" />
+              <xs:element name="Supplying_x0020_Op_x0020_Desc" msprop:Generator_ColumnVarNameInTable="columnSupplying_Op_Desc" msprop:Generator_ColumnPropNameInRow="Supplying_Op_Desc" msprop:Generator_ColumnPropNameInTable="Supplying_Op_DescColumn" msprop:Generator_UserColumnName="Supplying Op Desc" type="xs:string" minOccurs="0" />
+              <xs:element name="Supplying_x0020_Product_x0020_Qty" msprop:Generator_ColumnVarNameInTable="columnSupplying_Product_Qty" msprop:Generator_ColumnPropNameInRow="Supplying_Product_Qty" msprop:Generator_ColumnPropNameInTable="Supplying_Product_QtyColumn" msprop:Generator_UserColumnName="Supplying Product Qty" type="xs:decimal" minOccurs="0" />
+              <xs:element name="Supplying_x0020_Product_x0020_Desc" msprop:Generator_ColumnVarNameInTable="columnSupplying_Product_Desc" msprop:Generator_ColumnPropNameInRow="Supplying_Product_Desc" msprop:Generator_ColumnPropNameInTable="Supplying_Product_DescColumn" msprop:Generator_UserColumnName="Supplying Product Desc" type="xs:string" minOccurs="0" />
+              <xs:element name="Supplying_x0020_Need_x0020_Date" msprop:Generator_ColumnVarNameInTable="columnSupplying_Need_Date" msprop:Generator_ColumnPropNameInRow="Supplying_Need_Date" msprop:Generator_ColumnPropNameInTable="Supplying_Need_DateColumn" msprop:Generator_UserColumnName="Supplying Need Date" type="xs:dateTime" minOccurs="0" />
+              <xs:element name="Supplying_x0020_Op_x0020_UOM" msprop:Generator_ColumnVarNameInTable="columnSupplying_Op_UOM" msprop:Generator_ColumnPropNameInRow="Supplying_Op_UOM" msprop:Generator_ColumnPropNameInTable="Supplying_Op_UOMColumn" msprop:Generator_UserColumnName="Supplying Op UOM" type="xs:string" minOccurs="0" />
+              <xs:element name="Product" msprop:Generator_ColumnVarNameInTable="columnProduct" msprop:Generator_ColumnPropNameInRow="Product" msprop:Generator_ColumnPropNameInTable="ProductColumn" msprop:Generator_UserColumnName="Product" type="xs:string" minOccurs="0" />
+              <xs:element name="Product_x0020_Desc" msprop:Generator_ColumnVarNameInTable="columnProduct_Desc" msprop:Generator_ColumnPropNameInRow="Product_Desc" msprop:Generator_ColumnPropNameInTable="Product_DescColumn" msprop:Generator_UserColumnName="Product Desc" type="xs:string" minOccurs="0" />
+              <xs:element name="Qty_x0020_Used" msprop:Generator_ColumnVarNameInTable="columnQty_Used" msprop:Generator_ColumnPropNameInRow="Qty_Used" msprop:Generator_ColumnPropNameInTable="Qty_UsedColumn" msprop:Generator_UserColumnName="Qty Used" type="xs:decimal" minOccurs="0" />
+              <xs:element name="When_x0020_Used" msprop:Generator_ColumnVarNameInTable="columnWhen_Used" msprop:Generator_ColumnPropNameInRow="When_Used" msprop:Generator_ColumnPropNameInTable="When_UsedColumn" msprop:Generator_UserColumnName="When Used" type="xs:dateTime" minOccurs="0" />
+              <xs:element name="Job" msprop:Generator_ColumnVarNameInTable="columnJob" msprop:Generator_ColumnPropNameInRow="Job" msprop:Generator_ColumnPropNameInTable="JobColumn" msprop:Generator_UserColumnName="Job" type="xs:string" minOccurs="0" />
+              <xs:element name="MO" msprop:Generator_ColumnVarNameInTable="columnMO" msprop:Generator_ColumnPropNameInRow="MO" msprop:Generator_ColumnPropNameInTable="MOColumn" msprop:Generator_UserColumnName="MO" type="xs:string" minOccurs="0" />
+              <xs:element name="Op" msprop:Generator_ColumnVarNameInTable="columnOp" msprop:Generator_ColumnPropNameInRow="Op" msprop:Generator_ColumnPropNameInTable="OpColumn" msprop:Generator_UserColumnName="Op" type="xs:string" minOccurs="0" />
+              <xs:element name="Job_x0020_Need_x0020_Date" msprop:Generator_ColumnVarNameInTable="columnJob_Need_Date" msprop:Generator_ColumnPropNameInRow="Job_Need_Date" msprop:Generator_ColumnPropNameInTable="Job_Need_DateColumn" msprop:Generator_UserColumnName="Job Need Date" type="xs:dateTime" minOccurs="0" />
+              <xs:element name="Customer" msprop:Generator_ColumnVarNameInTable="columnCustomer" msprop:Generator_ColumnPropNameInRow="Customer" msprop:Generator_ColumnPropNameInTable="CustomerColumn" msprop:Generator_UserColumnName="Customer" type="xs:string" minOccurs="0" />
+              <xs:element name="MO_x0020_Product" msprop:Generator_ColumnVarNameInTable="columnMO_Product" msprop:Generator_ColumnPropNameInRow="MO_Product" msprop:Generator_ColumnPropNameInTable="MO_ProductColumn" msprop:Generator_UserColumnName="MO Product" type="xs:string" minOccurs="0" />
+              <xs:element name="MO_x0020_Product_x0020_Desc" msprop:Generator_ColumnVarNameInTable="columnMO_Product_Desc" msprop:Generator_ColumnPropNameInRow="MO_Product_Desc" msprop:Generator_ColumnPropNameInTable="MO_Product_DescColumn" msprop:Generator_UserColumnName="MO Product Desc" type="xs:string" minOccurs="0" />
+              <xs:element name="MO_x0020_Reqd_x0020_Qty" msprop:Generator_ColumnVarNameInTable="columnMO_Reqd_Qty" msprop:Generator_ColumnPropNameInRow="MO_Reqd_Qty" msprop:Generator_ColumnPropNameInTable="MO_Reqd_QtyColumn" msprop:Generator_UserColumnName="MO Reqd Qty" type="xs:decimal" minOccurs="0" />
+              <xs:element name="Op_x0020_Desc" msprop:Generator_ColumnVarNameInTable="columnOp_Desc" msprop:Generator_ColumnPropNameInRow="Op_Desc" msprop:Generator_ColumnPropNameInTable="Op_DescColumn" msprop:Generator_UserColumnName="Op Desc" type="xs:string" minOccurs="0" />
+              <xs:element name="Job_x0020_Desc" msprop:Generator_ColumnVarNameInTable="columnJob_Desc" msprop:Generator_ColumnPropNameInRow="Job_Desc" msprop:Generator_ColumnPropNameInTable="Job_DescColumn" msprop:Generator_UserColumnName="Job Desc" type="xs:string" minOccurs="0" />
+              <xs:element name="Op_x0020_JIT_x0020_Start" msprop:Generator_ColumnVarNameInTable="columnOp_JIT_Start" msprop:Generator_ColumnPropNameInRow="Op_JIT_Start" msprop:Generator_ColumnPropNameInTable="Op_JIT_StartColumn" msprop:Generator_UserColumnName="Op JIT Start" type="xs:dateTime" minOccurs="0" />
+              <xs:element name="Total_x0020_Reqd_x0020_Qty" msprop:Generator_ColumnVarNameInTable="columnTotal_Reqd_Qty" msprop:Generator_ColumnPropNameInRow="Total_Reqd_Qty" msprop:Generator_ColumnPropNameInTable="Total_Reqd_QtyColumn" msprop:Generator_UserColumnName="Total Reqd Qty" type="xs:decimal" minOccurs="0" />
+              <xs:element name="Resources" msprop:Generator_ColumnVarNameInTable="columnResources" msprop:Generator_ColumnPropNameInRow="Resources" msprop:Generator_ColumnPropNameInTable="ResourcesColumn" msprop:Generator_UserColumnName="Resources" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

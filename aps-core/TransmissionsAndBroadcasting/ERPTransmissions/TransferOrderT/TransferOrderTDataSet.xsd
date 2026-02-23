@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="TransferOrderTDataSet" targetNamespace="http://tempuri.org/TransferOrderTDataSet.xsd" xmlns:mstns="http://tempuri.org/TransferOrderTDataSet.xsd" xmlns="http://tempuri.org/TransferOrderTDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="TransferOrderTDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="TransferOrderTDataSet" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="TransferOrderTDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="TransferOrder" msprop:Generator_RowEvHandlerName="TransferOrderRowChangeEventHandler" msprop:Generator_RowDeletedName="TransferOrderRowDeleted" msprop:Generator_RowDeletingName="TransferOrderRowDeleting" msprop:Generator_RowEvArgName="TransferOrderRowChangeEvent" msprop:Generator_TablePropName="TransferOrder" msprop:Generator_RowChangedName="TransferOrderRowChanged" msprop:Generator_UserTableName="TransferOrder" msprop:Generator_RowChangingName="TransferOrderRowChanging" msprop:Generator_RowClassName="TransferOrderRow" msprop:Generator_TableClassName="TransferOrderDataTable" msprop:Generator_TableVarName="tableTransferOrder">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="ExternalId" msprop:Generator_ColumnPropNameInTable="ExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ExternalId" msprop:Generator_UserColumnName="ExternalId" msprop:Generator_ColumnVarNameInTable="columnExternalId" type="xs:string" />
+              <xs:element name="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:nullValue="_null" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_UserColumnName="Name" msprop:Generator_ColumnVarNameInTable="columnName" type="xs:string" />
+              <xs:element name="Description" msprop:Generator_ColumnPropNameInTable="DescriptionColumn" msprop:nullValue="_null" msprop:Generator_ColumnPropNameInRow="Description" msprop:Generator_UserColumnName="Description" msprop:Generator_ColumnVarNameInTable="columnDescription" type="xs:string" minOccurs="0" />
+              <xs:element name="Notes" msprop:Generator_ColumnPropNameInTable="NotesColumn" msprop:nullValue="_null" msprop:Generator_ColumnPropNameInRow="Notes" msprop:Generator_UserColumnName="Notes" msprop:Generator_ColumnVarNameInTable="columnNotes" type="xs:string" minOccurs="0" />
+              <xs:element name="Closed" msprop:Generator_ColumnPropNameInTable="ClosedColumn" msprop:Generator_ColumnPropNameInRow="Closed" msprop:Generator_UserColumnName="Closed" msprop:Generator_ColumnVarNameInTable="columnClosed" type="xs:boolean" default="false" />
+              <xs:element name="Priority" msprop:Generator_ColumnPropNameInTable="PriorityColumn" msprop:Generator_ColumnPropNameInRow="Priority" msprop:Generator_UserColumnName="Priority" msprop:Generator_ColumnVarNameInTable="columnPriority" type="xs:int" minOccurs="0" />
+              <xs:element name="UserFields" msprop:Generator_ColumnPropNameInTable="UserFieldsColumn" msprop:nullValue="_null" msprop:Generator_ColumnPropNameInRow="UserFields" msprop:Generator_UserColumnName="UserFields" msprop:Generator_ColumnVarNameInTable="columnUserFields" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="TransferOrderDistribution" msprop:Generator_RowEvHandlerName="TransferOrderDistributionRowChangeEventHandler" msprop:Generator_RowDeletedName="TransferOrderDistributionRowDeleted" msprop:Generator_RowDeletingName="TransferOrderDistributionRowDeleting" msprop:Generator_RowEvArgName="TransferOrderDistributionRowChangeEvent" msprop:Generator_TablePropName="TransferOrderDistribution" msprop:Generator_RowChangedName="TransferOrderDistributionRowChanged" msprop:Generator_UserTableName="TransferOrderDistribution" msprop:Generator_RowChangingName="TransferOrderDistributionRowChanging" msprop:Generator_RowClassName="TransferOrderDistributionRow" msprop:Generator_TableClassName="TransferOrderDistributionDataTable" msprop:Generator_TableVarName="tableTransferOrderDistribution">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="ExternalID" msprop:Generator_ColumnPropNameInTable="ExternalIDColumn" msprop:Generator_ColumnPropNameInRow="ExternalID" msprop:Generator_UserColumnName="ExternalID" msprop:Generator_ColumnVarNameInTable="columnExternalID" type="xs:string" />
+              <xs:element name="TransferOrderExternalId" msprop:Generator_ColumnPropNameInTable="TransferOrderExternalIdColumn" msprop:nullValue="_null" msprop:Generator_ColumnPropNameInRow="TransferOrderExternalId" msprop:Generator_UserColumnName="TransferOrderExternalId" msprop:Generator_ColumnVarNameInTable="columnTransferOrderExternalId" type="xs:string" default="&quot;&quot;" />
+              <xs:element name="FromWarehouseExternalId" msprop:Generator_ColumnPropNameInTable="FromWarehouseExternalIdColumn" msprop:nullValue="_null" msprop:Generator_ColumnPropNameInRow="FromWarehouseExternalId" msprop:Generator_UserColumnName="FromWarehouseExternalId" msprop:Generator_ColumnVarNameInTable="columnFromWarehouseExternalId" type="xs:string" default="&quot;&quot;" />
+              <xs:element name="ToWarehouseExternalId" msprop:Generator_ColumnPropNameInTable="ToWarehouseExternalIdColumn" msprop:nullValue="_null" msprop:Generator_ColumnPropNameInRow="ToWarehouseExternalId" msprop:Generator_UserColumnName="ToWarehouseExternalId" msprop:Generator_ColumnVarNameInTable="columnToWarehouseExternalId" type="xs:string" default="&quot;&quot;" />
+              <xs:element name="ItemExternalId" msprop:Generator_ColumnPropNameInTable="ItemExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ItemExternalId" msprop:Generator_UserColumnName="ItemExternalId" msprop:Generator_ColumnVarNameInTable="columnItemExternalId" type="xs:string" default="&quot;&quot;" />
+              <xs:element name="QtyOrdered" msprop:Generator_ColumnPropNameInTable="QtyOrderedColumn" msprop:Generator_ColumnPropNameInRow="QtyOrdered" msprop:Generator_UserColumnName="QtyOrdered" msprop:Generator_ColumnVarNameInTable="columnQtyOrdered" type="xs:decimal" />
+              <xs:element name="QtyShipped" msprop:Generator_ColumnPropNameInTable="QtyShippedColumn" msprop:Generator_ColumnPropNameInRow="QtyShipped" msprop:Generator_UserColumnName="QtyShipped" msprop:Generator_ColumnVarNameInTable="columnQtyShipped" type="xs:decimal" />
+              <xs:element name="QtyReceived" msprop:Generator_ColumnPropNameInTable="QtyReceivedColumn" msprop:Generator_ColumnPropNameInRow="QtyReceived" msprop:Generator_UserColumnName="QtyReceived" msprop:Generator_ColumnVarNameInTable="columnQtyReceived" type="xs:decimal" />
+              <xs:element name="MinSourceQty" msprop:Generator_ColumnPropNameInTable="MinSourceQtyColumn" msprop:Generator_ColumnPropNameInRow="MinSourceQty" msprop:Generator_UserColumnName="MinSourceQty" msprop:Generator_ColumnVarNameInTable="columnMinSourceQty" type="xs:decimal" default="0" minOccurs="0" />
+              <xs:element name="MaxSourceQty" msprop:Generator_ColumnPropNameInTable="MaxSourceQtyColumn" msprop:Generator_ColumnPropNameInRow="MaxSourceQty" msprop:Generator_UserColumnName="MaxSourceQty" msprop:Generator_ColumnVarNameInTable="columnMaxSourceQty" type="xs:decimal" default="0" minOccurs="0" />
+              <xs:element name="MaterialSourcing" msprop:Generator_ColumnPropNameInTable="MaterialSourcingColumn" msprop:nullValue="_null" msprop:Generator_ColumnPropNameInRow="MaterialSourcing" msprop:Generator_UserColumnName="MaterialSourcing" msprop:Generator_ColumnVarNameInTable="columnMaterialSourcing" type="xs:string" default="&quot;&quot;" minOccurs="0" />
+              <xs:element name="MaterialAllocation" msprop:Generator_ColumnPropNameInTable="MaterialAllocationColumn" msprop:nullValue="_null" msprop:Generator_ColumnPropNameInRow="MaterialAllocation" msprop:Generator_UserColumnName="MaterialAllocation" msprop:Generator_ColumnVarNameInTable="columnMaterialAllocation" type="xs:string" default="UseOldestFirst" minOccurs="0" />
+              <xs:element name="ScheduledShipDate" msprop:Generator_ColumnPropNameInTable="ScheduledShipDateColumn" msprop:Generator_ColumnPropNameInRow="ScheduledShipDate" msprop:Generator_UserColumnName="ScheduledShipDate" msprop:Generator_ColumnVarNameInTable="columnScheduledShipDate" type="xs:dateTime" />
+              <xs:element name="ScheduledReceiveDate" msprop:Generator_ColumnPropNameInTable="ScheduledReceiveDateColumn" msprop:Generator_ColumnPropNameInRow="ScheduledReceiveDate" msprop:Generator_UserColumnName="ScheduledReceiveDate" msprop:Generator_ColumnVarNameInTable="columnScheduledReceiveDate" type="xs:dateTime" />
+              <xs:element name="Closed" msprop:Generator_ColumnPropNameInTable="ClosedColumn" msprop:Generator_ColumnPropNameInRow="Closed" msprop:Generator_UserColumnName="Closed" msprop:Generator_ColumnVarNameInTable="columnClosed" type="xs:boolean" default="false" />
+              <xs:element name="FromStorageAreaExternalId" msprop:Generator_UserColumnName="FromStorageAreaExternalId" msprop:Generator_ColumnPropNameInTable="FromStorageAreaExternalIdColumn" msprop:Generator_ColumnPropNameInRow="FromStorageAreaExternalId" msprop:Generator_ColumnVarNameInTable="columnFromStorageAreaExternalId" type="xs:string" minOccurs="0" />
+              <xs:element name="ToStorageAreaExternalId" msprop:Generator_UserColumnName="ToStorageAreaExternalId" msprop:Generator_ColumnPropNameInTable="ToStorageAreaExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ToStorageAreaExternalId" msprop:Generator_ColumnVarNameInTable="columnToStorageAreaExternalId" type="xs:string" minOccurs="0" />
+              <xs:element name="PreferEmptyStorageArea" msprop:Generator_ColumnPropNameInRow="PreferEmptyStorageArea" msprop:Generator_ColumnPropNameInTable="PreferEmptyStorageAreaColumn" msprop:Generator_ColumnVarNameInTable="columnPreferEmptyStorageArea" msprop:Generator_UserColumnName="PreferEmptyStorageArea" type="xs:boolean" minOccurs="0" />
+              <xs:element name="OverrideStorageConstraint" msprop:Generator_ColumnPropNameInRow="OverrideStorageConstraint" msprop:Generator_ColumnPropNameInTable="OverrideStorageConstraintColumn" msprop:Generator_ColumnVarNameInTable="columnOverrideStorageConstraint" msprop:Generator_UserColumnName="OverrideStorageConstraint" type="xs:boolean" minOccurs="0" />
+              <xs:element name="AllowPartialAllocations" msprop:Generator_ColumnPropNameInRow="AllowPartialAllocations" msprop:Generator_ColumnPropNameInTable="AllowPartialAllocationsColumn" msprop:Generator_ColumnVarNameInTable="columnAllowPartialAllocations" msprop:Generator_UserColumnName="AllowPartialAllocations" type="xs:boolean" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:TransferOrder" />
+      <xs:field xpath="mstns:ExternalId" />
+    </xs:unique>
+    <xs:unique name="TransferOrderDistribution_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:TransferOrderDistribution" />
+      <xs:field xpath="mstns:ExternalID" />
+      <xs:field xpath="mstns:ItemExternalId" />
+    </xs:unique>
+  </xs:element>
+  <xs:annotation>
+    <xs:appinfo>
+      <msdata:Relationship name="TransferOrder_TransferOrderDistribution" msdata:parent="TransferOrder" msdata:child="TransferOrderDistribution" msdata:parentkey="ExternalId" msdata:childkey="TransferOrderExternalId" msprop:Generator_UserParentTable="TransferOrder" msprop:Generator_UserChildTable="TransferOrderDistribution" msprop:Generator_RelationVarName="relationTransferOrder_TransferOrderDistribution" msprop:Generator_ChildPropName="GetTransferOrderDistributionRows" msprop:Generator_ParentPropName="TransferOrderRow" msprop:Generator_UserRelationName="TransferOrder_TransferOrderDistribution" />
+    </xs:appinfo>
+  </xs:annotation>
+</xs:schema>

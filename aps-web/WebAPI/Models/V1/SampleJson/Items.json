@@ -1,0 +1,26 @@
+[
+  {
+    "importDate": "2024-02-05T00:00:00",
+    "ItemId": 1,
+    "Name": "Sample Item",
+    "Description": "This is a sample item.",
+    "ExternalId": "ABC123",
+    "Notes": "Some notes about the item.",
+    "Source": "Sample Source",
+    "ItemType": "Sample Type",
+    "DefaultLeadTimeDays": 5.0,
+    "AttributesSummary": "Attribute1: Value1, Attribute2: Value2",
+    "BatchSize": 10.0,
+    "BatchWindowDays": 7.0,
+    "ItemGroup": "Sample Group",
+    "MinOrderQty": 2.0,
+    "MaxOrderQty": 100.0,
+    "MinOrderQtyRoundupLimit": 5.0,
+    "JobAutoSplitQty": 20.0,
+    "Plan": true,
+    "ShelfLifeDays": 30.0,
+    "TransferQty": 50.0,
+    "RollupAttributesToParent": true,
+    "Cost": 25.99
+  }
+]

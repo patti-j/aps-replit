@@ -1,0 +1,90 @@
+﻿<DxPopup @ref="BulkEditorPopup"
+         ShowCloseButton="true"
+         HeaderText="Bulk Editor"
+         Width="700px"
+         Visible="@BulkEditorVisible"
+         Closed="HandleDataChanged">
+    <DxFormLayout>
+        <DxFormLayoutGroup Caption="Scenario Settings">
+            <DxFormLayoutItem>
+                <DxSpinEdit @bind-Value="@BulkEditorValues.ScenarioLimit" />
+            </DxFormLayoutItem>
+        </DxFormLayoutGroup>
+
+        <DxFormLayoutGroup Caption="Copilot Settings">
+            <DxFormLayoutItem Caption="Copilot Enabled:">
+                <DxCheckBox @bind-Checked="@BulkEditorValues.CopilotEnabled" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Average CPU Usage:">
+                <DxSpinEdit @bind-Value="@BulkEditorValues.AverageCpuUsage" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Boost Percentage:">
+                <DxSpinEdit @bind-Value="@BulkEditorValues.BoostPercentage" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Burst Duration (Hours):">
+                <DxTextBox @bind-Text="@BulkEditorValues.BurstDuration" />
+            </DxFormLayoutItem>
+        </DxFormLayoutGroup>
+
+        <DxFormLayoutGroup Caption="Actions">
+            <DxButton RenderStyle="ButtonRenderStyle.Info" CssClass="m-3" Click="@HandleRestoreDefaultsAsync">
+                Restore Defaults
+            </DxButton>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" CssClass="m-3" Click="@HandleSaveAsync">
+                Save
+            </DxButton>
+        </DxFormLayoutGroup>
+        <DxFormLayoutGroup Caption="Import">
+            <DxButton RenderStyle="ButtonRenderStyle.Warning" CssClass="m-3" Click="@HandleImport">
+                Import From Server Manager
+            </DxButton>
+        </DxFormLayoutGroup>
+
+    </DxFormLayout>
+</DxPopup>
+
+@code {
+    [Parameter]
+    public EventCallback<BulkEditorValues> BulkEditorValuesChanged { get; set; }
+    [Parameter]
+    public BulkEditorValues BulkEditorValues { get; set; }
+    [Parameter]
+    public EventCallback PAImportTriggered { get; set; }
+
+    private DxPopup BulkEditorPopup { get; set; }
+    private bool BulkEditorVisible { get; set; }
+
+    public void Show()
+    {
+        BulkEditorVisible = true;
+        StateHasChanged();
+    }
+
+    public void Hide()
+    {
+        BulkEditorVisible = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleSaveAsync()
+    {
+        HandleDataChanged();
+    }
+
+    private void HandleRestoreDefaultsAsync()
+    {
+        BulkEditorValues = new BulkEditorValues();
+    }
+
+    private async Task HandleDataChanged()
+    {
+        BulkEditorVisible = false;
+        await BulkEditorValuesChanged.InvokeAsync(BulkEditorValues);
+        StateHasChanged();
+    }
+
+    private async Task HandleImport()
+    {
+        await PAImportTriggered.InvokeAsync();
+    }
+}

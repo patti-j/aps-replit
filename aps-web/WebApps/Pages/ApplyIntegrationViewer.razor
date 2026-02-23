@@ -1,0 +1,152 @@
+﻿@page "/servermanager/applyintegrations"
+@using Utils = ReportsWebApp.Shared.Utils
+@inject IDBIntegrationService IntegrationService
+@inject IUserService UserService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>Apply Integrations to Planning Areas</h3>
+
+@if (planningAreas == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid Data="@planningAreas" ShowFilterRow="true" PageSize="10" @ref="m_grid"
+            UnboundColumnData="UnboundColumnData">
+        <Columns>
+            <DxGridCommandColumn Width="100px" NewButtonVisible="false">
+                <CellDisplayTemplate Context="context">
+                    @{
+                        var pa = (PADetails)context.DataItem;
+                    }
+                    <ActionDropdown DataItem="pa" Actions="_actions.Where(a => a.ShouldActionButtonBeEnabled(pa))" />
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+            <DxGridDataColumn FieldName="Name" Caption="Planning Area" />
+            <DxGridDataColumn FieldName="Version" />
+            <DxGridDataColumn FieldName="CurrentIntegration.Name" Caption="Integration" />
+            <DxGridDataColumn FieldName="CurrentIntegration.Version" Caption="Integration Version" />
+            <DxGridDataColumn FieldName="DBIntegrationLastAppliedTime" Caption="Last Applied" UnboundType="GridUnboundColumnType.Object"/>
+        </Columns>
+    </DxGrid>
+}
+
+<DxPopup @bind-Visible="isIntegrationDialogVisible"
+         ShowCloseButton="true"
+         Width="600px"
+         HeaderText="Select Integration"
+         CssClass="integration-popup">
+    <BodyContentTemplate>
+        @if (selectedPA != null)
+    {
+            <DxComboBox Data="@availableIntegrations"
+                        @bind-Value="selectedIntegration"
+                        TextFieldName="Name"
+                        ValueFieldName="Id"
+                        ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                        NullText="Select an integration..."
+                        Caption="Integration"
+                        CssClass="mb-2" />
+
+            @if (selectedIntegration != null)
+            {
+                <div class="integration-details shadow-sm p-3 rounded border mb-3">
+                    <div class="row">
+                        <div class="col-6 label">Version</div>
+                        <div class="col-6 value">@selectedIntegration.Version</div>
+
+                        <div class="col-6 label">Created By</div>
+                        <div class="col-6 value">@(selectedIntegration.CreatedByUser?.FullName ?? UserService.GetUserById(selectedIntegration.CreatedBy)?.FullName ?? "Unknown")</div>
+
+                        <div class="col-6 label">Created</div>
+                        <div class="col-6 value">@selectedIntegration.CreatedDate.ToLocalTime()</div>
+                        <div class="integration-notes-container">
+                            <div class="col-12 label mt-2">Notes</div>
+                            <div class="col-12 value">@selectedIntegration.VersionNotes</div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="text-end">
+                <DxButton RenderStyleMode="ButtonRenderStyleMode.Contained"
+                          Click="ConfirmApplyIntegration"
+                          Enabled="@(selectedIntegration != null)"
+                          Text="Apply Integration"
+                          CssClass="btn btn-primary px-4" />
+            </div>
+    }
+    </BodyContentTemplate>
+</DxPopup>
+@code {
+    private List<PADetails>? planningAreas;
+    private IEnumerable<ActionItem<PADetails>> _actions = new List<ActionItem<PADetails>>();
+    private bool isIntegrationDialogVisible = false;
+    private PADetails? selectedPA;
+    private List<DBIntegration> availableIntegrations = new();
+    private DBIntegration? selectedIntegration;
+    private User? currentUser;
+    private DxGrid m_grid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(currentUser, Permission.ViewIntegration, NavigationManager, true)) return;
+        
+        planningAreas = await IntegrationService.GetCompanyPlanningAreas(currentUser.CompanyId);
+
+        _actions = new List<ActionItem<PADetails>>
+        {
+            new ActionItem<PADetails>
+            {
+                ActionText = "Apply Integration",
+                IconCssClass = "fa fa-tachometer",
+                Action = ShowIntegrationDialog,
+                ShouldActionButtonBeEnabled = (pa) =>
+                {
+                    return currentUser.IsAuthorizedFor(Permission.EditIntegration);
+                },
+            }
+        };
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(m_grid);
+        base.OnAfterRender(firstRender);
+    }
+
+    private async Task ShowIntegrationDialog(PADetails pa)
+    {
+        selectedPA = pa;
+        selectedIntegration = null;
+        availableIntegrations = await IntegrationService.GetAvailableIntegrations(pa.CompanyId);
+        isIntegrationDialogVisible = true;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmApplyIntegration()
+    {
+        if (selectedPA != null && selectedIntegration != null)
+        {
+            await IntegrationService.ApplyIntegrationToPlanningArea(selectedPA.Id, selectedIntegration.Id);
+            planningAreas = await IntegrationService.GetCompanyPlanningAreas(selectedPA.CompanyId);
+            isIntegrationDialogVisible = false;
+            selectedIntegration = null;
+            selectedPA = null;
+            StateHasChanged();
+        }
+    }
+
+    private void UnboundColumnData(GridUnboundColumnDataEventArgs a_data)
+    {
+        var pa = (PADetails)a_data.DataItem;
+        a_data.Value = a_data.FieldName switch
+        {
+            "DBIntegrationLastAppliedTime" => Utils.FormatUtcDate(pa.DBIntegrationLastAppliedTime, currentUser),
+            _ => null
+        };
+    }
+
+}

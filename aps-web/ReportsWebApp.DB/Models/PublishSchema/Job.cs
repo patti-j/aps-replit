@@ -1,0 +1,181 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace ReportsWebApp.DB.Models;
+
+public partial class Job
+{
+    public DateTime PublishDate { get; set; }
+
+    public long JobId { get; set; }
+
+    public string? Customers { get; set; }
+
+    public DateTime? EntryDate { get; set; }
+
+    public DateTime? NeedDateTime { get; set; }
+
+    public string? Classification { get; set; }
+
+    public string? Commitment { get; set; }
+
+    public bool? Hot { get; set; }
+
+    public string? HotReason { get; set; }
+
+    public int? Importance { get; set; }
+
+    public bool? Cancelled { get; set; }
+
+    public double? LatePenaltyCost { get; set; }
+
+    public double? MaxEarlyDeliveryDays { get; set; }
+
+    public int? Priority { get; set; }
+
+    public string? Type { get; set; }
+
+    public double? Revenue { get; set; }
+
+    public double? Profit { get; set; }
+
+    public bool? Scheduled { get; set; }
+
+    public DateTime? ScheduledStartDateTime { get; set; }
+
+    public DateTime? ScheduledEndDateTime { get; set; }
+
+    public string? LeadResource { get; set; }
+
+    public int? StartsInDays { get; set; }
+
+    public double? LatenessDays { get; set; }
+
+    public bool? Late { get; set; }
+
+    public bool? Overdue { get; set; }
+
+    public string? Description { get; set; }
+
+    public string? Notes { get; set; }
+
+    public bool? Finished { get; set; }
+
+    public string? Name { get; set; }
+
+    public bool? DoNotDelete { get; set; }
+
+    public string? ExternalId { get; set; }
+
+    public string? Locked { get; set; }
+
+    public string? Anchored { get; set; }
+
+    public string? OrderNumber { get; set; }
+
+    public string? OnHold { get; set; }
+
+    public string? OnHoldReason { get; set; }
+
+    public bool? Template { get; set; }
+
+    public string? CustomerEmail { get; set; }
+
+    public string? AgentEmail { get; set; }
+
+    public bool? DoNotSchedule { get; set; }
+
+    public string? ColorCode { get; set; }
+
+    public string? EntryMethod { get; set; }
+
+    public DateTime? HoldUntil { get; set; }
+
+    public int? PercentFinished { get; set; }
+
+    public string? ScheduledStatus { get; set; }
+
+    public double? StandardHours { get; set; }
+
+    public string? AttributesSummary { get; set; }
+
+    public string? Bottlenecks { get; set; }
+
+    public bool? CanSpanPlants { get; set; }
+
+    public bool? CommitmentPreserved { get; set; }
+
+    public bool? DoNotDeletePreserved { get; set; }
+
+    public bool? DoNotSchedulePreserved { get; set; }
+
+    public DateTime? EarliestDelivery { get; set; }
+
+    public bool? EnteredToday { get; set; }
+
+    public double? ExpectedRunHours { get; set; }
+
+    public double? ExpectedSetupHours { get; set; }
+
+    public string? FailedToScheduleReason { get; set; }
+
+    public bool? Hold { get; set; }
+
+    public string? HoldReason { get; set; }
+
+    public double? LaborCost { get; set; }
+
+    public double? MachineCost { get; set; }
+
+    public double? MaterialCost { get; set; }
+
+    public double? OverdueDays { get; set; }
+
+    public int? PercentOfStandardHrs { get; set; }
+
+    public int? PercentOverStandardHrs { get; set; }
+
+    public string? Product { get; set; }
+
+    public string? ProductDescription { get; set; }
+
+    public double? Qty { get; set; }
+
+    public double? ReportedRunHours { get; set; }
+
+    public double? ReportedSetupHours { get; set; }
+
+    public double? SchedulingHours { get; set; }
+
+    public bool? Started { get; set; }
+
+    public double? Throughput { get; set; }
+
+    public double? ShippingCost { get; set; }
+
+    public double? ExpectedLatePenaltyCost { get; set; }
+
+    public double? SubcontractCost { get; set; }
+
+    public double? TotalCost { get; set; }
+
+    public bool? Printed { get; set; }
+
+    public bool? Invoiced { get; set; }
+
+    public string? Shipped { get; set; }
+
+    public string? Destination { get; set; }
+
+    public bool? Reviewed { get; set; }
+
+    public int? PercentOfMaterialsAvailable { get; set; }
+
+    public string? SuccessorOrderNumbers { get; set; }
+
+    public string? ResourceNames { get; set; }
+
+    public int? LowLevelCode { get; set; }
+
+    public string? InstanceId { get; set; }
+}

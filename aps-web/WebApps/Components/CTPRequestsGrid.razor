@@ -1,0 +1,239 @@
+﻿@using ReportsWebApp.Pages
+@using ReportsWebApp.DB.Models
+@using ReportsWebApp.Helpers
+@using ReportsWebApp.Resources.Components
+@inject ServiceContainer ServiceContainer
+
+<div class="@(IsSlidingPanel ? "sliding-panel" : "") @(IsSlidingPanel ? "" : "no-borders")  @(IsVisible ? "visible" : "")">
+    <DxFormLayout>
+        <DxFormLayoutGroup>
+            <HeaderTemplate>
+                <ServerContextHeader Subtitle="@GetPopupSubtitle()" Title="Capable to Promise (CTP) Request Management "
+                                   ShowSaveAsCopyButton="false" ShowSaveButton="false" ShowQuestionButton="true" OnClose="ClosePanel"
+                                   ShowChangeButton="@(!IsSlidingPanel)" OnChange="TogglePlanningAreaSelector" BigTitle="@(!IsSlidingPanel)"
+                                   ShowCloseButton="IsSlidingPanel" OnQuestion="ToggleQuestionDropdown" />
+            </HeaderTemplate>
+            <Items>
+                <div class="mt-3 @(IsSlidingPanel ? "mx-3" : "")" style="@($"height: {(IsSlidingPanel ? "95vh" : "100%")}")">
+
+                    <DxGrid Data="@CtpRequests"
+                            KeyFieldName="RequestId"
+                            @ref="grid"
+                            PageSize="10"
+                            CssClass="ch-480"
+                            PagerPosition="GridPagerPosition.TopAndBottom"
+                            PageSizeSelectorVisible="true"
+                            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+                            PageSizeSelectorAllRowsItemVisible="false"
+                            PagerSwitchToInputBoxButtonCount="10"
+                            PagerVisibleNumericButtonCount="10"
+                            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+                        <Columns>
+                            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                                <HeaderTemplate>
+                                    <DxButton Visible="@(!HideAddButton)" IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1" Text="Add" Click="@OnAddButtonClick" />
+                                </HeaderTemplate>
+                                <CellDisplayTemplate>
+                                    @{
+                                        var dataItem = context.DataItem;
+                                    }
+                                    <ActionDropdown DataItem="dataItem as CtpRequest" Actions="_actions" />
+                                </CellDisplayTemplate>
+                            </DxGridCommandColumn>
+                            <DxGridDataColumn FieldName="RequestId" Caption="Request Id" />
+                            <DxGridDataColumn FieldName="ItemExternalId" Caption="Item External ID" />
+                            <DxGridDataColumn FieldName="WarehouseExternalId" Caption="Warehouse External ID" />
+                            <DxGridDataColumn FieldName="RequiredQty" Caption="Required Quantity" />
+                            <DxGridDataColumn FieldName="NeedDate" Caption="Need Date" DisplayFormat="d" /> <!-- does this need to be localized? -->
+                            <DxGridDataColumn FieldName="Status" Caption="Status" />
+                            <DxGridDataColumn FieldName="Priority" Caption="Priority" />
+                            <DxGridDataColumn FieldName="ScheduledStart" Caption="Scheduled Start" DisplayFormat="d" />
+                            <DxGridDataColumn FieldName="ScheduledFinish" Caption="Scheduled Finish" DisplayFormat="d" />
+                        </Columns>
+                    </DxGrid>
+                </div>
+            </Items>
+        </DxFormLayoutGroup>
+    </DxFormLayout>
+</div>
+
+@if (!IsSlidingPanel)
+{
+    <CTPEstimateTile @ref="estimateTile" ctpRequest="SelectedCtpRequest" OnSave="OnSave" />
+}
+<PlanningAreaSelector @bind-ShowSelector="@isPlanningAreaSelectorVisible" PlanningAreaSelected="OnPlanningAreaSelectedAsync" />
+
+<DxDropDown @bind-IsOpen="@isQuestionDropdownOpen"
+            MinWidth="max(45vw, 250px)"
+            PositionMode="DropDownPositionMode.Bottom"
+            PositionTarget="#question-area"
+            RestrictionTarget="#Navigation-DropDown-Customization"
+            CloseMode="DropDownCloseMode.Close"
+            PreventCloseOnPositionTargetClick="true"
+            HeaderVisible="true"
+            HeaderText="CTP Request Overview"
+            FooterVisible="false">
+    <BodyContentTemplate>
+        <CTPExplanation />
+    </BodyContentTemplate>
+</DxDropDown>
+<ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+
+@code {
+
+    #region Parameters
+
+    [Parameter]
+    public bool IsSlidingPanel { get; set; } = false;
+
+    [Parameter]
+    public bool HideAddButton { get; set; } = false;
+
+    public IEnumerable<CtpRequest> CtpRequests { get; set; }
+    public PADetails SelectedPlanningArea { get; set; } = new();
+    public User currentUser;
+
+    #endregion
+
+    #region Private Fields
+
+    private IGrid? grid { get; set; }
+    private bool isQuestionDropdownOpen { get; set; } = false; 
+    private ConfirmationDialog Dialog;
+    private bool isPlanningAreaSelectorVisible { get; set; } = false;
+    private bool isEditorOpen { get; set; } = false;
+    private CTPEstimateTile estimateTile { get; set; }
+    private CtpRequest SelectedCtpRequest { get; set; } = new();
+    private bool IsVisible { get; set; } = false;
+    private IEnumerable<ActionItem<CtpRequest>> _actions;
+
+    #endregion
+
+    #region Lifecycle Methods
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(currentUser != null)
+            await CheckUserAuthorizationAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _actions = new List<ActionItem<CtpRequest>>
+        {
+            new ActionItem<CtpRequest>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-info-circle",
+                Action = async (item) => await OpenEditorAsync((CtpRequest)item)
+            },
+            new ActionItem<CtpRequest>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fa fa-trash",
+                Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog),
+            }
+        };
+    }
+
+    #endregion
+
+    #region UI Methods
+
+    private string GetPopupSubtitle()
+    {
+        return $"for Planning Area '{SelectedPlanningArea?.Name}' ({SelectedPlanningArea?.Version})";
+    }
+
+    public async Task ShowPanelAsync()
+    {
+        IsVisible = true;
+        await LoadDataAsync();
+        StateHasChanged();
+    }
+
+    private void ClosePanel()
+    {
+        IsVisible = false;
+        StateHasChanged();
+    }
+
+    private void TogglePlanningAreaSelector()
+    {
+        isPlanningAreaSelectorVisible = !isPlanningAreaSelectorVisible;
+        StateHasChanged();
+    }
+
+    private void ToggleQuestionDropdown()
+    {
+        isQuestionDropdownOpen = !isQuestionDropdownOpen;
+    }
+
+    private async Task OnAddButtonClick()
+    {
+        await OpenEditorAsync(new CtpRequest(), true);
+    }
+
+    private async Task<bool> OnSave(CtpRequest ctpRequest)
+    {
+        await LoadDataAsync();
+        return true;
+    }
+
+    #endregion
+
+    #region Data Methods
+
+    public async Task LoadDataAsync()
+    {
+        SelectedPlanningArea = await ServiceContainer.PlanningAreaDataService
+            .GetSelectedPlanningAreaByCompanyIdAndUserIdAsync(currentUser.CompanyId, currentUser.Id);
+        CtpRequests = await ServiceContainer.CTPRequestService.GetCtpRequestsAsync(SelectedPlanningArea.Id);
+        StateHasChanged();
+    }
+
+    protected async Task DeleteItem(object a_item)
+    {
+        var editModel = a_item as CtpRequest;
+        if (editModel != null)
+        {
+            bool result = await ServiceContainer.CTPRequestService.RemoveRequestAsync(editModel);
+            if (result)
+            {
+                CtpRequests = CtpRequests.Where(r => r.RequestId != editModel.RequestId).ToList();
+            }
+        }
+        StateHasChanged();
+    }
+
+    private async Task OpenEditorAsync(CtpRequest model, bool isNew = false)
+    {
+        if (isEditorOpen) return;
+
+        isEditorOpen = true;
+        SelectedCtpRequest = model;
+        StateHasChanged();
+        await estimateTile.ShowPanelAsync();
+        isEditorOpen = false;
+    }
+
+    private async Task OnPlanningAreaSelectedAsync()
+    {
+        isPlanningAreaSelectorVisible = false;
+        await LoadDataAsync();
+        if (SelectedPlanningArea == null)
+        {
+            // Handle null case, potentially show an error or log it.
+            return;
+        }
+    }
+
+    private async Task<bool> CheckUserAuthorizationAsync()
+    {
+        currentUser = await ServiceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(currentUser, null, NavigationManager)) return false;
+        return true;
+    }
+
+    #endregion
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "importDate": "2024-01-11T12:34:56",
+    "CapabilityId": 12345,
+    "Name": "Sample Capability",
+    "Description": "This is a sample capability description.",
+    "Notes": "Some notes about the capability.",
+    "ExternalId": "CAP-001"
+  }
+]

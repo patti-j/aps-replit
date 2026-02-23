@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="e1a3bb5a-640d-45d2-a079-d3b50f4d6a09" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings>
+      <CollectionMapping TypeName="System.Collections.Generic.List`1" Category="List" />
+    </CollectionMappings>
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost:8788/APSWebService" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="APSWebService4.xsd" MetadataType="Schema" ID="76dfbf93-142b-4df9-a509-885352c0675a" SourceId="1" SourceUrl="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd4" />
+    <MetadataFile FileName="APSWebService41.xsd" MetadataType="Schema" ID="c0bb2371-fab7-41c4-a825-9c997803e44a" SourceId="1" SourceUrl="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd1" />
+    <MetadataFile FileName="APSWebService42.xsd" MetadataType="Schema" ID="593586bc-5f15-493d-9d38-8fb39ad34810" SourceId="1" SourceUrl="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd0" />
+    <MetadataFile FileName="APSWebService43.xsd" MetadataType="Schema" ID="b7d47106-59aa-4def-aba9-faee50eff57e" SourceId="1" SourceUrl="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd3" />
+    <MetadataFile FileName="APSWebService44.xsd" MetadataType="Schema" ID="acd50f71-f24f-421e-a6a6-9a31ac07bd12" SourceId="1" SourceUrl="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd2" />
+    <MetadataFile FileName="APSWebService1.disco" MetadataType="Disco" ID="8906206f-8f19-4de2-b59b-536af0326d31" SourceId="1" SourceUrl="http://desktop-kcipa6f:8788/APSWebService?disco" />
+    <MetadataFile FileName="APSWebService1.wsdl" MetadataType="Wsdl" ID="b00d553f-f4d0-44ac-81ea-f14f3fb2bad7" SourceId="1" SourceUrl="http://desktop-kcipa6f:8788/APSWebService?wsdl" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

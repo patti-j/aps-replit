@@ -1,0 +1,45 @@
+﻿@page "/paGroupViewer"
+
+@if (viewPermission)
+{
+    @* <PAGroupGrid PAGroups="PAGroups" RefreshComponent="RefreshComponent" /> *@
+}
+
+@code {
+
+    private User User { get; set; }
+
+    public List<PlanningAreaTag> PAGroups { get; set; } = new List<PlanningAreaTag>();
+    private bool viewPermission = false;
+
+    [Inject]
+    IUserService userService { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    IPlanningAreaDataService paDataService { get; set; }
+    [Inject] IAuthorizationService m_authService { get; set; }
+    [Inject]
+    NavigationManager Navigation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.EditUsers, NavigationManager)) return;
+        viewPermission = true;
+        await ReloadData();
+    }
+
+    private async Task ReloadData()
+    {
+        if (User.Exists())
+        {
+            PAGroups = await paDataService.GetGroupsForCompanyAsync(User.CompanyId);
+        }
+    }
+
+    private async Task RefreshComponent()
+    {
+        await ReloadData();
+    }
+}

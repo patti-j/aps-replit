@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+  <PropertyGroup>
+    <AssemblyName>PT.Transmissions</AssemblyName>
+    <RootNamespace>PT.Transmissions</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Update="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Update="System.Core">
+    </Reference>
+    <Reference Update="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Update="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Update="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+    <ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\PackageDefinitions\PackageDefinitions.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="RecurringCapacityIntervalTDataSet.cs">
+      <DependentUpon>RecurringCapacityIntervalTDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="RecurringCapacityIntervalTDataSet.Designer.cs">
+      <DependentUpon>RecurringCapacityIntervalTDataSet.xsd</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="RecurringCapacityIntervalTDataSet2.Designer.cs">
+      <DependentUpon>RecurringCapacityIntervalTDataSet2.xsd</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="RecurringCapacityIntervalTDataSet.xsc">
+      <DependentUpon>RecurringCapacityIntervalTDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="RecurringCapacityIntervalTDataSet.xsd">
+      <SubType>Designer</SubType>
+      <LastGenOutput>RecurringCapacityIntervalTDataSet.Designer.cs</LastGenOutput>
+      <Generator>MSDataSetGenerator</Generator>
+    </None>
+    <None Update="RecurringCapacityIntervalTDataSet.xss">
+      <DependentUpon>RecurringCapacityIntervalTDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="RecurringCapacityIntervalTDataSet2.xsc">
+      <DependentUpon>RecurringCapacityIntervalTDataSet2.xsd</DependentUpon>
+    </None>
+    <None Update="RecurringCapacityIntervalTDataSet2.xsd">
+      <SubType>Designer</SubType>
+      <LastGenOutput>RecurringCapacityIntervalTDataSet2.Designer.cs</LastGenOutput>
+      <Generator>MSDataSetGenerator</Generator>
+    </None>
+  </ItemGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

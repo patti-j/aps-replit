@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "AhaIntegration": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:55971;http://localhost:55972"
+    }
+  }
+}

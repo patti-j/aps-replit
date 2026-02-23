@@ -1,0 +1,219 @@
+﻿@using ReportsWebApp.DB.Services.Interfaces
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject IDarkModeService DarkModeStateService
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment WebHostEnvironment
+
+<ApplicationInsightsComponent></ApplicationInsightsComponent>
+<body data-bs-theme=@(_isDarkMode ? "dark" : "light")>
+    <div class="main">
+        <div class="content">
+            <div class="page">
+                <DxGridLayout CssClass="page-layout">
+                    <Rows>
+                        @if (IsMobileLayout)
+                        {
+                            <DxGridLayoutRow Areas="header" Height="auto"></DxGridLayoutRow>
+                            <DxGridLayoutRow Areas="sidebar" Height="auto"></DxGridLayoutRow>
+                            <DxGridLayoutRow Areas="content" />
+                        }
+                        else
+                        {
+                            <DxGridLayoutRow Areas="header header" Height="auto" />
+                            <DxGridLayoutRow Areas="@(IsSidebarExpanded ? "sidebar content" : "content content")" />
+                        }
+                    </Rows>
+                    <Columns>
+                        @if (!IsMobileLayout)
+                        {
+                            <DxGridLayoutColumn Width="auto" />
+                            <DxGridLayoutColumn />
+                        }
+                    </Columns>
+                    <Items>
+                        <DxGridLayoutItem Area="header" CssClass="layout-item">
+                            <Template>
+                                <Header @bind-ToggleOn="@IsSidebarExpanded"  />                                
+                            </Template>
+                        </DxGridLayoutItem>
+                        <DxGridLayoutItem Area="sidebar" CssClass="layout-item">
+                            <Template>
+                                <NavMenu StateCssClass="@NavMenuCssClass" />
+                            </Template>
+                        </DxGridLayoutItem>
+                        <DxGridLayoutItem Area="content" CssClass="content px-md-4 layout-item">
+                            <Template>
+                                <ErrorBoundary @ref="errorBoundary">
+                                    <ChildContent>
+                                        @Body
+                                        <DxToastProvider Name="MainLayout"
+                                                         MaxToastCount="3"
+                                                         AnimationType="ToastAnimationType.Slide" />
+                                    </ChildContent>
+                                    <ErrorContent>
+                                        @{
+                                            OnError(context);
+                                        }
+                                        <div class="error-boundary-content">
+                                            <DxPopup Visible="true"
+                                                 HeaderText="Error"
+                                                 ShowFooter="true"
+                                                 Closed="OnClose"
+                                                 HorizontalAlignment="HorizontalAlignment.Center">
+                                            <BodyContentTemplate Context="ctx">
+                                                <div class="popup-spaced">
+                                                        <span class="fa fa-times-circle color-red-main alert-icon" /><p>An error ocurred: @(context.Message)<br />Error Code: @correlationId</p>
+                                                </div>
+                                            </BodyContentTemplate>
+                                            <FooterContentTemplate Context="ctx">
+                                                    <DxButton Text="Back To Home" Click="() => BackToOverview(ctx)"></DxButton>
+                                                    <DxButton Text="Try Again" Click="() => CloseError(ctx)"></DxButton>
+                                            </FooterContentTemplate>
+                                        </DxPopup>
+                                        </div>
+                                    </ErrorContent>
+                                </ErrorBoundary>
+                            </Template>
+                        </DxGridLayoutItem>
+                    </Items>
+                </DxGridLayout>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="js/powerbiembed.js"></script>
+    <script src="js/powerbi.min.js"></script>
+    <script src="js/keyboard.js"></script>
+</body>
+<DxLayoutBreakpoint MaxWidth="1200"
+                    @bind-IsActive="@IsMobileLayout" />
+
+
+@code {
+    [Inject]
+    IAppInsightsLogger logger { get; set; }
+    ErrorBoundary errorBoundary;
+    [Inject]
+    IUserService userService { get; set; }
+    string correlationId = "Loading...";
+    Exception? currentException = null;
+
+    bool _isDarkMode;
+    string? NavMenuCssClass { get; set; }
+    bool _isMobileLayout;
+    bool IsMobileLayout
+    {
+        get => _isMobileLayout;
+        set
+        {
+            _isMobileLayout = value;
+            IsSidebarExpanded = !_isMobileLayout;
+        }
+    }
+
+    bool _isSidebarExpanded = true;
+    bool IsSidebarExpanded
+    {
+        get => _isSidebarExpanded;
+        set
+        {
+            if (_isSidebarExpanded != value)
+            {
+                NavMenuCssClass = value ? "expand" : "collapse";
+                _isSidebarExpanded = value;
+            }
+        }
+    }
+
+    private async Task OnError(Exception e)
+    {
+        if (e != currentException)
+        {
+            currentException = e;
+            var user = await userService.GetCurrentUserAsync(AuthenticationStateProvider);
+            correlationId = logger.LogError(e, user?.Email ?? "unknown", NavigationManager.Uri);
+            // Log exception to Sentry with full stack trace
+            SentrySdk.CaptureException(e);
+            StateHasChanged();
+        }
+    }
+
+    private void OnClose()
+    {
+        errorBoundary.Recover();
+    }
+
+    private void CloseError(IPopupElementInfo context)
+    {
+        context.CloseCallback.InvokeAsync();
+    }
+
+    private void BackToOverview(IPopupElementInfo context)
+    {
+        context.CloseCallback.InvokeAsync();
+        NavigationManager.NavigateTo("/");
+    }
+
+    protected override void OnInitialized()
+    {
+        _isDarkMode = DarkModeStateService.IsDarkMode; // Initialize the state from the service
+        DarkModeStateService.OnDarkModeChanged += HandleDarkModeChanged; // Subscribe to changes
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private readonly IWebHostEnvironment _webHostEnvironment;
+
+    private void NavigateToOverview()
+    {
+        errorBoundary.Recover();
+        NavigationManager.NavigateTo($"./");
+    }
+
+    private void Retry()
+    {
+        errorBoundary.Recover();
+    }
+
+    private bool scriptLoaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeVoidAsync("changeBryntumTheme", _isDarkMode ? "dark" : "light");
+    }
+
+    private void HandleDarkModeChanged(bool isDarkMode)
+    {
+        _isDarkMode = isDarkMode;
+        JSRuntime.InvokeVoidAsync("changeBryntumTheme", isDarkMode ? "dark" : "light");
+        StateHasChanged(); // Re-render the component with the new state
+    }
+
+    async void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        if (IsMobileLayout)
+        {
+            IsSidebarExpanded = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    public void Dispose()
+    {
+        // Unsubscribe from the events when the component is disposed
+        DarkModeStateService.OnDarkModeChanged -= HandleDarkModeChanged;
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

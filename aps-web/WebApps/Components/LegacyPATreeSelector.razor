@@ -1,0 +1,239 @@
+﻿@using ReportsWebApp.DB.Services.Interfaces
+@inject IPlanningAreaDataService _paService
+<div class="tree-container">
+    <DxTreeList Data="@PARows"
+                @ref="TreeList"
+                ChildrenFieldName="Children"
+                AllowSelectRowByClick="true"
+                ShowAllRows="true"
+                ShowFilterRow="true"
+                SelectedDataItemsChanged="OnSelectedDataItemChange"
+                TextWrapEnabled="true"
+                CustomizeElement="OnRenderElement">
+        <Columns>
+            <DxTreeListDataColumn Width="80px" FieldName="Checked" Caption=" "></DxTreeListDataColumn>
+            <DxTreeListDataColumn Width="200px" FieldName="Name" Caption="Planning Area" />
+            <DxTreeListDataColumn FieldName="Description" Caption="Description" />
+            <DxTreeListDataColumn Caption="Permission Group">
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = (PaRow)context.DataItem;
+                    }
+                    <DxComboBox Data="PermissionGroups" Value="dataItem.PermissionGroup" Enabled="@(dataItem.Children == null || dataItem.Children.Count == 0)" ValueExpression="() => dataItem.PermissionGroup" ValueChanged="(PAPermissionGroup group) => GroupChanged(group, dataItem)" />
+                </CellDisplayTemplate>
+            </DxTreeListDataColumn>
+        </Columns>
+        <TotalSummary>
+            <DxTreeListSummaryItem FieldName="Name" SummaryType="TreeListSummaryItemType.Count" />
+        </TotalSummary>
+    </DxTreeList>
+</div>
+<ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+@code {
+    ITreeList TreeList { get; set; }
+    private ConfirmationDialog Dialog { get; set; }
+    private List<PaRow> PARows { get; set; } = new();
+    [Parameter]
+    public Func<List<(PADetails, PAPermissionGroup)>, Task> OnChange { get; set; }
+    [Parameter]
+    public List<PADetails> PlanningAreas { get; set; }
+    [Parameter]
+    public List<(PADetails, PAPermissionGroup)> SelectedPlanningAreas { get; set; }
+    [Parameter]
+    public List<PAPermissionGroup> PermissionGroups { get; set; }
+    private bool permissionsSet = false;
+    [Inject]
+    IUserService userService { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    IPlanningAreaLoginService paService { get; set; }
+    [Inject] IAuthorizationService m_authService { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        // Only get PTAdmin only permissions if the user is PTAdmin
+        var groups = PlanningAreas.Select(x => x.Company).DistinctBy(x => x.Id);
+        int id = 0;
+        foreach (var group in groups)
+        {
+            if (group == null)
+            {
+                continue;
+            }
+            AddGroup(ref id, group.Name, x => x.Company.Id == group.Id);
+        }
+        AddGroup(ref id, "Uncategorized", x => x.Company == null);
+        StateHasChanged();
+    }
+    private void AddGroup(ref int id, string name, Func<PADetails, bool> groupBy)
+    {
+        var groupRow = new PaRow(++id, name, "");
+        var anySelected = false;
+        var pasToGroup = PlanningAreas.Where(groupBy);
+        // Only add the group if it has children
+        if (pasToGroup.Any())
+        {
+            foreach (var pa in pasToGroup)
+            {
+                PaRow paRow = new PaRow(++id, pa.Name, pa.Environment, pa: pa, parent: groupRow);
+                (PADetails pa, PAPermissionGroup group) exists;
+                if ((exists = SelectedPlanningAreas.FirstOrDefault(x => x.Item1.Equals(pa))) != default(ValueTuple<PADetails, PAPermissionGroup>))
+                {
+                    paRow.Selected = true;
+                    paRow.PermissionGroup = exists.group;
+                    anySelected = true;
+                }
+                groupRow.Children.Add(paRow);
+            }
+            // Select parent if any child rows are selected
+            if (anySelected)
+            {
+                groupRow.Selected = true;
+            }
+            if (groupRow.Children.Any())
+            {
+                PARows.Add(groupRow);
+            }
+        }
+    }
+    private async Task OnSelectedDataItemChange(IReadOnlyList<object> newSelection)
+    {
+        if (newSelection is IGridSelectionChanges changes)
+        {
+            var newSelectedItems = changes.SelectedDataItems.Cast<PaRow>();
+            var deselectedItems = changes.DeselectedDataItems.Cast<PaRow>();
+            // Override default selection behavior
+            if (newSelection.Count() == 1 && (newSelection.First() as PaRow).Checked != true)
+            {
+                deselectedItems = new List<PaRow>();
+            }
+            if (newSelection.Count() == 1 && (newSelection.First() as PaRow).Checked == true)
+            {
+                newSelectedItems = new List<PaRow>();
+                var items = new List<PaRow>();
+                items.Add(newSelection.First() as PaRow);
+                items.AddRange((newSelection.First() as PaRow).Children);
+                deselectedItems = items;
+            }
+            // Syncronize Parent Selected State to Children
+            foreach (var item in newSelectedItems)
+            {
+                item.Selected = true;
+                if (!item.Children.IsNullOrEmpty())
+                {
+                    // Select children when parent is selected
+                    if (item.Children.Any(x => !x.Selected))
+                    {
+                        var toSelect = item.Children.Where(x => !x.Selected).ToList();
+                        foreach (var sel in toSelect)
+                        {
+                            sel.Selected = true;
+                        }
+                    }
+                }
+                // Select parent when child is selected
+                if (item.Parent != null && !item.Parent.Selected)
+                {
+                    item.Parent.Selected = false;
+                }
+            }
+            foreach (var item in deselectedItems)
+            {
+                item.Selected = false;
+                if (!item.Children.IsNullOrEmpty())
+                {
+                    if (item.Children.Any(x => x.Selected))
+                    {
+                        // Deselect children when parent is deselected
+                        var toDeSelect = item.Children.Where(x => x.Selected).ToList();
+                        foreach (var sel in toDeSelect)
+                        {
+                            sel.Selected = false;
+                        }
+                    }
+                }
+                // Deselect parent if all children have been deselected
+                if (item.Parent != null)
+                {
+                    if (item.Parent.Children.All(x => !x.Selected))
+                    {
+                        item.Parent.Selected = false;
+                    }
+                }
+            }
+            var pas = PARows.SelectMany(x => x.Children).Where(x => x is { PA: not null, Selected: true }).Select(x => (x.PA, x.PermissionGroup)).Distinct();
+            await OnChange(pas.ToList());
+            // Deselect all items so that the grid doesn't try to deselect them when another item is selected
+            TreeList.BeginUpdate();
+            TreeList.SelectedDataItems = new List<PaRow>();
+            TreeList.EndUpdate();
+        }
+    }
+    private void OnRenderElement(TreeListCustomizeElementEventArgs e)
+    {
+        object row = e.TreeList.GetDataItem(e.VisibleIndex);
+        if (row is PaRow permRow)
+        {
+        }
+    }
+    private class PaRow
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public List<PaRow> Children { get; set; }
+        public PaRow? Parent { get; set; }
+        public PADetails? PA { get; set; }
+        public PAPermissionGroup PermissionGroup { get; set; }
+        public bool Selected { get; set; }
+        /// <summary>
+        /// Whether the checkbox should show as checked, unchecked, or partially checked
+        /// </summary>
+        public bool? Checked
+        {
+            get
+            {
+                // If this has children, it is a category. Its checked status is based on children
+                if (Children.Any())
+                {
+                    // Checked if all children are checked
+                    if (Children.All(x => x.Checked == true))
+                    {
+                        return true;
+                    }
+                    // Unchecked if all children are unchecked
+                    if (Children.All(x => x.Checked == false))
+                    {
+                        return false;
+                    }
+                    // Partially checked if some children are partially checked, or a mix of checked and unchecked
+                    return null;
+                }
+                // If it has no children, it is a permission. Return whether it's selected
+                return Selected;
+            }
+        }
+        public PaRow(int id,
+            string name,
+            string description,
+            List<PaRow> children = null,
+            PADetails? pa = null,
+            PaRow? parent = null
+        )
+        {
+            Id = id;
+            Name = name;
+            Description = description;
+            Children = children ?? new List<PaRow>();
+            PA = pa;
+            Parent = parent;
+        }
+    }
+    private Task GroupChanged(PAPermissionGroup group, PaRow row)
+    {
+        row.PermissionGroup = group;
+        OnChange(PARows.SelectMany(x => x.Children).Where(x => x is { PA: not null, Selected: true }).Select(x => (x.PA!, x.PermissionGroup)).Distinct().ToList());
+        return Task.CompletedTask;
+    }
+}
+

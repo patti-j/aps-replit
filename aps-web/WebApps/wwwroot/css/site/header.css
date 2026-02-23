@@ -1,0 +1,98 @@
+﻿.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.header-container2 {
+    align-content: flex-end
+}
+.company-header {
+    font-size: 14pt;
+    padding-right: 10px;
+    letter-spacing: .7px;
+    font-weight: 500;
+    color: var(--bs-heading-color);
+}
+
+.company-header-cbox
+{
+    font-size: 14pt;
+    letter-spacing: .7px;
+    font-weight: 500;
+    color: var(--bs-heading-color);
+    border-width: 2px;
+}
+
+.custom-header {
+    display: flex;
+    height: 40px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 8px;
+    border-bottom-color: rgb(222, 226, 230);
+    border-bottom-style: solid;
+    border-bottom-width: 0.8px;
+}
+
+.custom-header h5 {
+    font-size: .965rem;
+    margin: 0px;
+}
+
+.navbar:focus-visible {
+    outline: none;
+}
+
+/* Profile information styling in header */
+.profile-info {
+    font-size: 1.2em;
+    display: flex; /* This turns profile-info into a flex container */
+    flex-direction: column; /* This stacks the children vertically */
+    justify-content: center; /* This centers the children vertically */
+    padding: 30px;
+    width: 70vw;
+}
+
+    .profile-info .name {
+        font-weight: bold;
+        font-size: 1.5em;
+    }
+
+    .profile-info .time {
+        font-size: 0.8em;
+        color: #aaa;
+    }
+
+    .profile-info .email {
+        color: #aaa;
+        text-decoration: none;
+        font-size: 0.9em;
+    }
+
+.profile-image {
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.img-profile {
+    height: 40px;
+}
+
+@media (max-width: 768px) {
+    .company-header {
+        position: absolute;
+        left: 58px;
+        top: 25px;
+        font-size: 10pt;
+        max-width: 105px;
+        overflow-x: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .logo-name {
+        margin-top: -18px;
+    }
+}

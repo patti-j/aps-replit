@@ -1,0 +1,1732 @@
+﻿@page "/servermanager/planningareas"
+@using System.Collections.Concurrent
+@using System.Data
+@using Newtonsoft.Json
+@using ReportsWebApp.DB.Models.JsonModels
+@using ReportsWebApp.DB.Services.Interfaces
+@inject DB.Services.ServiceContainer _serviceContainer
+@inject IAppInsightsLogger Logger
+@inject AzureTableService tableService
+@inject IPlanningAreaDataService paService
+@implements IDisposable
+
+@if (planningAreas == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="no-borders visible">
+        <DxFormLayout CssClass="no-borders">
+            <DxFormLayoutGroup>
+                <HeaderTemplate>
+                    <div class="bg-body pb-3 pt-1" style="box-shadow: none;">
+                        <DxButton Click="ShowFilters" Text="Filters" IconCssClass="fa fa-filter" RenderStyle="ButtonRenderStyle.Info"
+                                  Attributes="@(new Dictionary<string, object> { ["title"] = " (Show Filter and Column Options) " })" />
+                        
+                        <DxButton Click="HandleImport" Text="Import from Server Manager" RenderStyle="ButtonRenderStyle.Warning"
+                                  Attributes="@(new Dictionary<string, object> { ["title"] = " (Import from Server Manager) " })"/>
+                    </div>
+                    <div class="bg-body pb-3 pt-1" style="box-shadow: none;">
+                        @{
+                            var shownServers = (enabledServers.Keys).Count(x => enabledServers[x]);
+                            var hiddenServers = availableServers.Count - shownServers;
+                            if (shownServers != availableServers.Count && shownServers != 0)
+                            {
+                                <em>@(hiddenServers) Server@(hiddenServers == 1 ? "" : "s") Hidden by Filters</em>
+                            }
+                        }
+                    </div>
+                </HeaderTemplate>
+                <Items>
+                    <DxLoadingPanel Visible="IsLoading" IsContentVisible="true" IsContentBlocked="IsLoading" Text="@LoadingText" ApplyBackgroundShading="true">
+                        <CustomTreeList Data="@FilteredPlanningAreas"
+                                    SelectionMode="TreeListSelectionMode.Multiple"
+                                    AllowSelectRowByClick="true"
+                                    EditMode="TreeListEditMode.PopupEditForm"
+                                    ShowFilterRow="true"
+                                    @ref="TreeList"
+                                    PageSize="20"
+                                    CssClass="ch-480"
+                                    PagerPosition="TreeListPagerPosition.TopAndBottom"
+                                    PageSizeSelectorVisible="true"
+                                    PageSizeSelectorItems="@(new int[] { 20, 50, 100 })"
+                                    PageSizeSelectorAllRowsItemVisible="false"
+                                    PagerSwitchToInputBoxButtonCount="10"
+                                    DataItemDeleting="DeleteItem"
+                                    PagerVisibleNumericButtonCount="10"
+                                    KeyFieldName="Id"
+                                    ChildrenFieldName="Children"
+                                    AllowDragRows="true"
+                                    ItemsDropped="OnDrop"
+                                    ExpandedChanged="(x) => SaveTreeGridState(x)">
+                            <Columns>
+                                @foreach (var column in enabledColumns.Where(c => c.IsChecked))
+                                {
+                                    if (column.ColumnName == "Service Status")
+                                    {
+                                        <DxTreeListDataColumn FieldName="ServiceStatus" Caption="Service Status" Width="150">
+                                            <CellDisplayTemplate Context="context">
+                                                @if (context.DataItem is PATreeRow dataItem && dataItem.Type == EPATreeRowType.Pa && dataItem.PA != null)
+                                                {
+                                                    var status = GetStatusText(dataItem.PA);
+
+                                                    <div class="badge-container d-flex w-100">
+                                                        <span class="badge-style m-auto @GetBadgeTone(status)">
+                                                            <i class="@GetIconClass(status) badge-icon"></i>
+                                                            <strong>
+                                                                @status
+                                                            </strong>
+                                                        </span>
+                                                    </div>
+                                                }
+                                            </CellDisplayTemplate>
+                                        </DxTreeListDataColumn>
+                                    }
+                                    else if (column.ColumnName == "Error Logs")
+                                    {
+                                        <DxTreeListDataColumn Caption="Error Logs" Width="150">
+                                            <CellDisplayTemplate Context="context">
+                                                @{
+
+                                                    if (context.DataItem is PATreeRow dataItem && dataItem.PA != null)
+                                                    {
+                                                        if (dataItem.Type == EPATreeRowType.Backup) { }
+                                                        else if (!planningAreaErrorStatus.TryGetValue(dataItem.PA.Id, out ErrorLogStatus records))
+                                                        {
+                                                            <span>Loading...</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            if (!records.status.IsNullOrEmpty())
+                                                            {
+                                                                ErrorState[dataItem.PA.Id] = records;
+                                                                <span>@records.status</span>
+                                                            }
+
+                                                            if (records.count > 0)
+                                                            {
+                                                                <DxButton IconCssClass="fa fa-magnifying-glass" Enabled="records.count > 0" Click="() => ShowLogs(dataItem.PA)"></DxButton>
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </CellDisplayTemplate>
+                                        </DxTreeListDataColumn>
+                                    }
+                                    else if (column.ColumnName == "Name")
+                                    {
+                                        <DxTreeListDataColumn FieldName="@(column.FieldName)" Caption="@column.ColumnName" Width="@column.ColumnWidth">
+                                            <CellDisplayTemplate Context="cellContext">
+                                                @{
+                                                    var dataItem = ((PATreeRow)cellContext.DataItem);
+                                                }
+                                                @switch (dataItem.Type)
+                                                {
+                                                    case EPATreeRowType.Server:
+                                                        <i class="fa fa-server padded-icon"></i>
+                                                        break;
+                                                    case EPATreeRowType.Location:
+                                                        <i class="fa fa-globe padded-icon"></i>
+                                                        break;
+                                                    case EPATreeRowType.Pa:
+                                                        <i class="fa fa-computer padded-icon"></i>
+                                                        break;
+                                                    case EPATreeRowType.Backup:
+                                                        <i class="fa fa-timeline padded-icon"></i>
+                                                        break;
+                                                }
+                                                <span>@(dataItem.Name.IsNullOrEmpty() ? "Unspecified" : dataItem.Name)</span>
+                                            </CellDisplayTemplate>
+                                        </DxTreeListDataColumn>
+                                    }
+                                    else if (column.ColumnName == "Port")
+                                    {
+                                        <DxTreeListDataColumn FieldName="@(column.FieldName)" Caption="@column.ColumnName" Width="@column.ColumnWidth">
+                                            <CellDisplayTemplate Context="cellContext">
+                                                @{
+                                                    var dataItem = ((PATreeRow)cellContext.DataItem);
+                                                }
+                                                <span>@dataItem.PA?.PlanningArea?.Settings?.SystemServiceSettings.Port.ToString()</span>
+                                            </CellDisplayTemplate>
+                                        </DxTreeListDataColumn>
+                                    }
+                                    else if (column.ColumnName == "Actions")
+                                    {
+                                        <DxTreeListDataColumn FieldName="@(column.FieldName)" Caption="@column.ColumnName" Width="@column.ColumnWidth">
+                                            <CellDisplayTemplate Context="cellContext">
+                                                @{
+                                                    var dataItem = ((PATreeRow)cellContext.DataItem);
+                                                }
+                                                @switch (dataItem.Type)
+                                                {
+                                                    case EPATreeRowType.Backup:
+                                                        <ActionDropdown DataItem="dataItem" Actions="BackupActions"/>
+                                                        break;
+                                                    case EPATreeRowType.Pa:
+                                                        <ActionDropdown DataItem="dataItem" Actions="PAActions"/>
+                                                        break;
+                                                    case EPATreeRowType.Server:
+                                                        <ActionDropdown DataItem="dataItem" Actions="ReadonlyFolderActions"/>
+                                                        break;
+                                                    case EPATreeRowType.Location:
+                                                    case EPATreeRowType.Environment:
+                                                        <ActionDropdown DataItem="dataItem" Actions="FolderActions"/>
+                                                        break;
+                                                }
+                                            </CellDisplayTemplate>
+                                        </DxTreeListDataColumn>
+                                    }
+                                    else
+                                    {
+                                        <DxTreeListDataColumn FieldName="@("PA." + column.FieldName)" Caption="@column.ColumnName" Width="@column.ColumnWidth">
+
+                                        </DxTreeListDataColumn>
+                                    }
+                                }
+                            </Columns>
+                        </CustomTreeList>
+                    </DxLoadingPanel>
+                </Items>
+            </DxFormLayoutGroup>
+        </DxFormLayout>
+    </div>
+    <ConfirmationDialog @ref="ConfirmDialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Danger"></ConfirmationDialog>
+    <InputDialog @ref="InputDialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Danger"></InputDialog>
+    <DxPopup Visible="@ShowQuestionDialog"
+             HeaderText="Server Agent Offline"
+             ShowCloseButton="false"
+             CloseOnOutsideClick="false"
+             CloseOnEscape="false"
+             Width="600px">
+        <BodyContentTemplate>
+            <p>The Server Agent which controls this planning area is currently Offline. </p>
+            <p>Attempts to delete Planning Areas controlled by this Server Agent will not succeed until it is Online. If the Server Agent 
+                is expected to be unreachable (e.g. it was uninstalled from the host machine without being removed from the Web App) then
+                you may use the "Force Delete" Action in the grid to remove it from the Web App.</p>
+            <DxButton Text="Cancel" Click="CancelDeleteClick" RenderStyle="ButtonRenderStyle.Secondary"/>
+            <DxButton Text="Send Delete Request" Click="ContinueDeleteClick" RenderStyle="ButtonRenderStyle.Primary"/>
+        </BodyContentTemplate>
+        
+    </DxPopup>
+
+}
+
+<PlanningAreaEditor PADetail="PAToEdit" selectedServer="selectedServer" CompanyId="@currentUser.CompanyId" @ref="planningAreaEditor" OnSave="@((model) => HandleSave(model, null, false))" />
+<PlanningAreaVersionSelector Visible="versionSelectorVisible" PlanningArea="PAToUpgrade" OnConfirm="UpgradeInstance" Versions="planningAreaVersions" OnCancel="VersionSelectorClosed"></PlanningAreaVersionSelector>
+<PlanningAreaBackupViewer Visible="backViewerVisible" PlanningArea="PAToView" Backups="BackupVersions" OnDeleteBackup="DeleteBackup" OnRestoreBackup="RestoreBackup" OnCancel="CloseBackups"></PlanningAreaBackupViewer>
+<PlanningAreaCreator @ref="planningAreaCreator" OnSave="@((args) => HandleSave(args.model, args.originForCopy, args.startWhenCreated))" ExistingPlanningAreas="planningAreas"/>
+<FilterSelector @ref="columnSelector" @bind-SelectedColumns="@enabledColumns" AllServers="availableServers" ServersShown="enabledServers" ServersShownChanged="(x) => enabledServers = x" FiltersChanged="() => SaveTreeGridState()"/>
+
+<ErrorLogViewer user="currentUser" @ref="ErrorViewer"></ErrorLogViewer>
+
+@code {
+    [Inject] IToastNotificationService ToastService { get; set; }
+    CustomTreeList? TreeList { get; set; }
+    ErrorLogViewer ErrorViewer { get; set; }
+    private IEnumerable<ActionItem<PATreeRow>> PAActions;
+    private IEnumerable<ActionItem<PATreeRow>> BackupActions;
+    private IEnumerable<ActionItem<PATreeRow>> FolderActions;
+    private IEnumerable<ActionItem<PATreeRow>> ReadonlyFolderActions;
+
+    private ActionItem<PADetails> SelectedAction { get; set; }
+    private User currentUser;
+    private ConfirmationDialog ConfirmDialog { get; set; }
+    private InputDialog InputDialog { get; set; }
+    private List<PADetails> planningAreas = new();
+    private List<PADetails> backups = new List<PADetails>();
+    private List<CompanyServer> availableServers = new();
+    private Dictionary<int, bool> enabledServers = new();
+    private List<ColumnOption> allColumns = new List<ColumnOption>
+    {
+        new ColumnOption { ColumnName = "Name", FieldName = "Name", IsChecked = true, ColumnWidth = "240"},
+        new ColumnOption { ColumnName = "Actions", FieldName = "none", IsChecked = true, ColumnWidth = "90"},
+        new ColumnOption { ColumnName = "Version", FieldName = "Version", IsChecked = true, ColumnWidth = "100"},
+        new ColumnOption { ColumnName = "Using Companies", FieldName = "UsingCompanies", Unbound = true},
+        new ColumnOption { ColumnName = "Port", FieldName = "PlanningArea.Settings.SystemServiceSettings.Port", IsChecked = true, Unbound = true, ColumnWidth = "60" },
+        new ColumnOption { ColumnName = "Service Status", IsChecked = true },
+        new ColumnOption { ColumnName = "License Status", FieldName = "LicenseStatus", IsChecked = true },
+        new ColumnOption { ColumnName = "Creation Date", FieldName = "PlanningArea.Settings.CreationDate", IsChecked = true, Unbound = true, ColumnWidth = "90" },
+        new ColumnOption { ColumnName = "Integration Code", FieldName = "PlanningArea.ServicePaths.IntegrationCode", IsChecked = true }, // TODO: This doesn't show and it isn't clear why
+        new ColumnOption { ColumnName = "Subscription", FieldName = "PlanningArea.LicenseInfo.Subscription", IsChecked = true, Unbound = true },
+        /* new ColumnOption { ColumnName = "Serial Code", FieldName = "PlanningArea.LicenseInfo.SerialCode", IsChecked = true, Unbound = true }, */ // TODO: Make this a password input that reveals on click //
+        new ColumnOption { ColumnName = "Registration", FieldName = "RegistrationStatus", IsChecked = true, ColumnWidth = "80" },
+        new ColumnOption { ColumnName = "Error Logs", FieldName = "unbound", IsChecked = true, ColumnWidth = "80" },
+    };
+
+    private List<ColumnOption> enabledColumns = new();
+    private static readonly CompanyServer AllServersConst = new() { Name = "All Servers" };
+    private static readonly Company AllCompaniesConst = new() { Name = "All Companies" };
+    private CompanyServer selectedServer = AllServersConst;
+    private Company selectedCompany = AllCompaniesConst;
+    private PlanningAreaEditor? planningAreaEditor;
+    private PlanningAreaCreator? planningAreaCreator;
+    private BulkEditor? bulkEditor;
+    private FilterSelector? columnSelector;
+    private BulkEditorValues bulkEditorValues = new();
+    private ConcurrentDictionary<string, string> planningAreaStatuses = new(); // Planning Area statuses cache
+    private ConcurrentDictionary<int, ErrorLogStatus> planningAreaErrorStatus = new();
+    private CancellationTokenSource _cancellationTokenSource;
+    private Task _statusUpdateTask;
+    private bool versionSelectorVisible = false;
+    private bool backViewerVisible = false;
+    private PADetails? PAToEdit;
+    private PADetails? PAToUpgrade = null;
+    private PADetails? PAToView = null;
+    private List<PADetails>? BackupVersions = null;
+    private Dictionary<int, EActionRequestStatuses> ActionState = new();
+    private Dictionary<int, ErrorLogStatus> ErrorState = new();
+    private PlanningAreaLocation? SelectedFolder = null;
+    private List<string> ExpandedKeys = new ();
+    private bool IsLoading = true;
+    private bool IsInitialized = false;
+    private string LoadingText = "Loading...";
+
+    private List<string> planningAreaVersions = new();
+
+    [Inject]
+    IPlanningAreaDataService _paService { get; set; }
+    [Inject]
+    IToastNotificationService _toastService { get; set; }
+
+    [Inject]
+    IServerActionsService actionsService { get; set; }
+
+    private enum EPATreeRowType
+    {
+        Pa,
+        Server,
+        Environment,
+        Location,
+        Backup
+    }
+    private class PATreeRow : CustomTreeList.TreeRow
+    {
+        public string Name { get; set; }
+        public string Id { get; set; }
+        public CompanyServer Server { get; set; }
+        public EPATreeRowType Type { get; set; }
+        public PADetails PA { get; set; }
+        public PlanningAreaLocation? LocationRef { get; set; }
+        public List<CustomTreeList.TreeRow> Children { get; set; } = new ();
+        public PATreeRow? Parent { get; set; }
+        public bool IsExpanded { get; set; }
+    }
+
+    #region Initialization
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await _serviceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+        enabledColumns = allColumns.ToList();
+        var gridState = JsonConvert.DeserializeObject<PATreeGridState>(currentUser.SavedGridLayouts.FirstOrDefault(x => x.CompanyId == currentUser.CompanyId)?.PlanningAreaGridJson ?? "");
+        foreach (ColumnOption column in enabledColumns)
+        {
+            if (gridState != null && gridState.HiddenColumnNames.Contains(column.ColumnName))
+            {
+                column.IsChecked = false;
+            }
+        }
+
+        if (gridState?.ExpandedKeys != null)
+        {
+            ExpandedKeys = gridState.ExpandedKeys;
+        }
+
+        if (currentUser.CompanyId == 1)
+        {
+            enabledColumns.Insert(2, new ColumnOption { ColumnName = "Company", FieldName = "Company.Name", IsChecked = gridState?.HiddenColumnNames.Contains("Company") ?? true, Unbound = true, ColumnWidth = "120" });
+        }
+
+        PAActions = new List<ActionItem<PATreeRow>>
+        {
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "Edit", 
+                IconCssClass = "fas fa-pencil-alt", 
+                Action = async dataItem => await ShowEditor(dataItem.PA),
+                ShouldActionButtonBeEnabled = dataItem => dataItem.PA.RegistrationStatus == ERegistrationStatus.Created.ToString()
+            },
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fas fa-trash-alt",
+                Action = async dataItem => await DeleteInstance(dataItem.PA),
+                ShouldActionButtonBeEnabled = (_) => true // always show this option, even if the PA hasn't been created yet.
+            },
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "Force Delete",
+                IconCssClass = "fas fa-trash-alt",
+                Action = async dataItem => await ForceDeleteInstance(dataItem.PA),
+                ShouldActionButtonBeEnabled = (pa) => pa.PA.RegistrationStatus is "Deleting" or "Unknown" || pa.Server.Status is "Offline"
+            },
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "Start Service",
+                IconCssClass = "fas fa-play",
+                Action = async dataItem => await StartInstance(dataItem.PA),
+                ShouldActionButtonBeEnabled = dataItem => dataItem.PA.RegistrationStatus == ERegistrationStatus.Created.ToString()
+            },
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "Stop Service",
+                IconCssClass = "fas fa-stop",
+                Action = async dataItem => await StopInstance(dataItem.PA),
+                ShouldActionButtonBeEnabled = dataItem => dataItem.PA.RegistrationStatus == ERegistrationStatus.Created.ToString()
+            },
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "Restart Service",
+                IconCssClass = "fas fa-arrow-rotate-left",
+                Action = async dataItem => await RestartInstance(dataItem.PA),
+                ShouldActionButtonBeEnabled = dataItem => dataItem.PA.RegistrationStatus == ERegistrationStatus.Created.ToString()
+            },
+            // Manage Actions
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "View Logs",
+                IconCssClass = "fas fa-file-alt",
+                Action = async dataItem => await ShowLogs(dataItem.PA),
+                ShouldActionButtonBeEnabled = dataItem => dataItem.PA.RegistrationStatus == ERegistrationStatus.Created.ToString()
+            },
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "Copy",
+                IconCssClass = "fas fa-copy",
+                Action = async dataItem => await ShowCreator(dataItem.Server, dataItem.PA),
+                ShouldActionButtonBeEnabled = dataItem => dataItem.PA.RegistrationStatus == ERegistrationStatus.Created.ToString()
+            },
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "View Backups",
+                IconCssClass = "fas fa-clock",
+                Action = async dataItem => await ShowBackups(dataItem.PA),
+                ShouldActionButtonBeEnabled = dataItem => true
+            },
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "Upgrade",
+                IconCssClass = "fas fa-arrow-up",
+                Action = async dataItem => await ShowUpgradeVersionSelector(dataItem.PA),
+                ShouldActionButtonBeEnabled = dataItem => dataItem.PA.RegistrationStatus == ERegistrationStatus.Created.ToString() && dataItem.PA.Version != planningAreaVersions.FirstOrDefault()
+            },
+        };
+
+        BackupActions = new List<ActionItem<PATreeRow>>
+        {
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "Restore",
+                IconCssClass = "fas fa-arrow-rotate-left",
+                Action = async dataItem => await RestoreBackup(planningAreas.FirstOrDefault(x => x.Id == dataItem.PA.BackupOf),dataItem.PA),
+                ShouldActionButtonBeEnabled = (_) => true
+            },
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fas fa-trash-alt",
+                Action = async dataItem => await DeleteInstance(dataItem.PA),
+                ShouldActionButtonBeEnabled = (_) => true // always show this option, even if the PA hasn't been created yet.
+            },
+        };
+
+        ReadonlyFolderActions = new List<ActionItem<PATreeRow>>
+        {
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "New Location",
+                IconCssClass = "fas fa-globe",
+                Action = async dataItem => await CreateFolder(dataItem),
+                ShouldActionButtonBeEnabled = (_) => true
+            },
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "New Planning Area",
+                IconCssClass = "fas fa-plus",
+                Action = async dataItem => await CreatePAInFolder(dataItem),
+                ShouldActionButtonBeEnabled = (_) => true
+            }
+        };
+
+        FolderActions = new List<ActionItem<PATreeRow>>
+        {
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "New Planning Area",
+                IconCssClass = "fas fa-plus",
+                Action = async dataItem => await CreatePAInFolder(dataItem),
+                ShouldActionButtonBeEnabled = (_) => true
+            },
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "Rename",
+                IconCssClass = "fas fa-tag",
+                Action = async dataItem => await RenameFolder(dataItem.LocationRef),
+                ShouldActionButtonBeEnabled = (_) => true
+            },
+            new ActionItem<PATreeRow>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fas fa-trash-alt",
+                Action = async dataItem => await DeleteFolder(dataItem.LocationRef),
+                ShouldActionButtonBeEnabled = (_) => true
+            },
+        };
+
+        await Refresh();
+
+        // If a specific server is being shown, show only it
+        if (_serviceContainer.ScopedAppStateService.Server != null && availableServers.Any(x => x.Id == _serviceContainer.ScopedAppStateService.Server.Id))
+        {
+            foreach (CompanyServer server in availableServers)
+            {
+                enabledServers[server.Id] = false;
+            }
+
+            enabledServers[_serviceContainer.ScopedAppStateService.Server.Id] = true;
+
+            // Clear the saved server so the user's saved state can be loaded next time
+            _serviceContainer.ScopedAppStateService.Server = null;
+        }
+        else
+        {
+            // Set initial values for enabledServers from saved state
+            foreach (CompanyServer server in availableServers)
+            {
+                enabledServers[server.Id] = gridState?.ShownServerIds == null || gridState.ShownServerIds.Contains(server.Id) || gridState.HiddenServerIds == null || !gridState.HiddenServerIds.Contains(server.Id);
+            }
+        }
+
+
+        GetLogs();
+    }
+
+    private async Task<bool> ForceDeleteInstance(PADetails model, bool initialDelete = true)
+    {
+        bool confirmDelete = initialDelete;
+        try
+        {
+            var backups = await paService.GetBackups(model);
+            if (backups.Any())
+            {
+                // Confirm before deleting backups
+                if (confirmDelete && !await ConfirmDialog.ConfirmDeleteOperation("Are you sure?", "This Planning Area has saved backups, do you want to delete this Planning Area as well as ALL backup versions of it?", model.Name))
+                {
+                    return false;
+                }
+
+                // User has now confirmed the operation, so don't ask again
+                confirmDelete = false;
+
+                // Recursively delete backups
+                foreach (PADetails backup in backups)
+                {
+                    if (!await ForceDeleteInstance(backup, false))
+                    {
+                        // If a backup failed to delete, cancel the operation
+                        return false;
+                    }
+                }
+            }
+
+            if (!confirmDelete || await ConfirmDialog.ConfirmDeleteOperation($"Delete {model.Name}?",
+                    $"Are you sure you wish to forcefully delete this Planning Area? This Action cannot be undone. ", model.Name))
+            {
+                await _paService.DeletePlanningAreaAsync(model);
+                planningAreas = await _paService.GetPlanningAreasByManagingCompanyIdAsync(currentUser.CompanyId);
+                StateHasChanged();
+                _toastService.ShowToast("Deleting", $"{model.Name} has been deleted.", ToastRenderStyle.Success);
+                return true;
+            }
+
+            return false;
+        }
+        catch (Exception e)
+        {
+            _toastService.ShowToast("Error Deleting", e.ToString(), ToastRenderStyle.Danger);
+            return false;
+        }
+        finally
+        {
+            // Release the loading state even if delete failed
+            if (initialDelete)
+            {
+                IsLoading = false;
+                LoadingText = "";
+                StateHasChanged();
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            RestoreExpansionState();
+            IsInitialized = true;
+        }
+    }
+
+    private record ErrorLogStatus(int count, string status, Dictionary<string, int> categories);
+    private async Task GetLogs()
+    {
+        foreach (PADetails planningArea in planningAreas)
+        {
+            if (!planningArea.PlanningArea.Settings.SystemServiceSettings.LogDbConnectionString.IsNullOrEmpty())
+            {
+                var categories = await paService.GetTotalErrors(planningArea, 3);
+                var total = categories?.Values.Sum() ?? 0;
+                if (categories == null)
+                {
+                    planningAreaErrorStatus[planningArea.Id] = new ErrorLogStatus(-1,"Connection Failed", new());
+                }
+                else
+                {
+                    planningAreaErrorStatus[planningArea.Id] = new ErrorLogStatus(total, $"{total} Error{( total == 1 ? "" : "s")}", categories);
+                }
+                await InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                planningAreaErrorStatus[planningArea.Id] = new ErrorLogStatus(-1, "No Log DB", new());
+            }
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ShowFilters()
+    {
+        columnSelector?.Show();
+    }
+
+    private async Task ShowBackups(PADetails a_planningArea)
+    {
+        BackupVersions = null;
+        PAToView = a_planningArea;
+        backViewerVisible = true;
+        BackupVersions = await _paService.GetBackups(a_planningArea);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void CloseBackups()
+    {
+        backViewerVisible = false;
+        BackupVersions = null;
+        PAToView = null;
+        StateHasChanged();
+    }
+
+    private void ResetPAStatuses()
+    {
+        // Set initial statuses
+        foreach (var server in availableServers)
+        {
+            UpdatePlanningAreaStatusesAsync(server);
+        }
+    }
+
+    #endregion
+
+    #region Status Clock
+    private EventBusListener? StatusUpdateListener;
+    private async Task StartPeriodicStatusUpdates()
+    {
+        if (StatusUpdateListener == null)
+        {
+            StatusUpdateListener = new EventBusListener((statusEvent) =>
+            {
+                var ev = (PAStatusUpdateEvent)statusEvent;
+                bool somethingChanged = false;
+                foreach (var status in ev.PlanningAreaStatusList.StatusList)
+                {
+                    try
+                    {
+                        planningAreaStatuses[status.PlanningAreaKey] = status.state.ToString();
+                        somethingChanged = true;
+                    }
+                    catch (Exception e)
+                    {
+                        //this was not handled before so I'm not sure how to handle it now.
+                        Logger.LogError(e, "Unknown", "PlanningAreaGridStatusUpdateListener");
+                    }
+                }
+
+                if (somethingChanged)
+                {
+                    InvokeAsync(StateHasChanged);
+                }
+            }, typeof(PAStatusUpdateEvent));
+        }
+    }
+
+    private async Task UpdatePlanningAreaStatusesAsync(CompanyServer server)
+    {
+        try
+        {
+            List<PlanningAreaLiteModel> latestPlanningAreaStatuses = await _paService.GetPlanningAreaStatusesForServerAsync(server.Id);
+            Dictionary<string, Task> planningAreaStatusTasks = latestPlanningAreaStatuses.ToDictionary(
+                paLatestStatus => paLatestStatus.PlanningAreaKey,
+                paLatestStatus => Task.Run(async () =>
+                {
+                    try
+                    {
+                        UpdatePARowRegistration(paLatestStatus);
+
+                        if (paLatestStatus.Status.RegistrationStatus != ERegistrationStatus.Created)
+                        {
+                            planningAreaStatuses[paLatestStatus.PlanningAreaKey] = paLatestStatus.Status.RegistrationStatus.ToString();
+                        }
+                        else
+                        {
+                            planningAreaStatuses[paLatestStatus.PlanningAreaKey] = MapServiceStateToStatus(paLatestStatus.Status.State);
+                        }
+                    }
+                    catch
+                    {
+                        planningAreaStatuses[paLatestStatus.PlanningAreaKey] = ERegistrationStatus.Unknown.ToString(); // Fallback for errors
+                    }
+                    finally
+                    {
+                        await InvokeAsync(StateHasChanged); // Refresh UI for individual updates
+                    }
+                })
+            );
+
+            await Task.WhenAll(planningAreaStatusTasks.Values); // Wait for all planning area updates
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error updating planning area statuses.");
+        }
+    }
+
+    /// <summary>
+    /// Makes the Registration Column in the grid update based on incoming PA status, just like ServiceStatus does
+    /// </summary>
+    /// <param name="paLatestStatus"></param>
+    private void UpdatePARowRegistration(PlanningAreaLiteModel paLatestStatus)
+    {
+        PADetails rowDataForPA = planningAreas.FirstOrDefault(paGridRow => paGridRow.Id == paLatestStatus.PlanningAreaId);
+        if (rowDataForPA != null &&
+            // Registration Status is a string in our current db model for visibility. That requires a little ugly parsing here, but essentially matches the string val.
+            paLatestStatus.Status.RegistrationStatus != 
+                (Enum.TryParse(rowDataForPA.RegistrationStatus, out ERegistrationStatus status) ? status : ERegistrationStatus.Unknown))
+        {
+            rowDataForPA.RegistrationStatus = paLatestStatus.Status.RegistrationStatus.ToString();
+        }
+    }
+
+    private string GetIconClass(string status)
+    {
+        return status switch
+        {
+            "Started" => "fa-solid fa-circle-check",       // Checkmark for successfully started
+            "Starting" => "fa-solid fa-spinner fa-spin",   // Spinner for action in progress
+            "Stopped" => "fa-solid fa-circle-xmark",       // X mark for fully stopped
+            "Stopping" => "fa-solid fa-hourglass-end",     // Hourglass running out for stopping
+            "Idle" => "fa-regular fa-circle-pause",        // Pause icon for idle state
+            "Active" => "fa-solid fa-circle-play",         // Play icon for active/ongoing state
+            "Server Offline" => "fa-solid fa-server",// Server with slash for server offline
+            "Offline" => "fa-solid fa-circle-slash",       // Circle with slash for disconnected
+            "Unknown" => "fa-solid fa-circle-question",    // Circle question for unknown status
+            "Not Found" => "fa-solid fa-magnifying-glass",  // Magnifying glass for not found
+            "Restoring" => "fa-solid fa-clock",
+            _ => "fa-solid fa-circle-dashed"               // Dashed circle for undefined status
+        };
+    }
+
+    private string GetBadgeTone(string status)
+    {
+        return status switch
+        {
+            "Started" => "pill-tone-1",
+            "Starting" => "pill-tone-3",
+            "Stopped" => "pill-tone-2",
+            "Stopping" => "pill-tone-3",
+            "Idle" => "pill-tone-1",
+            "Active" => "pill-tone-1",
+            "Server Offline" => "pill-tone-red",
+            "Offline" => "pill-tone-2",
+            "Unknown" => "pill-tone-red",
+            "Restoring" => "pill-tone-3",
+            "Not Found" => "pill-tone-red",
+            _ => "pill-tone-3"
+        };
+    }
+
+    // TODO: We could set display names on the EServiceState enum and remove the need for this local method
+    private string MapServiceStateToStatus(EServiceState state)
+    {
+        return state switch
+        {
+            EServiceState.Started => "Started",          // Fully started state
+            EServiceState.Starting => "Starting",       // In progress of starting
+            EServiceState.Stopped => "Stopped",         // Fully stopped state
+            EServiceState.Stopping => "Stopping",       // In progress of stopping
+            EServiceState.Idle => "Idle",               // Idle state
+            EServiceState.Active => "Active",           // Active state distinct from Started
+            EServiceState.Unknown => "Unknown",         // Unknown state
+            EServiceState.NotFound => "Not Found",         // NotFound state
+            EServiceState.Restoring => "Restoring",
+            _ => "Unknown"                              // Default fallback for unhandled states
+        };
+    }
+
+    #endregion
+
+    #region Filtering Logic
+    private List<PATreeRow> FilteredPlanningAreas => ApplyFilters();
+    private bool ShowQuestionDialog { get; set; }
+    private TaskCompletionSource<bool> QuestionTCS;
+    public Task<bool> ConfirmSAOfflineDeletePAAnyway()
+    {
+        ShowQuestionDialog = true;
+        StateHasChanged();
+        QuestionTCS = new TaskCompletionSource<bool>();
+        return QuestionTCS.Task;
+    }
+    private Task CancelDeleteClick()
+    {
+        QuestionTCS.TrySetResult(false);
+        ShowQuestionDialog = false;
+        return Task.CompletedTask;
+    }
+
+    private Task ContinueDeleteClick()
+    {
+        QuestionTCS.TrySetResult(true);
+        ShowQuestionDialog = false;
+        return Task.CompletedTask;
+    }
+    
+
+    private string GetStatusText(PADetails dataItem)
+    {
+        return planningAreaStatuses.TryGetValue(dataItem.PlanningAreaKey, out var status)
+            ? status
+            : "Detecting...";
+    }
+
+    private async Task HandleImport()
+    {
+        try
+        {
+            var instances = await ServerManagerService.GetLegacyInstancesFromServerManager(selectedServer);
+
+            if (instances == null)
+            {
+                _toastService.ShowToast("Error", "Could not connect to Server Manager", ToastRenderStyle.Danger);
+                return;
+            }
+
+            if (!await ConfirmDialog.ConfirmOperation("Are you sure?", $"Found {instances.TotalCount} Planning Area(s) to import. This will overwrite any previously imported Planning Areas. Do you want to continue the Import Process?"))
+            {
+                return;
+            }
+
+            foreach (var instance in instances.Data)
+            {
+                // Write instance data into new Planning Areas
+                await _paService.OverwriteAsync(instance.ToPlanningArea(selectedServer, currentUser));
+            }
+        }
+
+        catch (Exception e)
+        {
+            _toastService.ShowToast("Error", e.Message, ToastRenderStyle.Danger);
+            return;
+        }
+        _toastService.ShowToast("Success", "Planning Areas were successfully imported.", ToastRenderStyle.Success);
+
+        planningAreas = await _serviceContainer.PlanningAreaDataService.GetPlanningAreasByManagingCompanyIdAsync(currentUser.CompanyId);
+
+        // Set initial statuses
+        ResetPAStatuses();
+        bulkEditor?.Hide();
+        StateHasChanged();
+    }
+
+    private async Task HandleSave(PADetails model, PADetails modelToCopyFrom, bool startWhenCreated)
+    {
+        try
+        {
+            // TODO: determine if the instance even needs to know it's a copy, or if the acquiring of settings here is sufficient
+            bool isNew = model.Id == 0;
+
+            if (isNew)
+            {
+                model.InitValsFromServer(model.PlanningArea);
+                model.LocationId = SelectedFolder?.Id;
+            }
+
+            var existingPa = await _serviceContainer.PlanningAreaDataService.GetPlanningAreaByIdAsync(model.Id);
+
+            var needsRestart = await CheckNeedsRestart(isNew, model, existingPa);
+            var needsSettingsUpdate = await CheckNeedsUpdate(isNew, model, existingPa);
+
+            await _serviceContainer.PlanningAreaDataService.SaveAsync(model);
+
+            if (model.ApiKey != null && model.ApiKey != existingPa?.ApiKey)
+            {
+                EventBus.Main.PostEventSync(new UpdatePaApiKeyEvent(model.ApiKey, model.PlanningAreaKey));
+            }
+
+            SaveInstanceResponse result = new();
+            if (isNew)
+            {
+                if (modelToCopyFrom != null)
+                {
+                    CopyPlanningAreaRequest copyPlanningAreaRequest = new CopyPlanningAreaRequest(model, modelToCopyFrom, startWhenCreated);
+                    bool actionPending = !await actionsService.RequestServerCopyPA(model.ServerId, currentUser, copyPlanningAreaRequest);
+                    if (actionPending)
+                    {
+                        _toastService.ShowToast("Already Copying", "A copy of that Planning Area with the given name is already being created.", ToastRenderStyle.Warning);
+                    }
+                }
+                else
+                {
+                    CreatePlanningAreaRequest createPlanningAreaRequest = new CreatePlanningAreaRequest(model, startWhenCreated);
+                    bool actionPending = !await actionsService.RequestServerAddPA(model.ServerId, currentUser, createPlanningAreaRequest);
+                    if (actionPending)
+                    {
+                        _toastService.ShowToast("Already Creating", "An Planning Area with that name and version is already being created.", ToastRenderStyle.Warning);
+                    }
+                }
+            }
+            else
+            {
+                if (needsSettingsUpdate)
+                {
+                    bool actionPending = !await actionsService.RequestPASettingsUpdate(model.ServerId, currentUser, new InstanceSettingsUpdateRequest(model.Name, model.Version, existingPa.PlanningArea.Settings.SystemServiceSettings.Port));
+                    if (actionPending)
+                    {
+                        if (await ConfirmDialog.ConfirmOperation("Already Updating", "That Planning Area is in the process of being updated. Do you want to queue this settings update to happen after that completes?"))
+                        {
+                            await actionsService.RequestPASettingsUpdate(model.ServerId, currentUser, new InstanceSettingsUpdateRequest(model.Name, model.Version, existingPa.PlanningArea.Settings.SystemServiceSettings.Port), true);
+                        }
+                    }
+                }
+                // If PA has been updated and needs a restart, request the restart
+                if (needsRestart && !await ConfirmDialog.ConfirmOperation("Restart Required", $"These changes require the Planning Area service to be restarted to take effect. Would you like to restart automatically?"))
+                {
+                    // No need to notify user if restart is already pending, it will pick up updated settings on restart.
+                    await actionsService.RequestServerRestartPA(model.ServerId, currentUser, new InstanceKey(model.Name, model.Version));
+                }
+            }
+
+            // Refresh the local planning areas list
+            planningAreas = await _serviceContainer.PlanningAreaDataService.GetPlanningAreasByManagingCompanyIdAsync(currentUser.CompanyId);
+
+            // Notify UI of changes
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error saving planning area {model.Name}");
+            _toastService.ShowToast("Error", $"Error saving planning area {model.Name}", ToastRenderStyle.Danger);
+            _toastService.ShowToast("Exception", ex.Message, ToastRenderStyle.Info);
+        }
+    }
+
+    private async Task<bool> CheckNeedsUpdate(bool isNew, PADetails newPa, PADetails existingPa)
+    {
+        var needsUpdate = false;
+
+        if (!isNew)
+        {
+            if (existingPa.PlanningArea == null)
+            {
+                // The existing pa has bad planning area data, so we should force a restart
+                needsUpdate = true;
+            }
+            else
+            {
+                needsUpdate = existingPa.PlanningArea.Settings.CheckIfSettingUpdateNeeded(newPa.PlanningArea?.Settings)
+                || newPa.ApiKey != existingPa.ApiKey;
+            }
+        }
+
+        return needsUpdate;
+    }
+
+    private async Task<bool> CheckNeedsRestart(bool isNew, PADetails newPa, PADetails existingPa)
+    {
+        var needsRestart = false;
+
+        if (!isNew)
+        {
+            if (existingPa.PlanningArea == null)
+            {
+                // The existing pa has bad planning area data, so we should force a restart
+                needsRestart = true;
+            }
+            else if (existingPa.IsStarted)
+            {
+                needsRestart = existingPa.PlanningArea.Settings.SystemServiceSettings.CheckIfRestartNeeded(newPa.PlanningArea?.Settings.SystemServiceSettings) 
+                || newPa.ApiKey != existingPa.ApiKey;
+            }
+        }
+
+        return needsRestart;
+    }
+
+    private List<PATreeRow> ApplyFilters()
+    {
+        int id = 0;
+
+        // If all servers are set to false, show them all. No point in showing an empty grid
+        var allServersFalse = enabledServers.Values.All(x => !x);
+
+        var serverRows = availableServers.Where(x => allServersFalse || enabledServers[x.Id] == true).Select(x => new PATreeRow()
+        {
+            Id = "S" + x.Id,
+            Type = EPATreeRowType.Server,
+            Server = x,
+            Name = x.Name,
+            PA = null,
+            Parent = null,
+            IsExpanded = ExpandedKeys.Contains("S" + x.Id)
+        }).ToList();
+
+        foreach (PATreeRow row in serverRows)
+        {
+            var firstOrderNodes = row.Server.Folders.Where(x => x.ParentId == null).Select(x => FolderToTreeRow(row, x, row.Server)).ToList();
+            foreach (PADetails pa in planningAreas.Where(x => x.ServerId == row.Server.Id && x.LocationId == null))
+            {
+                firstOrderNodes.Add(PAToTreeRow(row, pa, row.Server, null));
+            }
+
+            row.Children = firstOrderNodes.OrderBy(x => x.Type).ThenBy(x => x.Name).Cast<CustomTreeList.TreeRow>().ToList();
+        }
+
+        return serverRows;
+    }
+
+    private PATreeRow PAToTreeRow(PATreeRow parentRow, PADetails pa, CompanyServer server, PlanningAreaLocation? parentFolder)
+    {
+        var thisPaBackups = backups.Where(b => b.BackupOf == pa.Id);
+        var backupRows = new List<CustomTreeList.TreeRow>();
+
+        var row = new PATreeRow()
+        {
+            Id = "P" + pa.Id,
+            Type = EPATreeRowType.Pa,
+            Server = server,
+            Name = pa.Name,
+            PA = pa,
+            Children = backupRows,
+            LocationRef = parentFolder,
+            Parent = parentRow,
+            IsExpanded = ExpandedKeys.Contains("P" + pa.Id)
+        };
+
+        foreach (var backup in thisPaBackups)
+        {
+            backupRows.Add(new PATreeRow()
+            {
+                Id = "P" + backup.Id,
+                Type = EPATreeRowType.Backup,
+                Server = server,
+                Name = "Backup",
+                PA = backup,
+                LocationRef = parentFolder,
+                Parent = row,
+                IsExpanded = ExpandedKeys.Contains("P" + backup.Id)
+            });
+        }
+
+        return row;
+    }
+
+
+    private PATreeRow FolderToTreeRow(PATreeRow parentRow, PlanningAreaLocation a_location, CompanyServer server)
+    {
+        var childRows = new List<CustomTreeList.TreeRow>();
+
+        var row = new PATreeRow()
+        {
+            Id = "F" + a_location.Id,
+            Type = EPATreeRowType.Location,
+            Server = server,
+            Name = a_location.Name,
+            LocationRef = a_location,
+            Children = childRows,
+            Parent = parentRow,
+            IsExpanded = ExpandedKeys.Contains("F" + a_location.Id)
+        };
+
+        foreach (var pa in a_location.PlanningAreas)
+        {
+            childRows.Add(PAToTreeRow(row, pa, server, a_location));
+        }
+        foreach (var child in a_location.Children)
+        {
+            childRows.Add(FolderToTreeRow(row, child, server));
+        }
+
+        return row;
+    }
+    #endregion
+
+    #region Event Handlers
+    private void ShowBulkEditor() => bulkEditor?.Show();
+
+    private async Task DeleteItem(object a_item)
+    {
+        if (a_item is PADetails item)
+        {
+            try
+            {
+                await _serviceContainer.PlanningAreaDataService.DeletePlanningAreaAsync(item);
+                planningAreas = await _serviceContainer.PlanningAreaDataService.GetPlanningAreasByManagingCompanyIdAsync(currentUser.CompanyId);
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error deleting Planning Area: {item.Name}");
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task ShowCreator(CompanyServer server, PADetails a_copyFromModel = null)
+    {
+        if (planningAreaCreator is null) return;
+        if (server is null) return;
+
+        await planningAreaCreator.Show(server, a_copyFromModel);
+    }
+
+    private async Task ShowEditor(PADetails model)
+    {
+        if (planningAreaEditor is null) return;
+
+        // Make sure PA is up to date before editing
+        var updatedPa = await paService.GetPlanningAreaByIdAsync(model.Id);
+        var index = planningAreas.FindIndex(x => x.Id == model.Id);
+        planningAreas[index] = updatedPa;
+        PAToEdit = updatedPa;
+        StateHasChanged();
+        await planningAreaEditor.Show();
+    }
+
+    private async Task StartInstance(PADetails model)
+    {
+        bool actionPending = !await actionsService.RequestServerStartPA(model.ServerId, currentUser, new InstanceKey(model));
+        if (actionPending)
+        {
+            _toastService.ShowToast("Already Starting", "That Planning Area is already starting.", ToastRenderStyle.Info);
+        }
+    }
+
+    private async Task StopInstance(PADetails model)
+    {
+        bool actionPending = !await actionsService.RequestServerStopPA(model.ServerId, currentUser, new InstanceKey(model));
+        if (actionPending)
+        {
+            _toastService.ShowToast("Already Stopping", "That Planning Area is already stopping.", ToastRenderStyle.Info);
+        }
+    }
+
+    private async Task<bool> DeleteInstance(PADetails model, bool initialDelete = true)
+    {
+        var confirmDelete = initialDelete;
+        string serverStatus = model.Server.Status;
+
+        if (serverStatus == "Offline")
+        {
+            var confirm = await ConfirmSAOfflineDeletePAAnyway();
+            StateHasChanged();
+            if (!confirm)
+            {
+                return false;
+            }
+        }
+        try
+        {
+            var backups = await paService.GetBackups(model);
+            if (backups.Any())
+            {
+                // Confirm before deleting backups
+                if (confirmDelete && !await ConfirmDialog.ConfirmDeleteOperation("Are you sure?", "This Planning Area has saved backups, do you want to delete this Planning Area as well as ALL backup versions of it?", model.Name))
+                {
+                    return false;
+                }
+
+                // User has now confirmed the operation, so don't ask again
+                confirmDelete = false;
+
+                // Recursively delete backups
+                foreach (PADetails backup in backups)
+                {
+                    if (!await DeleteInstance(backup, false))
+                    {
+                        // If a backup failed to delete, cancel the operation
+                        return false;
+                    }
+                }
+            }
+
+            // PAs that aren't in a "Created" state should be clearable - remove the data, but don't send a server action
+            if (!model.RegistrationStatus.Equals(ERegistrationStatus.Created.ToString(), StringComparison.OrdinalIgnoreCase) ||
+                model.ServiceState == EServiceState.Unknown)
+            {
+                if (!confirmDelete || await ConfirmDialog.ConfirmDeleteOperation($"Delete {model.Name}?",
+                        $"This Planning Area is not confirmed as created on the server (status {model.RegistrationStatus}). " +
+                        $"If recently created, please allow time for the process to complete. " +
+                        $"{Environment.NewLine}Remove data anyway?", model.Name))
+                {
+                    IsLoading = true;
+                    LoadingText = "Deleting PA: " + model.Name;
+                    StateHasChanged();
+                    await _paService.DeletePlanningAreaAsync(model);
+                    planningAreas = await _paService.GetPlanningAreasByManagingCompanyIdAsync(currentUser.CompanyId);
+                    _toastService.ShowToast("Deleting", $"{model.Name} has been marked for deletion and should be removed shortly.", ToastRenderStyle.Success);
+                    return true;
+                }
+            }
+
+            // Regular delete, which queues the server to clean up the PA on its side
+            if (!confirmDelete || await ConfirmDialog.ConfirmDeleteOperation("Are you sure?", "Are you sure you want to delete this Planning Area?", model.Name))
+            {
+                // Set the model status to "pending delete" and request SM to delete any related services
+                // The DB model will be deleted by the API when the delete action is updated to "success"
+                
+                IsLoading = true;
+                LoadingText = "Deleting PA: " + model.Name;
+                StateHasChanged();
+                
+                try
+                {
+                    await _paService.UpdateStatusAsync(model, "Deleting");
+                }
+                catch (Exception e)
+                {
+                    // Planning area is already deleted
+                    _toastService.ShowToast("Already Deleted", "That Planning Area could not be found, it may have already been deleted. Refreshing data...", ToastRenderStyle.Info);
+                    await Refresh();
+                    return true;
+                }
+
+                ServerActionsService.ActionCompletion actionPending = await actionsService.WaitForServerToDeletePA(model.ServerId, currentUser, new InstanceKey(model));
+                if (actionPending.error == "Action already exists.")
+                {
+                    var result = await actionsService.WaitForActionCompletion(actionPending.exsitingId ?? Guid.Empty);
+                    return result.isSuccess;
+                }
+
+                if (actionPending.isTimeout)
+                {
+                    _toastService.ShowToast("Delete Took Too Long", "The server did not successfully delete the Planning Area within a reasonable time. Check to make sure the server is Online.", ToastRenderStyle.Danger);
+                    return false;
+                }
+
+                model.RegistrationStatus = "Deleting";
+
+                if (confirmDelete)
+                {
+                    await Refresh();
+                }
+
+                return true;
+            }
+
+            // Unknown failure
+            return false;
+        }
+        catch (Exception e)
+        {
+            _toastService.ShowToast("Error Deleting", e.ToString(), ToastRenderStyle.Danger);
+            return false;
+        }
+        finally
+        {
+            // Release the loading state even if delete failed
+            if (initialDelete)
+            {
+                IsLoading = false;
+                LoadingText = "";
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task CreateFolder(PATreeRow parent)
+    {
+        var name = await InputDialog.GetUserInput("Folder Name", "Please enter the name of the folder.");
+        if (name.IsNullOrEmpty())
+        {
+            return;
+        }
+        try
+        {
+            if (parent.Type == EPATreeRowType.Location)
+            {
+                await _paService.CreateFolder(currentUser, parent.LocationRef, name);
+            }
+            if (parent.Type == EPATreeRowType.Server)
+            {
+                await _paService.CreateRootFolder(currentUser, parent.Server, name);
+            }
+            await Refresh();
+        } catch(DataException e)
+        {
+            _toastService.ShowToast("Folder Already Exists", "A Folder with that name already exists in this Folder.", ToastRenderStyle.Danger);
+        }
+    }
+
+    private async Task CreatePAInFolder(PATreeRow parent)
+    {
+        SelectedFolder = null;
+        selectedServer = null;
+        if (parent.Type == EPATreeRowType.Location)
+        {
+            SelectedFolder = parent.LocationRef;
+        }
+        if (parent.Type == EPATreeRowType.Server)
+        {
+            SelectedFolder = null;
+        }
+
+        selectedServer = parent.Server;
+        await ShowCreator(selectedServer);
+    }
+
+    private async Task RenameFolder(PlanningAreaLocation model)
+    {
+        var name = await InputDialog.GetUserInput("Folder Name", "Please enter the name of the folder.");
+        if (name.IsNullOrEmpty())
+        {
+            return;
+        }
+
+        _paService.RenameFolder(currentUser, model, name);
+        await Refresh();
+    }
+
+
+    private async Task<bool> DeleteFolder(PlanningAreaLocation model, bool initialDelete = true)
+    {
+        // If this folder has contents, confirm delete.
+        if (initialDelete && (model.PlanningAreas.Any() || model.Children.Any()))
+        {
+            if (!await ConfirmDialog.ConfirmDeleteOperation("Are you sure?", "Are you sure you want to delete this Folder? This will delete all Planning Areas in this folder as well as any subfolders. This may take a while.", model.Name))
+            {
+                return false;
+            }
+        }
+
+        IsLoading = true;
+        LoadingText = "Deleting folder: " + model.Name;
+        StateHasChanged();
+
+        // Recursively delete child folders
+        foreach (PlanningAreaLocation folder in model.Children.ToList())
+        {
+            if (!await DeleteFolder(folder, false))
+            {
+                // Delete child failed, cancel
+                if (initialDelete)
+                {
+                    _toastService.ShowToast("Couldn't Delete", "The folder could not be deleted. Failed to delete subfolder:" + folder.Name, ToastRenderStyle.Danger);
+                }
+                return false;
+            }
+        }
+
+        // Remove all PAs in this folder
+        foreach (PADetails pa in model.PlanningAreas.ToList())
+        {
+            if (!await DeleteInstance(pa, false))
+            {
+                // Delete child failed, cancel
+                if (initialDelete)
+                {
+                    _toastService.ShowToast("Couldn't Delete", "The folder could not be deleted, as a planning area inside it failed to delete.", ToastRenderStyle.Danger);
+                }
+                return false;
+            }
+        }
+
+        await _paService.DeleteFolder(currentUser, model);
+
+        if (initialDelete)
+        {
+            await Refresh();
+        }
+
+        return true;
+    }
+
+
+    private async Task RestartInstance(PADetails model)
+    {
+        bool actionPending = !await actionsService.RequestServerRestartPA(model.ServerId, currentUser, new InstanceKey(model));
+        if (actionPending)
+        {
+            _toastService.ShowToast("Already Restarting", "That Planning Area is already restarting.", ToastRenderStyle.Info);
+        }
+    }
+
+    private async Task ShowUpgradeVersionSelector(PADetails model)
+    {
+        PAToUpgrade = model;
+        await SetVersionOptions(model.Server);
+        versionSelectorVisible = true;
+        StateHasChanged();
+    }
+
+    private async Task UpgradeInstance(PADetails a_model, string a_version, bool a_startAfterUpgrade)
+    {
+        var backups = await _paService.GetBackups(a_model);
+        if (backups.Any(x => x.Version == a_version))
+        {
+            await ConfirmDialog.ConfirmOperation($"Cannot Upgrade", $"You cannot upgrade to {a_version} as there is a backup of this Planning Area using that version. You must first delete that backup, or choose a different version.", yesButtonText: "Ok", displayNoButton: false, renderStyle: ButtonRenderStyle.Primary);
+            return;
+        }
+        bool actionPending = !await actionsService.RequestServerUpgradePA(a_model.ServerId, currentUser, new UpgradePlanningAreaRequest()
+        {
+            InstanceName = a_model.Name,
+            SoftwareVersion = a_model.Version,
+            NewVersion = a_version,
+            StartAfterUpgrade = a_startAfterUpgrade
+        });
+        if (actionPending)
+        {
+            _toastService.ShowToast("Already Upgrading", "That Planning Area is already being upgraded.", ToastRenderStyle.Info);
+        }
+
+        versionSelectorVisible = false;
+        StateHasChanged();
+    }
+
+    private void NavigateTo()
+    {
+        NavigationManager.NavigateTo("servermanager/" + @_serviceContainer.ScopedAppStateService.BackPath);
+    }
+
+    void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+        int id = Convert.ToInt32(e.GetRowValue("Id"));
+        var item = planningAreas.Find(c => c.Id == id);
+        var tz = _serviceContainer.UserTimeZone ?? "UTC";
+
+        if (item == null) return;
+
+        e.Value = e.FieldName switch
+        {
+            "PlanningArea.PublicInfo.EnvironmentType" =>
+                item.PlanningArea?.PublicInfo is not null
+                    ? ((EnvironmentTypeEnum)item.PlanningArea.PublicInfo.EnvironmentType).ToString().ToUpper()
+                    : null,
+
+            "PlanningArea.LicenseInfo.SerialCode" =>
+                item.PlanningArea?.LicenseInfo?.SerialCode is string code
+                    ? CommonUtils.FormatSerialCodeAddSeparators(code)
+                    : null,
+
+            "PlanningArea.Settings.CreationDate" =>
+                Shared.Utils.FormatUtcDate(item.PlanningArea?.Settings?.CreationDate, currentUser),
+
+            "PlanningArea.Settings.UpdateDate" =>
+                Shared.Utils.FormatUtcDate(item.UpdateDate, currentUser),
+
+            "PlanningArea.Settings.SystemServiceSettings.Port" =>
+                item.PlanningArea?.Settings?.SystemServiceSettings?.Port.ToString(),
+
+            "Server.Name" => 
+                item?.Server?.Name,
+
+            "Company.Name" => 
+                item?.Company?.Name,
+                
+            "UsingCompanies" => 
+                string.Join(", ", item?.Server.UsingCompanies.Select(x => x.Company.Name)),
+
+            _ => null
+        };
+    }
+
+    private async Task ExecuteActionAsync(ActionItem<PADetails> action, PADetails dataItem)
+    {
+        if (action?.Action != null)
+        {
+            SelectedAction = action;
+            await action.Action(dataItem);
+        }
+        StateHasChanged();
+    }
+
+    #endregion
+
+    private void VersionSelectorClosed()
+    {
+        versionSelectorVisible = false;
+    }
+
+    private async Task Refresh()
+    {
+        try
+        {
+            if (IsInitialized)
+            {
+                await SaveTreeGridState();
+            }
+
+            availableServers.Clear();
+            planningAreas.Clear();
+
+            if (!currentUser.IsAuthorizedFor(Permission.ViewUsers))
+            {
+                NavigationManager.NavigateTo("/");
+                return;
+            }
+            availableServers = await _serviceContainer.ServerManagerService.GetServersByManagingCompanyAsync(currentUser.CompanyId);
+
+            planningAreas = await _serviceContainer.PlanningAreaDataService.GetPlanningAreasByManagingCompanyIdAsync(currentUser.CompanyId);
+            backups = await _paService.GetAllBackupsForCompany(currentUser.CompanyId);
+
+            ResetPAStatuses();
+
+            // Start periodic updates
+            await StartPeriodicStatusUpdates();
+
+            await SetVersionOptions();
+
+            RestoreExpansionState();
+
+            IsLoading = false;
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing Planning Areas page.");
+        }
+    }
+
+    private async Task SaveTreeGridState(int? expandedRow = null)
+    {
+        ExpandedKeys = TreeList.GetExpandedNodes().Select(x => x.Id).ToList();
+
+        var jsonObj = new PATreeGridState()
+        {
+            ExpandedKeys = ExpandedKeys,
+            HiddenColumnNames = enabledColumns.Where(x => !x.IsChecked).Select(x => x.ColumnName).ToList(),
+            ShownServerIds = enabledServers.Keys.Where(x => enabledServers[x]).ToList(),
+            HiddenServerIds = enabledServers.Keys.Where(x => !enabledServers[x]).ToList()
+        };
+
+        var layout = new SavedGridLayout()
+        {
+            Id = currentUser.SavedGridLayouts.FirstOrDefault(x => x.CompanyId == currentUser.CompanyId)?.Id ?? 0,
+            CompanyId = currentUser.CompanyId,
+            UserId = currentUser.Id,
+            Name = $"{currentUser.FullName} Default",
+            PlanningAreaGridJson = JsonConvert.SerializeObject(jsonObj)
+        };
+
+        await _serviceContainer.UserService.SaveUserGridLayout(layout, currentUser);
+
+        // If the saved layout is not present in the user layout list, reload the user so we can update it
+        if (!currentUser.SavedGridLayouts.Any(x => x.Id == layout.Id))
+        {
+            currentUser = await _serviceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+        }
+    }
+
+    private void RestoreExpansionState()
+    {
+        TreeList?.ReSyncExpansion();
+    }
+
+    private async Task SetVersionOptions(CompanyServer? server = null)
+    {
+        if (server == null)
+        {
+            server = selectedServer;
+        }
+
+        var VersionOptions = new List<string>();
+        if (!server.LocalVersions.IsNullOrEmpty())
+        {
+            VersionOptions = server.LocalVersions.Split(',').ToList();
+        }
+        else
+        {
+            VersionOptions = new ();
+        }
+
+        VersionOptions.AddRange((await tableService.GetAllSoftwareVersions()).Select(x => x.VersionNumber).Where(x => VersionOptions.All(y => x != y)).ToList());
+        VersionOptions = VersionOptions.OrderByDescending(x => new Version(x)).ToList();
+        planningAreaVersions = VersionOptions;
+    }
+
+    private async Task DeleteBackup(PADetails model)
+    {
+        if (!model.RegistrationStatus.Equals(ERegistrationStatus.Created.ToString(), StringComparison.OrdinalIgnoreCase) ||
+            model.ServiceState == EServiceState.Unknown)
+        {
+            await _paService.DeletePlanningAreaAsync(model);
+            BackupVersions = await _paService.GetBackups(PAToView);
+            _toastService.ShowToast("Deleting", $"{model.Name} has been marked for deletion and should be removed shortly.", ToastRenderStyle.Success);
+            return;
+        }
+
+        _toastService.ShowToast("Deleting Backup", $"Deleting backup of {model.Name} on version {model.Version}...", ToastRenderStyle.Info);
+        var result = await actionsService.WaitForServerToDeletePA(model.ServerId, currentUser, new InstanceKey(model), 120000);
+        if (result.isSuccess)
+        {
+            _toastService.ShowToast("Backup Deleted", $"Backup of {model.Name} on version {model.Version} was deleted successfully.", ToastRenderStyle.Success);
+            if (PAToView != null)
+            {
+                // Refresh view
+                BackupVersions = await _paService.GetBackups(PAToView);
+                if (!BackupVersions.Any())
+                {
+                    CloseBackups();
+                }
+                else
+                {
+                    StateHasChanged();
+                }
+            }
+        }
+        else if (result.isTimeout)
+        {
+            _toastService.ShowToast("Couldn't Delete", $"Backup of {model.Name} on version {model.Version} is not responding to the delete request. Check the actions page for more details.", ToastRenderStyle.Warning);
+        } else
+        {
+            _toastService.ShowToast("Couldn't Delete", $"Backup of {model.Name} on version {model.Version} was not deleted. The server reported the following error: {result.error}", ToastRenderStyle.Danger);
+        }
+    }
+
+    private async Task RestoreBackup(PADetails? a_currentVersion, PADetails a_versionToRestore)
+    {
+        if (a_currentVersion == null)
+        {
+            _toastService.ShowToast("Restore Failed", $"Backup of {a_currentVersion.Name} on version {a_versionToRestore.Version} could not be restored, as the current version was not found.", ToastRenderStyle.Warning);
+            return;
+        }
+        var startNew = a_currentVersion.IsStarted;
+        if (a_currentVersion.RegistrationStatus == ERegistrationStatus.Created.ToString())
+        {
+            _toastService.ShowToast("Restoring Backup", "Waiting for service to stop...", ToastRenderStyle.Info);
+            await actionsService.RequestServerStopPA(a_currentVersion.ServerId, currentUser, new InstanceKey(a_currentVersion));
+            if (!await _paService.WaitForPAStatus(a_currentVersion, EServiceState.Stopped))
+            {
+                _toastService.ShowToast("Restoring Backup Failed", "The current version did not stop in a timely manner.", ToastRenderStyle.Danger);
+                CloseBackups();
+                return;
+            }
+        }
+
+        _toastService.ShowToast("Restoring Backup", $"Restoring version {a_versionToRestore.Version}...", ToastRenderStyle.Info);
+        await _paService.RestoreBackup(a_currentVersion, a_versionToRestore);
+        if (startNew)
+        {
+            _toastService.ShowToast("Restoring Backup", "Trying to start restored service...", ToastRenderStyle.Info);
+            await actionsService.RequestServerStartPA(a_versionToRestore.ServerId, currentUser, new InstanceKey(a_versionToRestore));
+            if (!await _paService.WaitForPAStatus(a_versionToRestore, EServiceState.Started))
+            {
+                _toastService.ShowToast("Restoring Backup", $"Successfully restored {a_versionToRestore.Version}, but it did not report a successful start. You may need to restart it manually.", ToastRenderStyle.Warning);
+                Refresh();
+                return;
+            }
+        }
+        _toastService.ShowToast("Restoring Backup", $"Successfully restored {a_versionToRestore.Version}.", ToastRenderStyle.Success);
+        backViewerVisible = false;
+        Refresh();
+    }
+
+    private async Task ShowLogs(PADetails a_dataItem)
+    {
+        if (ErrorState.TryGetValue(a_dataItem.Id, out var categories) && categories.count >= 1)
+        {
+            await ErrorViewer.Show(a_dataItem, categories.categories);
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            await ErrorViewer.Show(a_dataItem, new());
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        _statusUpdateTask?.Dispose();
+        StatusUpdateListener?.Dispose();
+        ConfirmDialog.Dispose();
+    }
+
+    // Handle items that are dragged and dropped
+    private async Task OnDrop(TreeListItemsDroppedEventArgs args)
+    {
+        var droppedItems = args.DroppedItems.Cast<PATreeRow>();
+        var target = args.TargetItem as PATreeRow;
+        bool updateMade = false;
+
+        try
+        {
+            if (droppedItems.Any(x => x.Server.Id != target.Server.Id))
+            {
+                _toastService.ShowToast("Can't Move Items Between Servers", $"You cannot move an item to a different server.", ToastRenderStyle.Danger);
+                return;
+            }
+            if (droppedItems.Any(x => x.Type == EPATreeRowType.Server))
+            {
+                _toastService.ShowToast("Can't Move Servers", $"You cannot move servers.", ToastRenderStyle.Danger);
+                return;
+            }
+            if (droppedItems.All(x => x.Type == EPATreeRowType.Backup))
+            {
+                _toastService.ShowToast("Can't Move Backups", $"You cannot move backups by themselves. To move a backup, you will need to move the active PA. If you wish to restore this backup, use the 'Restore' Action.", ToastRenderStyle.Danger);
+                return;
+            }
+
+            // Multi-drag is not currently configured, but this should handle that gracefully.
+            foreach (PATreeRow item in droppedItems)
+            {
+                if (item.Type == EPATreeRowType.Pa)
+                {
+                    if (item.PA.LocationId != target.LocationRef?.Id && !droppedItems.Any(x => x.Type == EPATreeRowType.Location && x.LocationRef.Id == item.PA.LocationId))
+                    {
+                        IsLoading = true;
+                        LoadingText = "Moving PA: " + item.Name;
+                        StateHasChanged();
+                        await _paService.MoveFolder(currentUser, item.PA, target.LocationRef);
+                        updateMade = true;
+                    }
+                }
+
+                if (item.Type == EPATreeRowType.Location)
+                {
+                    _toastService.ShowToast("Can't Move Locations", $"You cannot move locations. If you wish to move planning areas to a new location, move the planning areas by themselves.", ToastRenderStyle.Danger);
+                    return;
+                    // if (item.LocationRef.Id != target.LocationRef?.Id)
+                    // {
+                    //     IsLoading = true;
+                    //     LoadingText = "Moving Folder: " + item.Name;
+                    //     StateHasChanged();
+                    //     await _paService.MoveFolder(currentUser, item.LocationRef, target.LocationRef);
+                    //     updateMade = true;
+                    // }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            _toastService.ShowToast("Failed to Move Items", $"Not all items were moved successfully.", ToastRenderStyle.Danger);
+            IsLoading = false;
+            LoadingText = "";
+            StateHasChanged();
+        }
+
+        // Only update the tree if the data actually 
+        if (updateMade)
+        {
+            await Refresh();
+        }
+    }
+}

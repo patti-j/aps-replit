@@ -1,0 +1,76 @@
+﻿@using DevExpress.Blazor
+
+<h1>@Scope.Name</h1>
+<div>@Scope.Description</div>
+<DxTabs ActiveTabIndexChanged="TabChanged">
+    <DxTab Text="Planning Areas"></DxTab>
+    <DxTab Text="Assigned Teams"></DxTab>
+    <DxTab Text="Assigned Users"></DxTab>
+</DxTabs>
+@switch (m_page)
+{
+    case 0:
+    {
+        <DxGrid Data="Scope.PlanningAreas">
+            <Columns>
+                @foreach (var column in allColumns.Where(c => c.IsChecked))
+                {
+                    if (column.ColumnName == "Name")
+                    {
+                        <DxGridDataColumn FieldName="@(column.FieldName)" Caption="@column.ColumnName" Width="@column.ColumnWidth">
+                            <CellDisplayTemplate Context="context">
+                                @if (context.DataItem is PADetails pa)
+                                {
+                                        <a href="javascript:void(0)"><span @onclick="async () => ShowItemWithBreadcrumb(pa)">@pa.Name</span></a>
+                                }
+                            </CellDisplayTemplate>
+
+                        </DxGridDataColumn>
+                    }
+                    else {
+                        <DxGridDataColumn FieldName="@(column.FieldName)" Caption="@column.ColumnName" Width="@column.ColumnWidth">
+
+                        </DxGridDataColumn>
+                    }
+                }
+            </Columns>
+        </DxGrid>
+        break;
+    }
+    case 1:
+    {
+        <span>No teams assigned</span>
+        // TODO: Add once teams are associated
+        break;
+    }
+    case 2:
+    {
+        <span>No users assigned</span>
+        // TODO: Add once users are associated
+        break;
+    }
+}
+
+@code {
+    [Parameter] public PlanningAreaScope Scope { get; set; }  // Object from the grid (e.g., PADetails)
+    [Parameter] public Action<BaseEntity> ShowItemWithBreadcrumb { get; set; }
+    int m_page = 0;
+
+    private List<ColumnOption> allColumns = new List<ColumnOption>
+    {
+        new ColumnOption { ColumnName = "Name", FieldName = "Name", IsChecked = true, ColumnWidth = "240"},
+        new ColumnOption { ColumnName = "Location", FieldName = "Location.Name", IsChecked = true, ColumnWidth = "240"},
+        new ColumnOption { ColumnName = "Version", FieldName = "Version", IsChecked = true, ColumnWidth = "100"},
+        new ColumnOption { ColumnName = "Port", FieldName = "PlanningArea.Settings.SystemServiceSettings.Port", IsChecked = true, Unbound = true, ColumnWidth = "60" },
+        new ColumnOption { ColumnName = "License Status", FieldName = "LicenseStatus", IsChecked = true },
+        new ColumnOption { ColumnName = "Creation Date", FieldName = "PlanningArea.Settings.CreationDate", IsChecked = true, Unbound = true, ColumnWidth = "90" },
+        new ColumnOption { ColumnName = "Integration Code", FieldName = "PlanningArea.ServicePaths.IntegrationCode", IsChecked = true }, // TODO: This doesn't show and it isn't clear why
+        new ColumnOption { ColumnName = "Serial Code", FieldName = "PlanningArea.LicenseInfo.SerialCode", IsChecked = true, Unbound = true }, // TODO: Make this a password input that reveals on click //
+        new ColumnOption { ColumnName = "Registration", FieldName = "RegistrationStatus", IsChecked = true, ColumnWidth = "80" },
+    };
+
+    private void TabChanged(int a_tabIndex)
+    {
+        m_page = a_tabIndex;
+    }
+}

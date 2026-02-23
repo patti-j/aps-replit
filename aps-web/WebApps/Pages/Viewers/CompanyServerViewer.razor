@@ -1,0 +1,66 @@
+﻿@page "/companyserverViewer"
+@* NOTE: This page is deprecated and no longer shown in the UI. It is kept here for reference 
+    
+@if (viewPermission)
+{
+    
+    <CompanyServerGrid OnSave="OnSave" Company="Company" Servers="Servers" />
+    <DxButton Text="Install new Server Manager" Click="ShowServerInstall"></DxButton>
+    <DxPopup @bind-Visible="@PopupVisible"
+             HeaderText="Install Instructions"
+             BodyText="@($"Please begin the Server Manager installation process now. When prompted, enter this code to continue: \n{code}")"
+             ShowFooter="true"
+             @ref="Popup">
+        <FooterContentTemplate>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="@(codeCopied ? "Copied!" : "Copy Code")" Click="CopyCode" />
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Close" Click="x => Popup.CloseAsync()" />
+        </FooterContentTemplate>
+    </DxPopup>
+} *@
+
+@code {
+    // private DxPopup Popup { get; set; }
+    // private User User { get; set; }
+    // private Company Company;
+    // public List<CompanyServer> Servers { get; set; } = new List<CompanyServer>();
+    // public List<Company> Companies { get; set; } = new List<Company>();
+    // private bool PopupVisible = false;
+    // private string code = "";
+    // private bool codeCopied = false;
+    // private bool viewPermission = false;
+
+    // [Inject]
+    // IUserService m_userService { get; set; }
+    // [Inject]
+    // ICompanyService companyService { get; set; }
+    // [Inject]
+    // IJSRuntime jsRuntime { get; set; }
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+    //     if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.ManageUsers, NavigationManager, true)) return;
+    //     viewPermission = true;
+
+    //     Company = User.Company;
+    //     Servers = await companyService.GetCompanyServersAsync(Company.Id);
+    // }
+
+    // protected async Task ShowServerInstall()
+    // {
+    //     code = await companyService.GetCurrentInstallCode(User);
+    //     codeCopied = false;
+    //     PopupVisible = true;
+    // }
+
+    // protected async Task CopyCode()
+    // {
+    //     await jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", code);
+    //     codeCopied = true;
+    // }
+
+    // private async Task<CompanyServer> OnSave(CompanyServer server)
+    // {
+    //     return await companyService.AddOrUpdateServerAsync(server);
+    // }
+}

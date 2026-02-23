@@ -1,0 +1,10 @@
+[
+  {
+    "importDate": "2024-02-05T14:30:00",
+    "PurchaseToStockId": 12345,
+    "TransferOrderDistributionId": 67890,
+    "RequiredDate": "2024-02-10T08:00:00",
+    "RequiredQty": 25.5,
+    "Notes": "Sample notes for the purchase to stock transfer order demand"
+  }
+]

@@ -1,0 +1,104 @@
+﻿@page "/components/triggerImport"
+@using ReportsWebApp.Controllers.Models
+@using System.Text
+@using System.Text.Json
+
+<h3>Trigger Import</h3>
+@if (Instances == null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<DxGrid ShowFilterRow="true"
+			Data="@Instances"
+			@ref="MyGrid"
+			PageSize="10"
+			CssClass="ch-480"
+			PagerPosition="GridPagerPosition.TopAndBottom"
+			PageSizeSelectorVisible="true"
+			PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+			PageSizeSelectorAllRowsItemVisible="false"
+			PagerSwitchToInputBoxButtonCount="10"
+			PagerVisibleNumericButtonCount="10"
+			ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+		<Columns>
+			<DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" />
+			<DxGridDataColumn FieldName="Environment" UnboundType="GridUnboundColumnType.String" MinWidth="200" />
+			<DxGridDataColumn FieldName="Name" Caption="Planning Area Name" MinWidth="200" />
+			<DxGridCommandColumn ClearFilterButtonVisible="false">
+				<HeaderTemplate>
+					Trigger Import
+				</HeaderTemplate>
+				<CellDisplayTemplate>
+					@{
+						var dataItem = (CompanyDb)context.DataItem;
+						<DxButton IconCssClass="fa fa-arrow-right-from-bracket" CssClass="btn-icon" Click="() => OnImportButtonClick(context.DataItem)" />
+					}
+				</CellDisplayTemplate>
+			</DxGridCommandColumn>
+		</Columns>
+	</DxGrid>
+    <DxPopup @bind-Visible="@ConfirmationShown" HeaderText="Trigger Import" Width="auto" CloseOnOutsideClick="false">
+        <BodyContentTemplate>
+			<p>You are about to trigger an import. This will trigger import for ALL SCENARIOS of this Planning Area. Are you sure?</p>
+            <div class="confirm-dialog-buttons">
+                <DxButton Text="Yes" RenderStyle="ButtonRenderStyle.Primary" Click="@OnYesButtonClick" />
+                <DxButton Text="No" RenderStyle="ButtonRenderStyle.Secondary" Click="@OnNoButtonClick" />
+            </div>
+        </BodyContentTemplate>
+    </DxPopup>
+}
+@code {
+    IGrid? MyGrid { get; set; }
+
+    [Parameter]
+    public List<CompanyDb> Instances { get; set; }
+    [Parameter]
+    public Func<CompanyDb, Task<Category>> OnSave { get; set; }
+    [Parameter]
+    public bool EditInstances { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    ICompanyDbService m_instanceService { get; set; }
+    [Inject]
+    private IConfiguration configuration { get; set; }
+    private User User { get; set; }
+    private CompanyDb? currentInstance { get; set; } = null;
+	private bool ConfirmationShown { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+	    HTUtils.Utils.UpdateGridStyling(MyGrid);
+	    base.OnAfterRender(firstRender);
+    }
+
+    void OnImportButtonClick(object context) {
+        currentInstance = (context as CompanyDb);
+        ConfirmationShown = true;
+    }
+	void OnYesButtonClick()
+	{
+		if (currentInstance != null)
+	    {
+	        QueueManager queueManager = new QueueManager(configuration["AzureSMBStorageConnectionString"], configuration["AzureImportQueueName"]);
+			TriggerImportMessage message = new TriggerImportMessage()
+	        {
+	            MessageType = "TriggerImport", Sender = User.Email, CompanyId = User.CompanyId.ToString(), 
+	            InstanceName = currentInstance.Name, IsSuccess = false, Errors = "", Message = "", Environment = currentInstance.Environment
+	        };
+	        queueManager.SendMessageAsync(Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message))));
+	    }
+	    ConfirmationShown = false;
+    }
+    void OnNoButtonClick() 
+    {
+        ConfirmationShown = false;
+    }
+}

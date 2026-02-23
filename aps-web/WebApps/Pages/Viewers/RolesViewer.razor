@@ -1,0 +1,49 @@
+﻿@page "/rolesViewer"
+
+@if (viewPermission)
+{
+    <RoleGrid @ref="m_roleGrid" Groups="Groups" RefreshComponent="RefreshComponent" />
+}
+
+@code {
+
+    private User User { get; set; }
+
+    public List<Category> Categories { get; set; } = new List<Category>();
+    public List<Role> Groups { get; set; } = null;
+    public List<User> Users { get; set; } = new List<User>();
+    private bool viewPermission = false;
+    private RoleGrid m_roleGrid;
+
+    [Inject]
+    IUserService userService { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    IRoleService RoleService { get; set; }
+    [Inject] IAuthorizationService m_authService { get; set; }
+    [Inject]
+    NavigationManager Navigation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.EditUsers, NavigationManager)) return;
+        viewPermission = true;
+        await ReloadData();
+    }
+
+    private async Task ReloadData()
+    {
+        if (User.Exists())
+        {
+            Groups = await RoleService.GetRoles(User.CompanyId);
+        }
+        StateHasChanged();
+    }
+
+    private async Task RefreshComponent()
+    {
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+}

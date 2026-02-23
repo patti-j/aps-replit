@@ -1,0 +1,130 @@
+﻿@using ReportsWebApp.DB
+@using ReportsWebApp.Pages
+@inject ServiceContainer ServiceContainer
+
+<div class="card p-2 m-1 shadow-sm hover-shadow rounded">
+    <!-- Header: Server Name and Status -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="server-name fw-bold">@Server.Name</h5>
+        <span class="badge @BadgeClass" title="Server Status">@Server.Status</span>
+    </div>
+
+    <div class="server-details mb-3">
+        <div class="row" style="max-width: 400px">
+            <!-- Details or Error Display -->
+            @if (HasError)
+            {
+                <ErrorMessagesDisplay ErrorMessages="new List<string>() { ErrorMessage }" />
+            }
+            else
+            {
+                <div class="col-12 text-muted small">
+                    <i class="fas fa-network-wired me-2"></i> URL: @Server.Url
+                </div>
+                @if (!Server.Location.IsNullOrEmpty())
+                {
+                    <div class="col-12 text-muted small">
+                        <i class="fas fa-map-marker-alt me-2"></i> Location: @Server.Location
+                    </div>
+                }
+                <div class="col-12 text-muted small mt-1">
+                    <i class="fas fa-clock me-2"></i> Last Activity: @Server.LastActivity.ToString(CommonUtils.DateTimeOfficialFormat)
+                </div>
+                <div class="col-12 text-muted small mt-1" title="@Server.Notes">
+                    <i class="fas fa-notebook me-2"></i> Notes: @(Server.Notes?.Length > 70 ? Server.Notes[0..70] + "..." : Server.Notes)
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Actions: Manage Planning Areas and Settings -->
+    <div class="d-flex justify-content-between">
+        <DxButton Attributes="@(new Dictionary<string, object> { ["title"] = " Manage Planning Areas " })" RenderStyle="ButtonRenderStyle.Info" CssClass="btn-icon mr-2" IconCssClass="fa fa-tachometer" Click="NavigateToPlanningAreasAsync" />
+        <div class="d-flex justify-content-between">
+            @* Removed while we don't have regular server data: <DxButton Attributes="@(new Dictionary<string, object> { ["title"] = " Server Home " })" RenderStyle="ButtonRenderStyle.Info" CssClass="btn-icon mr-2" IconCssClass="fa fa-home" Click="NavigateToHomeAsync" /> *@
+            <DxButton Attributes="@(new Dictionary<string, object> { ["title"] = " Settings " })" RenderStyle="ButtonRenderStyle.Info" CssClass="btn-icon mr-2" IconCssClass="fa fa-cog" Click="NavigateToSettingsAsync" />
+            <DxButton Attributes="@(new Dictionary<string, object> { ["title"] = " Delete " })" RenderStyle="ButtonRenderStyle.Danger" CssClass="btn-icon mr-2" IconCssClass="fa fa-trash" Click="DeleteServer" />
+        </div>
+    </div>
+</div>
+<ConfirmationDialog DefaultConfirmButtonStyle="ButtonRenderStyle.Danger" @ref="dialog"></ConfirmationDialog>
+
+@code {
+    [Parameter] public CompanyServer Server { get; set; } = new();
+    [Parameter] public Action<CompanyServer> OnDelete { get; set; }
+
+    private bool HasError { get; set; }
+    private ConfirmationDialog dialog { get; set; }
+    private string ErrorMessage { get; set; } = string.Empty;
+
+    private string BadgeClass => Server.Status switch
+    {
+        "Online" => "bg-success",
+        "Offline" => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    private void SetError(string message)
+    {
+        HasError = true;
+        ErrorMessage = message;
+    }
+
+    private void ClearError()
+    {
+        HasError = false;
+        ErrorMessage = string.Empty;
+    }
+
+    private async Task NavigateToSettingsAsync()
+    {
+        if (await ValidateServerAsync())
+        {
+            NavigateTo("servermanager/settings");
+        }
+    }
+
+    private async Task DeleteServer()
+    {
+        if (await dialog.ConfirmOperation("Warning", $"You are about to remove the server {Server.ServerName}. This will not uninstall the Server Agent from the host machine. If you wish to uninstall the Server Agent, please run the uninstaller, which will automatically remove it from this view."))
+        {
+            await ServiceContainer.ServerManagerService.DeleteServerAsync(Server.Id);
+            OnDelete(Server);
+        }
+    }
+
+    private async Task NavigateToHomeAsync()
+    {
+        if (await ValidateServerAsync())
+        {
+            NavigateTo("servermanager/home");
+        }
+    }
+
+    private async Task NavigateToPlanningAreasAsync()
+    {
+        NavigateTo("servermanager/planningareas");
+    }
+
+    private async Task<bool> ValidateServerAsync()
+    {
+        if (Server.Id <= 0)
+        {
+            SetError("Invalid server configuration.");
+            return false;
+        }
+
+        ClearError();
+        return true;
+    }
+
+    private void NavigateTo(string url)
+    {
+        ServiceContainer.ScopedAppStateService.Server = Server;
+        ServiceContainer.ScopedAppStateService.BackPath = "servers";
+        var current = new Uri(NavigationManager.Uri);
+        var next = new Uri(NavigationManager.BaseUri + url);
+
+        NavigationManager.NavigateTo(url, forceLoad: current.LocalPath == next.LocalPath);
+    }
+}

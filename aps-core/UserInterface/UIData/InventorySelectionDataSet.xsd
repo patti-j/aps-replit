@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="InventorySelectionDataSet" targetNamespace="http://tempuri.org/InventorySelectionDataSet.xsd" xmlns:mstns="http://tempuri.org/InventorySelectionDataSet.xsd" xmlns="http://tempuri.org/InventorySelectionDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="InventorySelectionDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="InventorySelectionDataSet" msprop:Generator_UserDSName="InventorySelectionDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Inventories" msprop:Generator_TableClassName="InventoriesDataTable" msprop:Generator_TableVarName="tableInventories" msprop:Generator_RowChangedName="InventoriesRowChanged" msprop:Generator_TablePropName="Inventories" msprop:Generator_RowDeletingName="InventoriesRowDeleting" msprop:Generator_RowChangingName="InventoriesRowChanging" msprop:Generator_RowEvHandlerName="InventoriesRowChangeEventHandler" msprop:Generator_RowDeletedName="InventoriesRowDeleted" msprop:Generator_RowClassName="InventoriesRow" msprop:Generator_UserTableName="Inventories" msprop:Generator_RowEvArgName="InventoriesRowChangeEvent">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Selected" msprop:Generator_ColumnVarNameInTable="columnSelected" msprop:Generator_ColumnPropNameInRow="Selected" msprop:Generator_ColumnPropNameInTable="SelectedColumn" msprop:Generator_UserColumnName="Selected" type="xs:boolean" minOccurs="0" />
+              <xs:element name="Item_x0020_Name" msprop:Generator_ColumnVarNameInTable="columnItem_Name" msprop:Generator_ColumnPropNameInRow="Item_Name" msprop:Generator_ColumnPropNameInTable="Item_NameColumn" msprop:Generator_UserColumnName="Item Name" type="xs:string" minOccurs="0" />
+              <xs:element name="Item_x0020_Description" msprop:Generator_ColumnVarNameInTable="columnItem_Description" msprop:Generator_ColumnPropNameInRow="Item_Description" msprop:Generator_ColumnPropNameInTable="Item_DescriptionColumn" msprop:Generator_UserColumnName="Item Description" type="xs:string" minOccurs="0" />
+              <xs:element name="Warehouse_x0020_Name" msprop:Generator_ColumnVarNameInTable="columnWarehouse_Name" msprop:Generator_ColumnPropNameInRow="Warehouse_Name" msprop:Generator_ColumnPropNameInTable="Warehouse_NameColumn" msprop:Generator_UserColumnName="Warehouse Name" type="xs:string" minOccurs="0" />
+              <xs:element name="Qty_x0020_On-Hand" msprop:Generator_ColumnVarNameInTable="_columnQty_On_Hand" msprop:Generator_ColumnPropNameInRow="_Qty_On_Hand" msprop:Generator_ColumnPropNameInTable="_Qty_On_HandColumn" msprop:Generator_UserColumnName="Qty On-Hand" type="xs:decimal" minOccurs="0" />
+              <xs:element name="ItemId" msprop:Generator_ColumnVarNameInTable="columnItemId" msprop:Generator_ColumnPropNameInRow="ItemId" msprop:Generator_ColumnPropNameInTable="ItemIdColumn" msprop:Generator_UserColumnName="ItemId" type="xs:long" minOccurs="0" />
+              <xs:element name="WarehouseId" msprop:Generator_ColumnVarNameInTable="columnWarehouseId" msprop:Generator_ColumnPropNameInRow="WarehouseId" msprop:Generator_ColumnPropNameInTable="WarehouseIdColumn" msprop:Generator_UserColumnName="WarehouseId" type="xs:long" minOccurs="0" />
+              <xs:element name="Item_x0020_ExternalId" msprop:Generator_ColumnVarNameInTable="columnItem_ExternalId" msprop:Generator_ColumnPropNameInRow="Item_ExternalId" msprop:Generator_ColumnPropNameInTable="Item_ExternalIdColumn" msprop:Generator_UserColumnName="Item ExternalId" type="xs:string" minOccurs="0" />
+              <xs:element name="Warehouse_x0020_ExternalId" msprop:Generator_ColumnVarNameInTable="columnWarehouse_ExternalId" msprop:Generator_ColumnPropNameInRow="Warehouse_ExternalId" msprop:Generator_ColumnPropNameInTable="Warehouse_ExternalIdColumn" msprop:Generator_UserColumnName="Warehouse ExternalId" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -1,0 +1,51 @@
+﻿@page "/sharedGanttsViewer"
+@using ReportsWebApp.DB.Services.SchedulerHelpers
+@inject ISchedulerFavoritesService favoritesService
+@inject NavigationManager navigationManager
+
+@if (viewPermission)
+{
+    <h3>Shared Gantts Viewer</h3>
+    @if (!isPrerendering)
+    {
+        <FavoriteGrid LoadFavoriteFunc="OnSchedulerFavoriteLoaded" CreatedByMeOnly="false" />
+    }
+    else
+    {
+        <p>Loading...</p>
+    }
+}
+
+@code {
+    private bool isPrerendering = true; // Assume prerendering by default
+    private bool viewPermission = false;
+
+    [Inject]
+    IUserService userService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(user, null, NavigationManager)) return;
+        viewPermission = true;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            isPrerendering = false; // No longer prerendering after the first render
+            StateHasChanged(); // Re-render the component
+        }
+    }
+
+    // This method handles the loading of a scheduler disk image.
+    private void OnSchedulerFavoriteLoaded(GanttFavoriteData Favorite)
+    {
+        // Ensure not to navigate during prerendering
+        if (!isPrerendering && Favorite != null)
+        {
+            navigationManager.NavigateTo($"/scheduler/{Favorite.id}");
+        }
+    }
+}

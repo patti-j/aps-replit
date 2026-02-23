@@ -1,0 +1,354 @@
+﻿@using ReportsWebApp.DB.Services.Interfaces
+@inject IPlanningAreaDataService _paService
+
+<div class="tree-container">
+    <DxComboBox @ref="QuickSelect" Data="QuickSelectActions" Value="@("Quick Select")" ValueExpression="@(() => QuickSelectString)" ValueChanged="(string e) => QuickSelectChanged(e)"></DxComboBox>
+    <DxTreeList Data="@PARows"
+                @ref="TreeList"
+                ChildrenFieldName="Children"
+                AllowSelectRowByClick="true"
+                ShowAllRows="true"
+                ShowFilterRow="true"
+                SelectedDataItemsChanged="OnSelectedDataItemChange"
+                TextWrapEnabled="true"
+                CustomizeElement="OnRenderElement">
+        <Columns>
+            <DxTreeListDataColumn Width="80px" FieldName="Selected" Caption=" "></DxTreeListDataColumn>
+            <DxTreeListDataColumn Width="200px" FieldName="Name" Caption="Name/Location"/>
+            <DxTreeListDataColumn FieldName="Description" Caption="Environment" />
+            <DxTreeListDataColumn Caption="Access">
+                <CellDisplayTemplate >
+                    @{
+                        var dataItem = (PaRow)context.DataItem;
+                    }
+                    <span>
+                        @if (dataItem.RowType == PaRowType.Location)
+                        {
+                            @(dataItem.Selected switch
+                            {
+                                false => "No Access",
+                                true => "Access to All",
+                                null => "Access to Selected",
+                            })
+                        }
+                        @if (dataItem.RowType == PaRowType.PA)
+                        {
+                            @(dataItem.Selected switch
+                            {
+                                false => "No Access",
+                                true => "Role Based Access",
+                                null => "Role Based Access",
+                            })
+                                                }
+                    </span>
+                </CellDisplayTemplate>
+            </DxTreeListDataColumn>
+        </Columns>
+        <TotalSummary>
+            <DxTreeListSummaryItem FieldName="Name" SummaryType="TreeListSummaryItemType.Count"/>
+        </TotalSummary>
+
+    </DxTreeList>
+</div>
+<ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+
+
+@code {
+
+    ITreeList TreeList { get; set; }
+    private ConfirmationDialog Dialog { get; set; }
+    private List<PaRow> PARows { get; set; } = new();
+
+    [Parameter]
+    public Func<List<PADetails>, List<string>, Task> OnChange { get; set; }
+    [Parameter]
+    public List<PADetails> PlanningAreas { get; set; }
+    [Parameter]
+    public List<PADetails> SelectedPlanningAreas { get; set; }
+    [Parameter]
+    public List<PlanningAreaScopeAssociationKey> Associations { get; set; }
+    [Parameter]
+    public List<PAPermissionGroup> PermissionGroups { get; set; }
+    private bool permissionsSet = false;
+
+    [Inject]
+    IUserService userService { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    IRoleService RoleService { get; set; }
+    [Inject]
+    IPlanningAreaLoginService paService { get; set; }
+    [Inject] IAuthorizationService m_authService { get; set; }
+
+    private DxComboBox<string, string> QuickSelect { get; set; }
+    private string QuickSelectString = "Quick Select";
+    private List<string> QuickSelectActions = new ()
+    {
+        "None",
+        "All",
+        "All Production",
+        "All QA",
+        "All Development"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Only get PTAdmin only permissions if the user is PTAdmin
+        var groups = PlanningAreas.GroupBy(x => x.LocationId);
+
+        var associatedLocationIds = new List<int?>();
+        foreach (var key in Associations)
+        {
+            if (key.ScopeAssociationKey.StartsWith("L:"))
+            {
+                if (key.ScopeAssociationKey.EndsWith("?"))
+                {
+                    associatedLocationIds.Add(null);
+                }
+                else
+                {
+                    associatedLocationIds.Add(int.Parse(key.ScopeAssociationKey.Split(':').Last()));
+                }
+            }
+        }
+
+        int id = 0;
+        foreach (var group in groups)
+        {
+            if (group == null || !group.Any())
+            {
+                continue;
+            }
+            AddGroup(ref id, group.First().Location?.Name, group.First().Location?.Id, group, associatedLocationIds.Contains(group.Key));
+        }
+
+        StateHasChanged();
+    }
+
+    private void AddGroup(ref int id, string? name, int? locationId, IEnumerable<PADetails> pasToGroup, bool forceSelected)
+    {
+        var groupRow = new PaRow(++id, name ?? "Uncategorized", "", rowType: PaRowType.Location, key: $"L:{(locationId == null ? "?" : locationId)}");
+        var anySelected = false;
+
+        // Only add the group if it has children
+        if (pasToGroup.Any())
+        {
+            foreach (var pa in pasToGroup)
+            {
+                PaRow paRow = new PaRow(++id, pa.Name, pa.Environment, pa: pa, parent: groupRow);
+
+                (PADetails pa, bool? level) exists;
+                if (forceSelected || SelectedPlanningAreas.Any(x => x.Id == pa.Id))
+                {
+                    paRow.Selected = true;
+                    anySelected = true;
+                }
+                else
+                {
+                    paRow.Selected = false;
+                }
+                groupRow.Children.Add(paRow);
+            }
+
+            // Select parent if any child rows are selected
+            if (anySelected)
+            {
+                groupRow.Selected = forceSelected ? true : null;
+            }
+
+            if (groupRow.Children.Any())
+            {
+                PARows.Add(groupRow);
+            }
+        }
+    }
+
+    private async Task OnSelectedDataItemChange(IReadOnlyList<object> newSelection)
+    {
+        if (newSelection is IGridSelectionChanges changes)
+        {
+            var newSelectedItems = changes.SelectedDataItems.Cast<PaRow>();
+            var deselectedItems = changes.DeselectedDataItems.Cast<PaRow>();
+
+
+            // Override default selection behavior
+            if (!newSelection.Any())
+            {
+                return;
+            }
+
+            bool? newState = newSelectedItems.First().Selected switch
+            {
+                true => false,
+                null => true,
+                false => null,
+            };
+
+
+            // Syncronize Parent Selected State to Children
+            foreach (var item in newSelectedItems)
+            {
+                item.Selected = newState;
+                if (item.Children.IsNullOrEmpty())
+                {
+                    // PAs should always be true or false
+                    item.Selected ??= true as bool?;
+                }
+                else
+                {
+                    // Select children when parent is selected
+                    var toSelect = item.Children.Where(x => x.Selected != newState);
+                    foreach (var sel in toSelect)
+                    {
+                        // PAs should always be true or false
+                        sel.Selected = newState ?? true;
+                    }
+                }
+
+                // Select parent when child is selected
+                if (item.Parent != null) 
+                {
+                    CalculateSelectionStateFromChildren(item.Parent);
+                }
+            }
+
+            InvokeAsync(async () => await OnChange(PARows.SelectMany(x => x.Children).Where(x => x is { PA: not null, Selected: true }).Select(x => x.PA!).ToList(),
+                PARows.Where(x => x.RowType == PaRowType.Location && x is { Selected: true }).Select(x => x.Key).ToList()));
+
+            // Deselect all items so that the grid doesn't try to deselect them when another item is selected
+            TreeList.BeginUpdate();
+            TreeList.SelectedDataItems = new List<PaRow>();
+            TreeList.EndUpdate();
+        }
+    }
+
+    private void CalculateSelectionStateFromChildren(PaRow row)
+    {
+        // If a row has no children, is checked state is simply 
+        if (row.Children.IsNullOrEmpty())
+        {
+            return;
+        }
+
+        if (row.Children.All(x => x.Selected == true || x.Selected == null))
+        {
+            // All children checked, check this
+            if (row.Selected == false)
+            {
+                row.Selected = null;
+            }
+        }
+        else if (row.Children.All(x => x.Selected == false))
+        {
+            // No children checked, uncheck this
+            if (row.Selected == null || row.Selected == true)
+            {
+                row.Selected = false;
+            }
+        }
+        else
+        {
+            // Mixed state, partial check this
+            if (row.Selected == false || row.Selected == true)
+            {
+                row.Selected = null;
+            }
+        }
+    }
+
+    private void OnRenderElement(TreeListCustomizeElementEventArgs e)
+    {
+        object row = e.TreeList.GetDataItem(e.VisibleIndex);
+        if (row is PaRow permRow)
+        {
+
+        }
+    }
+
+    private enum PaRowType
+    {
+        PA,
+        Location,
+        Type
+    }
+    private class PaRow
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string? Location { get; set; }
+        public List<PaRow> Children { get; set; }
+        public PaRow? Parent { get; set; }
+        public PADetails? PA { get; set; }
+        public PAPermissionGroup PermissionGroup { get; set; }
+        public bool? Selected { get; set; }
+        public PaRowType RowType { get; set; }
+        public string Key { get; set; }
+        /// <summary>
+        /// Whether the checkbox should show as checked, unchecked, or partially checked
+        /// </summary>
+
+        public PaRow(int id,
+            string name,
+            string description,
+            List<PaRow> children = null,
+            PADetails? pa = null,
+            PaRow? parent = null,
+            PaRowType rowType = PaRowType.PA,
+            string key = ""
+        )
+        {
+            Id = id;
+            Name = name;
+            Description = description;
+            Location = pa?.Location?.Name;
+            Children = children ?? new List<PaRow>();
+            PA = pa;
+            Parent = parent;
+            RowType = rowType;
+            Key = key;
+        }
+    }
+
+    private void QuickSelectChanged(string a_selection)
+    {
+        foreach (PaRow row in PARows)
+        {
+            if (a_selection == "None")
+            {
+                RecursiveSetRowSelected(row, p => false);
+            }
+            if (a_selection == "All")
+            {
+                RecursiveSetRowSelected(row, p => true);
+            }
+            if (a_selection == "All Production")
+            {
+                RecursiveSetRowSelected(row, p => (p.PA?.Environment.Equals("prod", StringComparison.InvariantCultureIgnoreCase) ?? false) 
+                    || (p.PA?.Environment.Equals("production", StringComparison.InvariantCultureIgnoreCase) ?? false));
+            }
+            if (a_selection == "All QA")
+            {
+                RecursiveSetRowSelected(row, p => p.PA?.Environment.Equals("qa", StringComparison.InvariantCultureIgnoreCase) ?? false);
+            }
+            if (a_selection == "All Development")
+            {
+                RecursiveSetRowSelected(row, p => (p.PA?.Environment.Equals("dev", StringComparison.InvariantCultureIgnoreCase) ?? false)
+                    || (p.PA?.Environment.Equals("development", StringComparison.InvariantCultureIgnoreCase) ?? false));
+            }
+        }
+
+        InvokeAsync(async () => await OnChange(PARows.SelectMany(x => x.Children).Where(x => x is { PA: not null, Selected: true }).Select(x => x.PA!).ToList(),
+            PARows.Where(x => x.RowType == PaRowType.Location && x is { Selected: true }).Select(x => x.Key).ToList()));
+    }
+
+    private void RecursiveSetRowSelected(PaRow a_row, Func<PaRow, bool?> condition)
+    {
+        a_row.Selected = condition(a_row);
+        foreach (var child in a_row.Children)
+        {
+            RecursiveSetRowSelected(child, condition);
+        }
+    }
+}

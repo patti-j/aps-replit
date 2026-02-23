@@ -1,0 +1,13 @@
+[
+  {
+    "importDate": "2024-02-05T12:00:00",
+    "JobId": 12345,
+    "ManufacturingOrderId": 67890,
+    "SuccessorJobId": 54321,
+    "SuccessorManufacturingOrderId": 98765,
+    "SuccessorPathId": 789,
+    "SuccessorOperationId": 456,
+    "TransferHrs": 10.5,
+    "UsageQtyPerCycle": 2.5
+  }
+]

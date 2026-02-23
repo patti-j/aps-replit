@@ -1,0 +1,153 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+# trigger:
+#  - main
+
+stages:
+- stage: 'Build'
+  displayName: 'Build the web application'
+  jobs: 
+  - job: 'Build'
+    displayName: 'Build job'
+    pool:
+      name: 'PTWebBuildMachines'
+
+    variables:
+      solution: '**/WebApps.sln'
+      project: '**/WebAPI/WebAPI.csproj'
+      buildPlatform: 'Any CPU'
+      buildConfiguration: 'Release'
+
+    steps:
+    - checkout: git://APS/aps-api@Dev
+    - checkout: git://APS/aps-core@dev #used for common library references
+    
+    - task: NuGetToolInstaller@1
+
+    - task: NuGetCommand@2
+      inputs:
+        command: 'restore'
+        restoreSolution: '$(solution)'
+        feedsToUse: 'config'
+        #nugetConfigPath: ' D:\a\1\s\NuGet.config'
+
+    - task: VSBuild@1
+      inputs:
+        solution: '$(solution)'
+        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(Build.ArtifactStagingDirectory)\WebApiApp.zip" /p:DeployIisAppPath="Default Web Site"'
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+
+     #Publish build results for use in the release pipelines
+    - task: PublishBuildArtifacts@1
+      inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'drop'
+          publishLocation: 'Container'
+    - task: AzureKeyVault@2
+      inputs:
+        azureSubscription: '76e01371-5a04-44df-b577-3affc90d9712'
+        KeyVaultName: 'pt-webapp-vault-dev'
+        SecretsFilter: '12-Dev-Inst1-Publish'
+        RunAsPreJob: false
+        
+
+- stage: 'PT_WebApp_QA'
+  displayName: 'Deploy the web application to QA'
+  jobs:
+  - deployment: Deploy
+    environment: PT-WebApp-QA
+  - job: 'Deploy_to_QA'
+    displayName: 'Deploy to QA job'
+    pool:
+      name: 'PTWebBuildMachines'
+      environment: PT-WebApp-QA
+
+    variables:
+      solution: '**/*.sln'
+      buildPlatform: 'Any CPU'
+      buildConfiguration: 'Release'
+      System.Debug: 'true'
+      ConnectionStrings.APICompanyDatabase: $(ConnectionString-WebApi-QA)
+      WebAppUrl: $(app-qa-webapp-url)
+        
+    steps:
+    - download: current
+      #artifact: drop
+    
+    # File transform
+    # Replace tokens with variable values in XML or JSON configuration files
+    - task: FileTransform@1
+      displayName: 'File transformation: appsettings.json'
+      inputs:
+        folderPath: '$(Pipeline.Workspace)/drop/*.zip'
+        targetFiles: '**/appsettings.json' 
+        fileType: json
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+          ConnectionType: 'AzureRM'
+          azureSubscription: '76e01371-5a04-44df-b577-3affc90d9712'
+          appType: 'webApp'
+          WebAppName: 'pt-api-qa'
+          packageForLinux: '$(Pipeline.Workspace)/drop/*.zip'
+
+- stage: 'PT_WebApp_Prod'
+  displayName: 'Deploy the web application to Prod'
+  jobs:
+  - deployment: Deploy
+    environment: PT-WebApp-Prod
+  - job: 'Deploy_to_Prod'
+    displayName: 'Deploy to Prod job'
+    pool:
+      name: 'PTWebBuildMachines'
+      environment: PT-WebApp-Prod
+
+    variables:
+      solution: '**/PTIntegrationAPI.sln'
+      buildPlatform: 'Any CPU'
+      buildConfiguration: 'Release'
+      System.Debug: 'true'
+      ConnectionStrings.APICompanyDatabase: $(DEPLOY-ConnectionString-WebApp-Prod)
+      KeyVaultUrl: $(DEPLOY-KeyVaultUrl-Prod)
+      TenantId: $(DEPLOY-TenantId-Prod)
+      ClientId: $(DEPLOY-Webapp-ClientId-Prod)
+      ClientSecret: $(DEPLOY-Webapp-ClientSecret-Prod)
+      WebAppUrl: $(app-prod-webapp-url)
+        
+    steps:
+    - download: current
+      #artifact: drop
+    
+    # File transform
+    # Replace tokens with variable values in XML or JSON configuration files
+    - task: FileTransform@1
+      displayName: 'File transformation: appsettings.json'
+      inputs:
+        folderPath: '$(Pipeline.Workspace)/drop/*.zip'
+        targetFiles: '**/appsettings.json' 
+        fileType: json
+      
+    - task: AzureKeyVault@2
+      inputs:
+        azureSubscription: '76e01371-5a04-44df-b577-3affc90d9712'
+        KeyVaultName: 'pt-webapp-vault-prod'
+        SecretsFilter: '*'
+        RunAsPreJob: true
+
+# Apply migrations from the ReportsWebApp.DB project (NOT the prod migrations) to db in appsettings.json file. 
+     # This is a useful step for our nightly builds, but shouldn't be copied to the production environment where we want direct control.
+    # - script: dotnet ef database update --verbose --no-build --configuration Release --context CompanyDBContext --project $(Build.SourcesDirectory)/aps-api/PTIntegrationAPI/PTIntegrationAPI.csproj --startup-project $(Build.SourcesDirectory)/aps-api/PTIntegrationAPI/PTIntegrationAPI.csproj --connection "$(DEPLOY-ConnectionString-WebApp-Prod)"
+    #   displayName: 'Run EF Core Migration'
+    #   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    #   continueOnError: true
+
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+          ConnectionType: 'AzureRM'
+          azureSubscription: '76e01371-5a04-44df-b577-3affc90d9712'
+          appType: 'webApp'
+          WebAppName: 'pt-api-prod'
+          packageForLinux: '$(Pipeline.Workspace)/drop/*.zip'

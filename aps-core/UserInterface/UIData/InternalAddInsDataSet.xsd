@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="InternalAddInsDataSet" targetNamespace="http://tempuri.org/InternalAddInsDataSet.xsd" xmlns:mstns="http://tempuri.org/InternalAddInsDataSet.xsd" xmlns="http://tempuri.org/InternalAddInsDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="InternalAddInsDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="InternalAddInsDataSet" msprop:Generator_UserDSName="InternalAddInsDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="SchedulerAddIns" msprop:Generator_TableClassName="SchedulerAddInsDataTable" msprop:Generator_RowEvArgName="SchedulerAddInsRowChangeEvent" msprop:Generator_TableVarName="tableSchedulerAddIns" msprop:Generator_TablePropName="SchedulerAddIns" msprop:Generator_RowDeletingName="SchedulerAddInsRowDeleting" msprop:Generator_RowChangingName="SchedulerAddInsRowChanging" msprop:Generator_RowDeletedName="SchedulerAddInsRowDeleted" msprop:Generator_RowEvHandlerName="SchedulerAddInsRowChangeEventHandler" msprop:Generator_RowChangedName="SchedulerAddInsRowChanged" msprop:Generator_UserTableName="SchedulerAddIns" msprop:Generator_RowClassName="SchedulerAddInsRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Enabled" msprop:Generator_ColumnVarNameInTable="columnEnabled" msprop:Generator_ColumnPropNameInRow="Enabled" msprop:Generator_ColumnPropNameInTable="EnabledColumn" msprop:Generator_UserColumnName="Enabled" type="xs:boolean" minOccurs="0" />
+              <xs:element name="Admin_x0020_Controlled" msprop:Generator_ColumnVarNameInTable="columnAdmin_Controlled" msprop:Generator_ColumnPropNameInRow="Admin_Controlled" msprop:Generator_ColumnPropNameInTable="Admin_ControlledColumn" msprop:Generator_UserColumnName="Admin Controlled" type="xs:boolean" minOccurs="0" />
+              <xs:element name="Scope" msprop:Generator_ColumnVarNameInTable="columnScope" msprop:Generator_ColumnPropNameInRow="Scope" msprop:Generator_ColumnPropNameInTable="ScopeColumn" msprop:Generator_UserColumnName="Scope" type="xs:string" minOccurs="0" />
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" minOccurs="0" />
+              <xs:element name="Add-In_x0020_Type" msprop:Generator_ColumnVarNameInTable="_columnAdd_In_Type" msprop:Generator_ColumnPropNameInRow="_Add_In_Type" msprop:Generator_ColumnPropNameInTable="_Add_In_TypeColumn" msprop:Generator_UserColumnName="Add-In Type" type="xs:string" minOccurs="0" />
+              <xs:element name="Description" msprop:Generator_ColumnVarNameInTable="columnDescription" msprop:Generator_ColumnPropNameInRow="Description" msprop:Generator_ColumnPropNameInTable="DescriptionColumn" msprop:Generator_UserColumnName="Description" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="UserInterfaceAddIns" msprop:Generator_TableClassName="UserInterfaceAddInsDataTable" msprop:Generator_TableVarName="tableUserInterfaceAddIns" msprop:Generator_RowChangedName="UserInterfaceAddInsRowChanged" msprop:Generator_TablePropName="UserInterfaceAddIns" msprop:Generator_RowDeletingName="UserInterfaceAddInsRowDeleting" msprop:Generator_RowChangingName="UserInterfaceAddInsRowChanging" msprop:Generator_RowEvHandlerName="UserInterfaceAddInsRowChangeEventHandler" msprop:Generator_RowDeletedName="UserInterfaceAddInsRowDeleted" msprop:Generator_RowClassName="UserInterfaceAddInsRow" msprop:Generator_UserTableName="UserInterfaceAddIns" msprop:Generator_RowEvArgName="UserInterfaceAddInsRowChangeEvent">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" minOccurs="0" />
+              <xs:element name="Add-In_x0020_Type" msprop:Generator_ColumnVarNameInTable="_columnAdd_In_Type" msprop:Generator_ColumnPropNameInRow="_Add_In_Type" msprop:Generator_ColumnPropNameInTable="_Add_In_TypeColumn" msprop:Generator_UserColumnName="Add-In Type" type="xs:string" minOccurs="0" />
+              <xs:element name="Description" msprop:Generator_ColumnVarNameInTable="columnDescription" msprop:Generator_ColumnPropNameInRow="Description" msprop:Generator_ColumnPropNameInTable="DescriptionColumn" msprop:Generator_UserColumnName="Description" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -1,0 +1,38 @@
+﻿@using ReportsWebApp.DB.Services.Interfaces
+@inject INavigationStateService NavigationStateService
+
+<div class="navigation-breadcrum">
+    @if (NavigationStateService.GetNavigationPath().Count > 0)
+    {
+        var breadcrumbPath = NavigationStateService.GetNavigationPath();
+        @foreach (var (breadcrumbItem, isLast) in breadcrumbPath.Select((item, index) => (item, index == breadcrumbPath.Count - 1)))
+        {
+            if (!breadcrumbItem.Text.Equals("Home"))
+            if (breadcrumbItem.HasValue)
+            {
+                <a style="text-decoration: none" href="@breadcrumbItem.NavigateUrl">@breadcrumbItem.Text</a>
+            }
+            else
+            {
+                <span>@breadcrumbItem.Text</span>
+            }
+            if (!isLast && breadcrumbPath.Count > 1)
+            {
+                <i class="fa fa-angle-right breadcrumb-margin" aria-hidden="true"></i>
+            }
+        }
+    }
+</div>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        NavigationStateService.OnNavigationChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        NavigationStateService.OnNavigationChanged -= StateHasChanged;
+    }
+}

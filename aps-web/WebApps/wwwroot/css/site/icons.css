@@ -1,0 +1,35 @@
+﻿.nav-icon {
+    min-width: 16px;
+}
+
+.notification-icon.dx-icon-read {
+    color: #cccccc; /* Color for read icon */
+}
+
+.notification-icon.dx-icon-unread {
+    color: #007bff; /* Color for unread icon */
+}
+
+.dx-icon {
+    font-size: 14px; /* Smaller icons */
+}
+
+.history-detail i {
+    margin-right: 6px;
+}
+
+.tab-icon {
+    font-size: 10pt;
+}
+
+.tab-icon.fa-circle-r {
+    color: var(--bs-success-text-emphasis)
+}
+
+.tab-icon.fa-square-d {
+    color: var(--bs-primary-text-emphasis)
+}
+
+.padded-icon {
+    margin: 6px;
+}

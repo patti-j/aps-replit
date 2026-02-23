@@ -1,0 +1,122 @@
+﻿
+        <DxTabs @bind-ActiveTabIndex="TabIndex">
+            <DxTab Text="Permissions"/>
+            <DxTab Text="Assigned Teams"/>
+            <DxTab Text="Assigned Users"/>
+        </DxTabs>
+        @switch (TabIndex)
+        {
+            case 0:
+            {
+                <div style="display: grid; grid-template-columns: 1fr 1fr;overflow-y: auto">
+                    <div>
+                        <h3>Web Permissions</h3>
+                        <DxGrid ShowFilterRow="true" Data="@WebPermissions"
+                                PageSize="10"
+                                CssClass="ch-480"
+                                PagerPosition="GridPagerPosition.TopAndBottom"
+                                PageSizeSelectorVisible="true"
+                                PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+                                PageSizeSelectorAllRowsItemVisible="false"
+                                PagerSwitchToInputBoxButtonCount="10"
+                                PagerVisibleNumericButtonCount="10"
+                                ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+                            <Columns>
+                                <DxGridDataColumn Caption="Permission Name" FieldName="Name"/>
+                                <DxGridDataColumn Caption="Permission Description" FieldName="Description"/>
+                            </Columns>
+                        </DxGrid>
+                    </div>
+                    <div>
+                        <h3>Desktop Permissions</h3>
+                        <DxGrid ShowFilterRow="true" Data="@DesktopPermissions"
+                                PageSize="10"
+                                CssClass="ch-480"
+                                PagerPosition="GridPagerPosition.TopAndBottom"
+                                PageSizeSelectorVisible="true"
+                                PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+                                PageSizeSelectorAllRowsItemVisible="false"
+                                PagerSwitchToInputBoxButtonCount="10"
+                                PagerVisibleNumericButtonCount="10"
+                                ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+
+                            <Columns>
+                                <DxGridDataColumn Caption="Permission Name" FieldName="Name"/>
+                                <DxGridDataColumn Caption="Permission Description" FieldName="Description"/>
+                            </Columns>
+                        </DxGrid>
+                    </div>
+                </div>
+                break;
+            }
+            case 1:
+            {
+                <p>Soon™</p>
+                break;
+            }
+            case 2:
+            {
+                <DxGrid ShowFilterRow="true" Data="@Users"
+                        PageSize="10"
+                        CssClass="ch-480"
+                        PagerPosition="GridPagerPosition.TopAndBottom"
+                        PageSizeSelectorVisible="true"
+                        PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+                        PageSizeSelectorAllRowsItemVisible="false"
+                        PagerSwitchToInputBoxButtonCount="10"
+                        PagerVisibleNumericButtonCount="10"
+                        ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+                    <Columns>
+                        <DxGridDataColumn Caption="Name" FieldName="FullName"/>
+                    </Columns>
+                </DxGrid>
+                break;
+            }
+        }
+
+
+
+@code
+{
+
+    [Parameter]
+    public bool Visible { get; set; }
+    [Parameter]
+    public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public Action<BaseEntity> ShowItemWithBreadcrumb { get; set; }
+    [Parameter]
+    public Role Role { get; set; }
+
+    public int TabIndex { get; set; }
+    public List<DisplayPermission> WebPermissions { get; set; } = new ();
+    public List<DisplayPermission> DesktopPermissions { get; set; } = new ();
+    public List<User> Users => Role.Users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        foreach (string rolePermission in Role.Permissions)
+        {
+            Permission? perm = Permission.AllPermissions.FirstOrDefault(x => x.Key == rolePermission);
+            if (perm != null)
+            {
+                WebPermissions.Add(new DisplayPermission() {Name = perm.Name, Description = perm.Description});
+            }
+        }
+
+        foreach (string roleDesktopPermission in Role.DesktopPermissions)
+        {
+            var perm = PermissionsGroupConstants.DefaultPermissions.FirstOrDefault(x => x.PermissionKey == roleDesktopPermission);
+            if (perm != null)
+            {
+                DesktopPermissions.Add(new DisplayPermission() {Name = perm.Caption, Description = perm.Description});
+            }
+        }
+    }
+    
+    public class DisplayPermission
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+    }
+}
+

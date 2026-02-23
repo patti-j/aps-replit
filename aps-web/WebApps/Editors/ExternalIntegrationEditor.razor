@@ -1,0 +1,257 @@
+﻿@using ReportsWebApp.DB.Models
+@using System
+
+<DxFormLayout CssClass="w-100 p-3">
+    <DxFormLayoutItem Caption="Name:" ColSpanMd="8">
+        <DxTextBox @bind-Text="Model.Name" />
+    </DxFormLayoutItem>
+
+    <DxFormLayoutItem ColSpanMd="8" Caption="Integration Type:">
+        <DxComboBox TData="EExternalIntegrationType"
+                    TValue="EExternalIntegrationType"
+                    Data="Enum.GetValues<EExternalIntegrationType>()"
+                    @bind-Value="SelectedIntegrationType" />
+    </DxFormLayoutItem>
+
+    <DxFormLayoutItem Caption="Company" ColSpanMd="12">
+        <DxComboBox TData="Company"
+                    TValue="int"
+                    Data="Companies"
+                    TextFieldName="Name"
+                    KeyFieldName="Id"
+                    ValueFieldName="Id"
+                    @bind-Value="Model.CompanyId" />
+    </DxFormLayoutItem>
+
+    @* <DxFormLayoutItem Caption="Import Data Connector:" ColSpanMd="12">
+        <DxComboBox TData="DataConnector"
+                    TValue="int?"
+                    Data="DataConnectors"
+                    TextFieldName="Name"
+                    KeyFieldName="Id"
+                    ValueFieldName="Id"
+                    Value="Model.ImportDataConnector"
+                    ValueChanged="OnImportConnectorChanged"
+                    NullText="None" />
+    </DxFormLayoutItem>
+
+    <DxFormLayoutItem Caption="Publish Data Connector:" ColSpanMd="12">
+        <DxComboBox TData="DataConnector"
+                    TValue="int?"
+                    Data="DataConnectors"
+                    TextFieldName="Name"
+                    KeyFieldName="Id"
+                    ValueFieldName="Id"
+                    Value="Model.PublishDataConnector"
+                    ValueChanged="OnPublishConnectorChanged"
+                    NullText="None" />
+    </DxFormLayoutItem>
+    
+    <DxFormLayoutGroup Caption="Import Settings">
+        <DxFormLayoutItem Caption="Pre-Import Program Path:" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.PreImportProgramPath" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Program Arguments:" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.PreImportProgramArgs" />
+        </DxFormLayoutItem>
+
+        <!-- URLs controlled by the integration type -->
+        <DxFormLayoutItem Caption="Pre-Import URL:" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.PreImportURL"
+                       ReadOnly="@IsUrlsLocked" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Post-Import URL:" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.PostImportURL" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Run Pre-Import SQL" ColSpanLg="6">
+            <DxCheckBox @bind-Checked="Model.RunPreImportSQL" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Enable Integration Studio Board" ColSpanLg="6">
+            <DxCheckBox @bind-Checked="Model.IsIntegrationV2Enabled" />
+        </DxFormLayoutItem>
+    </DxFormLayoutGroup>
+
+    <DxFormLayoutGroup Caption="Publish Settings">
+        <!-- URL controlled by the integration type -->
+        <DxFormLayoutItem Caption="Pre-Export URL:" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.PreExportURL" />
+        </DxFormLayoutItem>
+        <DxFormLayoutItem Caption="Post-Export URL:" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.PostExportURL"
+                       ReadOnly="@IsUrlsLocked" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Analytics URL:" ColSpanMd="6">
+            <DxTextBox @bind-Text="Model.AnalyticsURL" />
+        </DxFormLayoutItem>
+    </DxFormLayoutGroup> *@
+
+    @switch (SelectedIntegrationType)
+    {
+        case EExternalIntegrationType.Null:
+            {
+                break;
+            }
+        case EExternalIntegrationType.Aha:
+            {
+                <DxFormLayoutGroup Caption="Aha! Integration Settings"
+                                   Visible="@(SelectedIntegrationType != EExternalIntegrationType.Null)">
+                    <AutoObjectFormEditor Bind="AhaModel" />
+                </DxFormLayoutGroup>
+
+                @* TODO: Add ImportFilter and PublishFilter groups if needed *@
+                break;
+            }
+        case EExternalIntegrationType.Maestro:
+            {
+                <DxFormLayoutGroup Caption="Maestro Integration Settings"
+                                   Visible="@(SelectedIntegrationType != EExternalIntegrationType.Null)">
+                    <AutoObjectFormEditor Bind="MaestroModel" />
+                </DxFormLayoutGroup>
+                break;
+            }
+        case EExternalIntegrationType.Netsuite:
+            {
+                <DxFormLayoutGroup Caption="Netsuite Integration Settings"
+                                   Visible="@(SelectedIntegrationType != EExternalIntegrationType.Null)">
+
+                    <DxFormLayoutGroup Caption="Credentials">
+                        <AutoObjectFormEditor Bind="NetsuiteModel.Credentials" />
+                    </DxFormLayoutGroup>
+
+                    <DxFormLayoutGroup Caption="Data">
+                        <DxFormLayoutItem Caption="Work Orders">
+                            <Template>
+                                <DxCheckBox @bind-Checked="NetsuiteModel.WorkOrders" ReadOnly="true" />
+                            </Template>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Caption="BOMs">
+                            <Template>
+                                <DxCheckBox @bind-Checked="NetsuiteModel.BOMs" ReadOnly="true" />
+                            </Template>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Caption="Routings">
+                            <Template>
+                                <DxCheckBox @bind-Checked="NetsuiteModel.Routings" ReadOnly="true" />
+                            </Template>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Caption="Items">
+                            <Template>
+                                <DxCheckBox @bind-Checked="NetsuiteModel.Items" ReadOnly="true" />
+                            </Template>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Caption="Purchase Orders">
+                            <Template>
+                                <DxCheckBox @bind-Checked="NetsuiteModel.PurchaseOrders" />
+                            </Template>
+                        </DxFormLayoutItem>
+
+                        <DxFormLayoutItem Caption="Sales Orders">
+                            <Template>
+                                <DxCheckBox @bind-Checked="NetsuiteModel.SalesOrders" />
+                            </Template>
+                        </DxFormLayoutItem>
+                    </DxFormLayoutGroup>
+
+                    <DxFormLayoutGroup Caption="Import Endpoints">
+                        <AutoObjectFormEditor Bind="NetsuiteModel.ImportEndpoints" />
+                    </DxFormLayoutGroup>
+
+                    <DxFormLayoutGroup Caption="Publish Endpoint">
+                        <AutoObjectFormEditor Bind="NetsuiteModel.PublishEndpoint" />
+                    </DxFormLayoutGroup>
+
+                </DxFormLayoutGroup>
+
+                break;
+            }
+        case EExternalIntegrationType.D365:
+            {
+                break;
+            }
+        default:
+            {
+                <DxFormLayoutItem ColSpanMd="6">
+                    <h6>The selected Integration Type is not available.</h6>
+                </DxFormLayoutItem>
+                break;
+            }
+    }
+
+    <DxFormLayoutItem ColSpanMd="12">
+        <div class="d-flex w-100 flex-row-reverse">
+            <DxButton Text="Save"
+                      Click="OnSaveClicked"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      Enabled=true>
+            </DxButton>
+        </div>
+    </DxFormLayoutItem>
+</DxFormLayout>
+
+@code {
+    [Parameter] public ExternalIntegration Model { get; set; }
+    [Parameter] public IEnumerable<Company> Companies { get; set; } = Enumerable.Empty<Company>();
+    [Parameter] public IEnumerable<DataConnector> DataConnectors { get; set; } = Enumerable.Empty<DataConnector>();
+
+    [Parameter] public AhaIntegrationModel AhaModel { get; set; }
+    [Parameter] public MaestroIntegrationModel MaestroModel { get; set; }
+    [Parameter] public NetsuiteIntegrationModel NetsuiteModel { get; set; }
+
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private const string DefaultEndpoint = "https://pt-integrations-dev.azurewebsites.net";
+
+    public EExternalIntegrationType SelectedIntegrationType
+    {
+        get => Model.Type;
+        set
+        {
+            if (Model.Type == value)
+                return;
+
+            Model.Type = value;
+            OnIntegrationTypeChanged();
+        }
+    }
+
+    // True when the integration type is NOT SQL -> locks PreImportURL and PostExportURL
+    private bool IsUrlsLocked => SelectedIntegrationType != EExternalIntegrationType.Null;
+
+    private void OnIntegrationTypeChanged()
+    {
+        if (Model.Type == EExternalIntegrationType.Null)
+        {
+            // If there is no integration, clear and leave the fields unlocked
+            Model.PreImportURL = string.Empty;
+            Model.PostExportURL = string.Empty;
+        }
+        else
+        {
+            // For any integration type other than SQL, use the default endpoint
+            Model.PreImportURL = DefaultEndpoint;
+            Model.PostExportURL = DefaultEndpoint;
+        }
+    }
+
+    private void OnImportConnectorChanged(int? id)
+    {
+        Model.ImportDataConnector = (id == -1) ? null : id;
+    }
+
+    private void OnPublishConnectorChanged(int? id)
+    {
+        Model.PublishDataConnector = (id == -1) ? null : id;
+    }
+
+    private Task OnSaveClicked()
+        => OnSave.InvokeAsync();
+}

@@ -1,0 +1,19 @@
+﻿@using Microsoft.AspNetCore.Components
+
+<div class="color-meaning">
+    <input type="color" class="color-box-editable" name="@Label" value="@Color" @onchange="@OnColorChange" />
+    <span class="color-box p-1" style="text-align: center; background-color:@Color; color: @CommonUtils.GetContrastTextColor(Color)">
+        <span>@Label</span>
+    </span>
+</div>
+
+@code {
+    [Parameter] public string Color { get; set; }
+    [Parameter] public string Label { get; set; }
+    [Parameter] public EventCallback<string> ColorChanged { get; set; }
+
+    private Task OnColorChange(ChangeEventArgs e)
+    {
+        return ColorChanged.InvokeAsync(e.Value.ToString());
+    }
+}

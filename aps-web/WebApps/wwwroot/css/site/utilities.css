@@ -1,0 +1,50 @@
+﻿/* Outline for modified fields that are valid */
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+/* Outline for fields that are invalid */
+.invalid {
+    outline: 1px solid red;
+}
+
+/* Color for validation messages */
+.validation-message {
+    color: red;
+}
+
+/* Spinner styles for loading indicators */
+.spinner {
+    padding-left: 8px;
+    display: inline-block;
+    vertical-align: baseline;
+}
+
+.spinner-loading {
+    opacity: 1;
+}
+
+.spinner-loaded {
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.breadcrumb-margin {
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+
+.overlay-noti {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.1);
+    z-index: 999;
+}
+
+.b-tooltip-content {
+    display: block !important;
+}
+

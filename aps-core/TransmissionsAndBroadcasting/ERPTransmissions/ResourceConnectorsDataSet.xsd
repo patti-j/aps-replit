@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ResourceConnectorDataSet" targetNamespace="http://tempuri.org/OperationCountTableDataSet.xsd" xmlns:mstns="http://tempuri.org/OperationCountTableDataSet.xsd" xmlns="http://tempuri.org/OperationCountTableDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="ResourceConnectorDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="ResourceConnectorDataSet" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="ResourceConnectorDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="ResourceConnection" msprop:Generator_RowEvHandlerName="ResourceConnectionRowChangeEventHandler" msprop:Generator_RowDeletedName="ResourceConnectionRowDeleted" msprop:Generator_RowDeletingName="ResourceConnectionRowDeleting" msprop:Generator_RowEvArgName="ResourceConnectionRowChangeEvent" msprop:Generator_TablePropName="ResourceConnection" msprop:Generator_RowChangedName="ResourceConnectionRowChanged" msprop:Generator_UserTableName="ResourceConnection" msprop:Generator_RowChangingName="ResourceConnectionRowChanging" msprop:Generator_RowClassName="ResourceConnectionRow" msprop:Generator_TableClassName="ResourceConnectionDataTable" msprop:Generator_TableVarName="tableResourceConnection">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="PlantExternalId" msprop:Generator_ColumnPropNameInTable="PlantExternalIdColumn" msprop:Generator_ColumnPropNameInRow="PlantExternalId" msprop:Generator_UserColumnName="PlantExternalId" msprop:Generator_ColumnVarNameInTable="columnPlantExternalId" type="xs:string" />
+              <xs:element name="DepartmentExternalId" msprop:Generator_ColumnPropNameInTable="DepartmentExternalIdColumn" msprop:Generator_ColumnPropNameInRow="DepartmentExternalId" msprop:Generator_UserColumnName="DepartmentExternalId" msprop:Generator_ColumnVarNameInTable="columnDepartmentExternalId" type="xs:string" />
+              <xs:element name="ResourceExternalId" msprop:Generator_ColumnPropNameInTable="ResourceExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ResourceExternalId" msprop:Generator_UserColumnName="ResourceExternalId" msprop:Generator_ColumnVarNameInTable="columnResourceExternalId" type="xs:string" />
+              <xs:element name="ResourceConnectorExternalId" msprop:Generator_ColumnPropNameInTable="ResourceConnectorExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ResourceConnectorExternalId" msprop:Generator_UserColumnName="ResourceConnectorExternalId" msprop:Generator_ColumnVarNameInTable="columnResourceConnectorExternalId" type="xs:string" />
+              <xs:element name="ConnectionDirection" msprop:Generator_ColumnPropNameInTable="ConnectionDirectionColumn" msprop:Generator_ColumnPropNameInRow="ConnectionDirection" msprop:Generator_UserColumnName="ConnectionDirection" msprop:Generator_ColumnVarNameInTable="columnConnectionDirection" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="ResourceConnectors" msprop:Generator_RowEvHandlerName="ResourceConnectorsRowChangeEventHandler" msprop:Generator_RowDeletedName="ResourceConnectorsRowDeleted" msprop:Generator_RowDeletingName="ResourceConnectorsRowDeleting" msprop:Generator_RowEvArgName="ResourceConnectorsRowChangeEvent" msprop:Generator_TablePropName="ResourceConnectors" msprop:Generator_RowChangedName="ResourceConnectorsRowChanged" msprop:Generator_UserTableName="ResourceConnectors" msprop:Generator_RowChangingName="ResourceConnectorsRowChanging" msprop:Generator_RowClassName="ResourceConnectorsRow" msprop:Generator_TableClassName="ResourceConnectorsDataTable" msprop:Generator_TableVarName="tableResourceConnectors">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="ExternalId" msprop:Generator_ColumnPropNameInTable="ExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ExternalId" msprop:Generator_UserColumnName="ExternalId" msprop:Generator_ColumnVarNameInTable="columnExternalId" type="xs:string" />
+              <xs:element name="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_UserColumnName="Name" msprop:Generator_ColumnVarNameInTable="columnName" type="xs:string" />
+              <xs:element name="Description" msprop:Generator_ColumnPropNameInTable="DescriptionColumn" msprop:Generator_ColumnPropNameInRow="Description" msprop:Generator_UserColumnName="Description" msprop:Generator_ColumnVarNameInTable="columnDescription" type="xs:string" minOccurs="0" />
+              <xs:element name="Notes" msprop:Generator_ColumnPropNameInTable="NotesColumn" msprop:Generator_ColumnPropNameInRow="Notes" msprop:Generator_UserColumnName="Notes" msprop:Generator_ColumnVarNameInTable="columnNotes" type="xs:string" minOccurs="0" />
+              <xs:element name="UserFields" msprop:Generator_ColumnPropNameInTable="UserFieldsColumn" msprop:Generator_ColumnPropNameInRow="UserFields" msprop:Generator_UserColumnName="UserFields" msprop:Generator_ColumnVarNameInTable="columnUserFields" type="xs:string" minOccurs="0" />
+              <xs:element name="TransitHours" msprop:Generator_ColumnPropNameInTable="TransitHoursColumn" msprop:Generator_ColumnPropNameInRow="TransitHours" msprop:Generator_UserColumnName="TransitHours" msprop:Generator_ColumnVarNameInTable="columnTransitHours" type="xs:double" minOccurs="0" />
+              <xs:element name="AllowConcurrentUse" msprop:Generator_ColumnPropNameInRow="AllowConcurrentUse" msprop:Generator_ColumnPropNameInTable="AllowConcurrentUseColumn" msprop:Generator_ColumnVarNameInTable="columnAllowConcurrentUse" msprop:Generator_UserColumnName="AllowConcurrentUse" type="xs:boolean" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:ResourceConnection" />
+      <xs:field xpath="mstns:PlantExternalId" />
+      <xs:field xpath="mstns:DepartmentExternalId" />
+      <xs:field xpath="mstns:ResourceExternalId" />
+      <xs:field xpath="mstns:ResourceConnectorExternalId" />
+    </xs:unique>
+    <xs:unique name="TableListKey1">
+      <xs:selector xpath=".//mstns:ResourceConnectors" />
+      <xs:field xpath="mstns:ExternalId" />
+    </xs:unique>
+  </xs:element>
+  <xs:annotation>
+    <xs:appinfo>
+      <msdata:Relationship name="TableList_AssignedResources" msdata:parent="ResourceConnectors" msdata:child="ResourceConnection" msdata:parentkey="ExternalId" msdata:childkey="ResourceConnectorExternalId" msprop:Generator_UserParentTable="ResourceConnectors" msprop:Generator_UserChildTable="ResourceConnection" msprop:Generator_RelationVarName="relationTableList_AssignedResources" msprop:Generator_ChildPropName="GetResourceConnectionRows" msprop:Generator_ParentPropName="ResourceConnectorsRow" msprop:Generator_UserRelationName="TableList_AssignedResources" />
+    </xs:appinfo>
+  </xs:annotation>
+</xs:schema>

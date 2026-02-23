@@ -1,0 +1,47 @@
+@page "/paAccessViewer"
+@using ReportsWebApp.DB.Services.Interfaces
+@if (viewPermission)
+{
+    <PAUserGrid OnSave="OnSave" Company="Company" WebUsers="Users" PAUsers="PAUsers" PermissionGroups="PermissionGroups" AvailablePlanningAreas="PlanningAreas"/>
+}
+
+@code {
+    private User User { get; set; }
+    private Company Company;
+    public List<User> Users { get; set; } = new List<User>();
+    public List<PADetails> PlanningAreas { get; set; } = new List<PADetails>();
+    public List<PAPermissionGroup> PermissionGroups { get; set; } = new List<PAPermissionGroup>();
+    private bool viewPermission = false;
+    private List<PlanningAreaAccess> PAUsers;
+
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    IPlanningAreaLoginService m_paUserService { get; set; }
+    [Inject]
+    IPlanningAreaDataService m_paService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.EditUsers, NavigationManager, true)) return;
+        viewPermission = true;
+
+        Company = User.Company;
+        Users = (await m_userService.GetUsersAsync(null, Company.Id)).OrderBy(u => u.Email).ToList();
+        PAUsers = await m_paUserService.GetPlanningAreaAccessesForCompanyAsync(User.CompanyId);
+
+        PermissionGroups = await m_paUserService.GetPermissionGroupsAsync(Company);
+
+        var pas = await m_paService.GetPlanningAreasByUsingCompany(Company.Id);
+        PlanningAreas.AddRange(pas);
+        
+        PlanningAreas = PlanningAreas
+        .ToList();
+    }
+
+    private void OnSave()
+    {
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,358 @@
+@page "/externalIntegrations"
+@using Newtonsoft.Json
+@using ReportsWebApp.DB.Models
+@inject DB.Services.ServiceContainer _serviceContainer
+
+@if (integrations == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="no-borders visible">
+        <DxFormLayout CssClass="no-borders">
+            <DxFormLayoutGroup>
+                <HeaderTemplate>
+                    <ServerContextHeader Title="Integrations Manager" BigTitle=true
+                                         ShowServerPill="true"
+                                         ShowCompanyPill="true"
+                                         ShowReturnButton="@(!string.IsNullOrEmpty(_serviceContainer.ScopedAppStateService.BackPath))"
+                                         ShowSaveButton="false" ShowCloseButton=false
+                                         OnReturn="@NavigateTo" Servers="@availableServers"
+                                         Companies="availableCompanies"
+                                         OnSelectAllServers="SelectAllServers"
+                                         OnSelectServer="SelectServer"
+                                         OnSelectAllCompanies="SelectAllCompanies"
+                                         OnSelectCompany="SelectCompany"
+                                         SelectedServer="@selectedServer"
+                                         SelectedCompany="@selectedCompany" />
+                </HeaderTemplate>
+                <Items>
+                    <div class="toolbar bg-body pb-3" style="box-shadow: none;">
+                        <DxButton Text="Bulk Changes" CssClass="toolbar-button"
+                                  Attributes="@(new Dictionary<string, object> { ["title"] = " (Bulk Changes) " })"
+                                  IconCssClass="fa-solid fa-envelopes-bulk" />
+                    </div>
+                    <DxGrid Data="@integrations"
+                            EditMode="GridEditMode.PopupEditForm"
+                            ShowFilterRow="true"
+                            @ref="MyGrid"
+                            PageSize="10"
+                            CssClass="ch-480"
+                            PagerPosition="GridPagerPosition.TopAndBottom"
+                            PageSizeSelectorVisible="true"
+                            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+                            PageSizeSelectorAllRowsItemVisible="false"
+                            PagerSwitchToInputBoxButtonCount="10"
+                            PagerVisibleNumericButtonCount="10"
+                            UnboundColumnData="Grid_CustomUnboundColumnData">
+                        <Columns>
+                            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                                <HeaderTemplate>
+                                    <DxButton IconCssClass="fa fa-plus px-2"
+                                              CssClass="p-2 m-1"
+                                              Text="Add"
+                                              Click="() => ShowAdd()" />
+                                </HeaderTemplate>
+                                <CellDisplayTemplate Context="cellContext">
+                                    @{
+                                        var dataItem = (ExternalIntegration)cellContext.DataItem;
+                                    }
+                                    <ActionDropdown DataItem="dataItem" Actions="Actions" />
+                                </CellDisplayTemplate>
+                            </DxGridCommandColumn>
+                            <DxGridDataColumn FieldName="Name" Caption="Name" />
+                            <DxGridDataColumn FieldName="DisplayType" Caption="Type" />
+                            <DxGridDataColumn FieldName="Company.Name"
+                                              UnboundType="GridUnboundColumnType.String"
+                                              Caption="Company" />
+                        </Columns>
+                    </DxGrid>
+                </Items>
+            </DxFormLayoutGroup>
+        </DxFormLayout>
+    </div>
+}
+
+@if (editingIntegration != null)
+{
+    <DxPopup @ref="EditDialog"
+             @bind-Visible="ShowEditDialog"
+             ShowCloseButton="true"
+             HeaderText="Integration Editor"
+             Closed="@EditorClosed"
+             Width="800px"
+             style="padding: 24px">
+        <BodyContentTemplate Context="_context">
+            <ExternalIntegrationEditor Model="editingIntegration"
+                                       Companies="availableCompanies.Where(c => c != AllCompaniesConst)"
+                                       DataConnectors="m_dataConnectors"
+                                       AhaModel="m_ahaModel"
+                                       MaestroModel="m_rrModel"
+                                       NetsuiteModel="m_netsuiteModel"
+                                       OnSave="SaveIntegration" />
+        </BodyContentTemplate>
+    </DxPopup>
+}
+
+<ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Danger"></ConfirmationDialog>
+
+@code
+{
+    private static readonly CompanyServer AllServersConst = new() { Name = "All Servers" };
+    private static readonly Company AllCompaniesConst = new() { Name = "All Companies" };
+
+    private CompanyServer selectedServer = AllServersConst;
+    private Company selectedCompany = AllCompaniesConst;
+
+    private List<CompanyServer> availableServers = new() { AllServersConst };
+    private List<Company> availableCompanies = new() { AllCompaniesConst };
+    private List<ExternalIntegration> integrations = null!;
+    private List<DataConnector> m_dataConnectors = new();
+
+    private DxGrid MyGrid { get; set; }
+    private ConfirmationDialog Dialog { get; set; }
+    private DxPopup EditDialog { get; set; }
+
+    private ExternalIntegration? editingIntegration = null;
+    private bool ShowEditDialog { get; set; } = false;
+
+    private User currentUser;
+    private IEnumerable<ActionItem<ExternalIntegration>> Actions;
+    
+    private AhaIntegrationModel m_ahaModel;
+    private MaestroIntegrationModel m_rrModel;
+    private NetsuiteIntegrationModel m_netsuiteModel;
+
+    protected async override Task OnInitializedAsync()
+    {
+        currentUser = await _serviceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (!currentUser.IsAuthorizedFor(Permission.AdministrateServers))
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        Actions = new List<ActionItem<ExternalIntegration>>
+        {
+            new ActionItem<ExternalIntegration>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fas fa-pencil-alt",
+                Action = async dataItem => await ShowEditor(dataItem),
+                ShouldActionButtonBeEnabled = _ => true
+            },
+            new ActionItem<ExternalIntegration>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fas fa-trash-alt",
+                Action = async dataItem => await DeleteIntegration(dataItem),
+                ShouldActionButtonBeEnabled = _ => true
+            },
+        };
+
+        availableServers = await _serviceContainer.ServerManagerService
+            .GetServersByManagingCompanyAsync(currentUser.CompanyId);
+        availableServers.Insert(0, AllServersConst);
+
+        availableCompanies = currentUser.AuthorizedCompanies.ToList();
+        availableCompanies.Insert(0, AllCompaniesConst);
+
+        selectedServer = _serviceContainer.ScopedAppStateService.Server ?? AllServersConst;
+
+        ReloadIntegrations();
+
+        // DataConnectors (with "None" = Id -1)
+        m_dataConnectors = _serviceContainer.DataConnectorService
+            .GetDataConnectorsForCompany(selectedCompany == AllCompaniesConst ? -1 : selectedCompany.Id)
+            .Concat(new[] { new DataConnector { Name = "None", Id = -1 } })
+            .ToList();
+    }
+
+    private void NavigateTo()
+    {
+        NavigationManager.NavigateTo("/" + _serviceContainer.ScopedAppStateService.BackPath);
+    }
+
+    private void SelectAllServers()
+    {
+        selectedServer = AllServersConst;
+        ReloadIntegrations();
+        StateHasChanged();
+    }
+
+    private void SelectAllCompanies()
+    {
+        selectedCompany = AllCompaniesConst;
+        ReloadIntegrations();
+        StateHasChanged();
+    }
+
+    private void SelectServer(CompanyServer server)
+    {
+        selectedServer = server;
+        ReloadIntegrations();
+        StateHasChanged();
+    }
+
+    private void SelectCompany(Company company)
+    {
+        selectedCompany = company;
+        ReloadIntegrations();
+        StateHasChanged();
+    }
+
+    private void ReloadIntegrations()
+    {
+        integrations = _serviceContainer.ExternalIntegrationService
+            .GetExternalIntegrationsForCompany(selectedCompany == AllCompaniesConst ? -1 : selectedCompany.Id);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(MyGrid);
+        base.OnAfterRender(firstRender);
+    }
+
+    private async Task DeleteIntegration(ExternalIntegration a_dataItem)
+    {
+        bool result = await Dialog.ConfirmDeleteOperation(
+            "Confirm",
+            "Are you sure you would like to delete the specified External Integration?",
+            a_dataItem.Name);
+
+        if (result)
+        {
+            _serviceContainer.ExternalIntegrationService.DeleteExternalIntegration(a_dataItem.Id);
+        }
+
+        ReloadIntegrations();
+        StateHasChanged();
+    }
+
+    private async Task ShowEditor(ExternalIntegration a_dataItem)
+    {
+        ShowEditDialog = true;
+        editingIntegration = a_dataItem;
+        
+        switch (a_dataItem.Type)
+        {
+            case EExternalIntegrationType.Null:
+                m_rrModel = new();
+                m_ahaModel = new();
+                m_netsuiteModel = new();
+                break;
+
+            case EExternalIntegrationType.Aha:
+                m_ahaModel = JsonConvert.DeserializeObject<AhaIntegrationModel>(a_dataItem.SettingsJson);
+                m_rrModel = new();
+                m_netsuiteModel = new();
+                break;
+
+            case EExternalIntegrationType.Maestro:
+                m_rrModel = JsonConvert.DeserializeObject<MaestroIntegrationModel>(a_dataItem.SettingsJson);
+                m_ahaModel = new();
+                m_netsuiteModel = new();
+                break;
+
+            case EExternalIntegrationType.Netsuite:
+                m_netsuiteModel = JsonConvert.DeserializeObject<NetsuiteIntegrationModel>(a_dataItem.SettingsJson);
+                m_ahaModel = new();
+                m_rrModel = new();
+                break;
+
+            case EExternalIntegrationType.D365:
+                m_ahaModel = new();
+                m_rrModel = new();
+                m_netsuiteModel = new();
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        StateHasChanged();
+    }
+
+    private Task ShowAdd()
+    {
+        var newInt = new ExternalIntegration
+            {
+                Name = "New Integration",
+                Type = EExternalIntegrationType.Null,
+                CompanyId = currentUser.CompanyId
+                
+            };
+
+        return ShowEditor(newInt);
+    }
+
+    private void EditorClosed(PopupClosedEventArgs a_obj)
+    {
+        ShowEditDialog = false;
+        editingIntegration = null;
+        StateHasChanged();
+    }
+
+    private async Task SaveIntegration()
+    {
+        if (editingIntegration == null)
+        {
+            return;
+        }
+
+        switch (editingIntegration.Type)
+        {
+            case EExternalIntegrationType.Null:
+                if (string.IsNullOrEmpty(editingIntegration.SettingsJson))
+                {
+                    editingIntegration.SettingsJson = "{}";
+                }
+                await _serviceContainer.ExternalIntegrationService.SaveExternalIntegrationAsync(editingIntegration);
+                break;
+
+            case EExternalIntegrationType.Aha:
+                editingIntegration.SettingsJson = JsonConvert.SerializeObject(m_ahaModel);
+                await _serviceContainer.ExternalIntegrationService.SaveExternalIntegrationAsync(editingIntegration);
+                break;
+
+            case EExternalIntegrationType.Maestro:
+                editingIntegration.SettingsJson = JsonConvert.SerializeObject(m_rrModel);
+                await _serviceContainer.ExternalIntegrationService.SaveExternalIntegrationAsync(editingIntegration);
+                break;
+
+            case EExternalIntegrationType.Netsuite:
+                editingIntegration.SettingsJson = JsonConvert.SerializeObject(m_netsuiteModel);
+                await _serviceContainer.ExternalIntegrationService.SaveExternalIntegrationAsync(editingIntegration);
+                break;
+
+            case EExternalIntegrationType.D365:
+                // TODO: handle D365 settings when defined
+                await _serviceContainer.ExternalIntegrationService.SaveExternalIntegrationAsync(editingIntegration);
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        ReloadIntegrations();
+        EditorClosed(null);
+    }
+
+
+    private void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+        int id = Convert.ToInt32(e.GetRowValue("Id"));
+        var item = integrations.Find(c => c.Id == id);
+
+        if (item == null) return;
+
+        e.Value = e.FieldName switch
+        {
+            "Company.Name" => item?.Company?.Name is not null
+                ? item.Company.Name
+                : "Unknown",
+            _ => null
+        };
+    }
+}

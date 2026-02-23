@@ -1,0 +1,11 @@
+[
+  {
+    "importDate": "2024-02-05T12:00:00",
+    "JobProductId": 12345,
+    "JobOperationId": 67890,
+    "TransferOrderDistributionId": 98765,
+    "RequiredDate": "2024-02-10T00:00:00",
+    "RequiredQty": 25.5,
+    "Notes": "Sample notes for JobProductTransferOrderDemand"
+  }
+]

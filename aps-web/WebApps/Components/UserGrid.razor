@@ -1,0 +1,566 @@
+﻿@page "/components/usergrid"
+@using System.Buffers.Text
+@using System.Security.Cryptography
+@using Microsoft.AspNetCore.Mvc
+@using Microsoft.EntityFrameworkCore
+@using ReportsWebApp.Helpers
+@inject NavMenuUpdateService NavMenuUpdateService
+@inject ICompanyService companyService
+@inject IUserService m_userService
+@inject Auth0Service m_auth0service
+@inject IToastNotificationService _toastService
+
+<h3>@GridCaption</h3>
+
+@if (Users == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid ShowFilterRow="true"
+            Data="@Users"
+            UnboundColumnData="Grid_CustomUnboundColumnData"
+            EditModelSaving="OnEditModelSaving"
+            EditMode="GridEditMode.PopupEditForm"
+            CustomizeEditModel="(e) => GridHelpers.CustomizeEditorTitle(e, m_grid)"
+            @ref="m_grid"
+            EditStart="OnEditStart"
+            PageSize="10"
+            CssClass="ch-480"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+        <Columns>
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                <HeaderTemplate>
+                    <DxButton IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1 large-tap-target" Text="Add" Click="() => m_grid.StartEditNewRowAsync()" />
+                </HeaderTemplate>
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = (User)context.DataItem;
+                    }
+                    <ActionDropdown DataItem="dataItem" Actions="_actions" />
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+            <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" />
+            <DxGridDataColumn FieldName="Email" Caption="Email" MinWidth="200" />
+            <DxGridDataColumn FieldName="FullName" Caption="Name" MinWidth="200" />
+            <DxGridDataColumn FieldName="Companies" UnboundType="GridUnboundColumnType.String" Visible="AdminView" MinWidth="200" />
+            <DxGridDataColumn FieldName="Roles" UnboundType="GridUnboundColumnType.String" Visible="User?.IsAuthorizedFor(Permission.EditUsers) ?? false" MinWidth="200" />
+        </Columns>
+        <EditFormTemplate Context="EditFormContext">
+            @{
+                var user = (User)EditFormContext.EditModel;
+            }
+            
+            <ValidationSummary />
+            <DxFormLayout CssClass="w-100">
+                <DxFormLayoutItem Caption="User Type" ColSpanMd="12">
+                    <DxComboBox Data="@(new List<EUserType>() {EUserType.Web, EUserType.Service})" @bind-Value="@user.UserType" Enabled="EnableUserTypeBox"/>
+                </DxFormLayoutItem>
+                @if (user.UserType == EUserType.Web)
+                {
+                    <DxFormLayoutItem Caption="Email:" ColSpanMd="12">
+                        <DxTextBox Text="@user.Email" TextExpression="() => user.Email" TextChanged="(string text) => user.Email = text"/>
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="First Name:" ColSpanMd="12">
+                        <DxTextBox @bind-Text="@user.Name"/>
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Last Name:" ColSpanMd="12">
+                        <DxTextBox @bind-Text="@user.LastName"/>
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Row Version:" ColSpanMd="12" Visible="false">
+                        <DxTextBox @bind-Text="@RowVersion"/>
+                    </DxFormLayoutItem>
+                }
+                else
+                {
+                    <DxFormLayoutItem Caption="Username:" ColSpanMd="12">
+                        <DxTextBox Text="@user.Name" TextExpression="@(() => user.Name)" TextChanged="(s) => SvcUserNameChanged(s, user)" Enabled="EnableUserTypeBox"/>
+                    </DxFormLayoutItem>
+                    @if (ShowTokenBox)
+                    {
+                        <DxFormLayoutItem Caption="Token:" ColSpanMd="12">
+                            <PasswordEdit @bind-Value="@ServiceToken" ReadOnly="true" ShowCopyButton="true" DotCount="54"/>
+                        </DxFormLayoutItem>   
+                    }
+                    <DxFormLayoutItem>
+                        <DxButton Text="Generate new Token" Click="GenerateNewToken"/>
+                    </DxFormLayoutItem>
+                }
+                @if (User.Exists())
+                {
+                    @if (User.IsAuthorizedFor(Permission.EditUsers) || User.IsPTAdmin())
+                    {
+                        @if (User.Id == user.Id)
+                        {
+                            <DxFormLayoutItem ColSpanMd="12">
+                                <span class="fa fa-exclamation-triangle color-yellow-main"></span>
+                                <span class="form-warning color-yellow-main">You are editing your own account. Changes may affect your permissions.</span>
+                            </DxFormLayoutItem>
+                        }
+
+                        <DxFormLayoutItem Caption="Roles:" ColSpanMd="12">
+                            <DxTagBox Data="@RoleOptions" @bind-Values="selectedRoles"
+                                      FilteringMode="DataGridFilteringMode.Contains"
+                                      TextFieldName="@(User.IsPTAdmin() ? nameof(Role.DetailDisplayValue) : nameof(Role.Name))"/>
+                        </DxFormLayoutItem>
+                    }
+                }
+                @if (user.UserType == EUserType.Web)
+                {
+                    <DxFormLayoutGroup Caption="Planning Area Preferences" ColSpanMd="12" Decoration="FormLayoutGroupDecoration.Card" CssClass="pa-group-card">
+                        <DxFormLayoutItem Caption="Display Language:" ColSpanMd="12">
+                            <DxTextBox @bind-Text="@user.DisplayLanguage"/>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Compression Type:" ColSpanMd="12">
+                            <DxComboBox Data="@CompressionOptions"
+                                        TextFieldName="Name"
+                                        @bind-Value="@SelectedCompression"/>
+                        </DxFormLayoutItem>
+                    </DxFormLayoutGroup>    
+                }
+            </DxFormLayout>
+        </EditFormTemplate>
+        <CustomValidators>
+            <CustomValidator DataItemValidating="ValidateData"></CustomValidator>
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+        </CustomValidators>
+    </DxGrid>
+    <DxPopup @bind-Visible="@PopupVisible"
+             HeaderText="@PopupHeader"
+             BodyText="@PopupMessage"
+             ShowFooter="true"
+             @ref="Popup">
+        <FooterContentTemplate>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Close" Click="CloseClick" />
+        </FooterContentTemplate>
+    </DxPopup>
+    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+}
+
+@code {
+    IGrid? m_grid { get; set; }
+    DxPopup Popup;
+    public List<Role> RoleOptions { get; set; }
+    private bool GlobalRoles { get; set; }
+    public IEnumerable<Role> selectedRoles { get; set; }
+    bool PopupVisible { get; set; } = false;
+    public string RowVersion { get; set; }
+    private string currentDomain = "";
+    private string originalEmail = "";
+    private string PopupMessage = "";
+    private string PopupHeader = "";
+    private bool _concurrencyException = false;
+    private ConfirmationDialog Dialog;
+    private bool EnableUserTypeBox = true;
+
+    [BindProperty]
+    public User EditingUser { get; set; }
+    [Parameter]
+    public bool AdminView { get; set; }
+    [Parameter]
+    public List<User> Users { get; set; }
+    [Parameter]
+    public List<Role> Roles { get; set; }
+    [Parameter]
+    public User User { get; set; }
+    [Parameter]
+    public Company ParentCompany { get; set; }
+    [Parameter]
+    public Func<User, Task<User>> OnSave { get; set; }
+    [Parameter]
+    public Func<Task> RefreshComponent { get; set; }
+    [Parameter]
+    public bool LimpMode { get; set; } = false;
+    [Parameter]
+    public string GridCaption { get; set; } = "Users";
+
+    private record CompressionOption(string Name, ECompressionType Type);
+
+    readonly List<CompressionOption> CompressionOptions = new List<CompressionOption> {
+        new CompressionOption("None", ECompressionType.None),
+        new CompressionOption("Fast", ECompressionType.Fast),
+        new CompressionOption("Normal", ECompressionType.Normal),
+        new CompressionOption("High", ECompressionType.High)
+    };
+
+    CompressionOption SelectedCompression = new CompressionOption("Normal", ECompressionType.Normal);
+    private string? ServiceToken;
+    private bool ShowTokenBox = false;
+    [Parameter]
+    public List<Company> Companies { get; set; }
+    public List<Company> CompaniesFiltered { 
+        get
+        {
+            // Filter the companies to exclude the one with Id = 1
+            return Companies?.Where(company => company.Id != 1).ToList();
+        }
+    }
+    public IEnumerable<Company> SelectedCompanies { get; set; }
+    private IEnumerable<ActionItem<User>> _actions = new List<ActionItem<User>>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Companies = Companies ?? await companyService.GetCompaniesAsync();
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        _actions = new List<ActionItem<User>>
+        {
+            new ActionItem<User>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-info-circle",
+                Action = async (item) => await m_grid.StartEditDataItemAsync(item)
+            },
+            new ActionItem<User>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fa fa-trash",
+                Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog, item.Email)
+            }
+        };
+
+        if (ParentCompany.UseSSOLogin == false)
+        {
+            _actions = _actions.Concat([new ActionItem<User>
+            {
+                ActionText = "Resend Invitation",
+                IconCssClass = "fa fa-envelope",
+                Action = async (item) => await SendInviteLink(item)
+            }]);
+        }
+    }
+
+    private async Task SendInviteLink(User user)
+    {
+        if (await m_auth0service.CheckIfUserIsValidated(user))
+        {
+            _toastService.ShowToast("Already Verified", "No email was sent, as the user you have selected is already verified. If they need to reset their password, they should use the 'forgot password' button on sign in.", ToastRenderStyle.Info);
+        }
+        else
+        {
+            await m_auth0service.SendInviteLink(user, NavigationManager.BaseUri);
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(m_grid);
+        base.OnAfterRender(firstRender);
+    }
+
+    async Task CloseClick(MouseEventArgs args)
+    {
+        await Popup.CloseAsync();
+        if (_concurrencyException)
+            await RefreshComponent();
+    }
+
+    private void OnEditStart(GridEditStartEventArgs args)
+    {
+        if (args.IsNew)
+        {
+            originalEmail = "";
+            RoleOptions = Roles;
+            GlobalRoles = true;
+            selectedRoles = new List<Role>();
+            SelectedCompression = CompressionOptions.First(x => x.Type == ECompressionType.Normal);
+            GenerateNewToken();
+            ShowTokenBox = true;
+            EnableUserTypeBox = true;
+        } 
+        else
+        {
+            EnableUserTypeBox = false;
+            var user = (User)args.DataItem;
+            originalEmail = user.Email;
+            if (user.DisplayLanguage.IsNullOrEmpty())
+            {
+                user.DisplayLanguage = "English";
+            }
+            RowVersion = user.Version != null ? Convert.ToBase64String(user.Version) : "";
+
+            SelectedCompression = CompressionOptions.FirstOrDefault(x => x.Type == user.CompressionType) ?? CompressionOptions.First(x => x.Type == ECompressionType.Normal);
+
+            if (User.IsPTAdmin() && AdminView)
+            {
+                RoleOptions = Roles;
+                GlobalRoles = true;
+            } 
+            else
+            {
+                // Don't show options for other companies if not PTAdmin
+                RoleOptions = Roles.Where(x => x.CompanyId == User.CompanyId).ToList();
+                GlobalRoles = false;
+            }
+            selectedRoles = new List<Role>(user.Roles);
+        }
+    }
+
+    protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        if (LimpMode)
+        {
+            User user = (User)e.EditModel;
+            user.Roles = selectedRoles.ToList();
+            await OnSave(user);
+            return;
+        }
+        try
+        {
+            var editModel = (e.EditModel as User);
+            if (editModel != null)
+            {
+                User emailUser = m_userService.GetUserByEmail(editModel.Email);
+                User dataItem;
+
+                // If user email exists, ensure it's the same user. Otherwise confirm import
+                if (emailUser.Exists())
+                {
+                    if (e.IsNew || emailUser.Id != editModel.Id)
+                    {
+                        if (AdminView)
+                        {
+                            // admin view should never import, as they can just assign groups to the existing user
+                            throw new InvalidDataException("Failed to save user. Email is already registered.");
+                        }
+                        if (emailUser.AuthorizedCompanyIds.Contains(ParentCompany.Id))
+                        {
+                            // This user already exists in this company, don't try to import it
+                            throw new InvalidDataException("Failed to save user. Email is already registered in this company.");
+                        }
+                        if (!await Dialog.ConfirmOperation("User Exists", "That email is already registered in our system. Would you like to import that user to this company?"))
+                        {
+                            return;
+                        }
+                    }
+                    dataItem = emailUser;
+                }
+                else
+                {
+                    // Create a new User, or find the existing User by Id
+                    if (e.IsNew)
+                    {
+                        dataItem = new User() { CompanyId = selectedRoles.First().CompanyId, CreatedBy = User.Email };
+                    } 
+                    else
+                    {
+                        dataItem = m_userService.GetUserById(editModel.Id);
+                    }
+                }
+
+                dataItem.Email = editModel.Email;
+                dataItem.Name = editModel.Name;
+                dataItem.LastName = editModel.LastName;
+                dataItem.Version = editModel.Version;
+                if (dataItem.Version != null) dataItem.Version = Convert.FromBase64String(RowVersion);
+
+                dataItem.TaskNotes = editModel.TaskNotes;
+                dataItem.DisplayLanguage = editModel.DisplayLanguage;
+                dataItem.CompressionType = editModel.CompressionType;
+                dataItem.ExternalId = editModel.ExternalId;
+                dataItem.CompressionType = SelectedCompression.Type;
+                dataItem.UpdatedBy = User.Email;
+                dataItem.UserType = editModel.UserType;
+                dataItem.ServiceToken = ServiceToken;
+
+                var newRoles = selectedRoles.ToList();
+
+                if (!AdminView)
+                {
+                    // If on company view, add back groups from other companies before saving
+                    newRoles.AddRange(dataItem.Roles.Where(x => x.CompanyId != User.CompanyId && !newRoles.Any(y => x.Id == y.Id)));
+                }
+
+                if (newRoles.All(x => x.CompanyId != dataItem.CompanyId))
+                {
+                    // If this user has had all groups from their current company removed, switch them to the next one
+                    dataItem.CompanyId = newRoles.First().CompanyId;
+                }
+
+                dataItem.Roles.Synchronize(newRoles);
+
+                try
+                {
+                    User savedUser = await OnSave(dataItem);
+                    dataItem.Id = savedUser.Id;
+
+                    if (savedUser.UserType == EUserType.Service)
+                    {
+                        savedUser.ServiceToken = dataItem.ServiceToken;
+                    }
+                    
+                    bool userHasChanged = false;
+                    if (e.IsNew)
+                    {
+                        Users.Add(savedUser);
+                        if (savedUser.UserType == EUserType.Service)
+                        {
+                            var oldEmail = savedUser.Email;
+                            var updatedUser = await m_auth0service.CreateServiceUserInAuth0(savedUser);
+                            if (updatedUser.Email != oldEmail)
+                            {
+                                await OnSave(updatedUser);
+                            }
+                        }
+                        else
+                        {
+                            if (ParentCompany.UseSSOLogin == false)
+                            {
+                                await m_auth0service.SetupAuth0User(savedUser, NavigationManager.BaseUri);
+                            }    
+                        }
+                    } 
+                    else
+                    {
+                        Users.Replace(savedUser, (u1, u2) => u1.Id == u2.Id);
+                        if (User.Id == savedUser.Id)
+                        {
+                            userHasChanged = true;
+                        }
+
+                        if (savedUser.ServiceToken != null)
+                        {
+                            await m_auth0service.SetAuth0PasswordForServiceUser(savedUser);
+                        }
+                    }
+                    NavMenuUpdateService.TriggerUpdate(userHasChanged);
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    if (Popup.IsInitialized)
+                    {
+                        _concurrencyException = true;
+                        PopupHeader = "Concurrency Exception";
+                        PopupMessage = "Concurrency exception occurred. Please try again.";
+                        await Popup.ShowAsync();
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            e.Cancel = true;
+            if (Popup.IsInitialized)
+            {
+                _concurrencyException = false;
+                PopupHeader = "Validation Error";
+                PopupMessage = ex.Message;
+                await Popup.ShowAsync();
+            }
+        }
+    }
+
+    void ValidateData(ValidationMessageStoreEventArgs e)
+    {
+        var user = (User)e.EditModel;
+        if (selectedRoles.Any(g => g.Permissions.Any(p => p == Permission.PTAdmin.Key)) && (!user.Email?.EndsWith("@planettogether.com") ?? true))
+        {
+            e.AddError(nameof(user.Roles), "Cannot assign a Role with PTAdmin privileges to a user outside of the Planet Together Domain.");
+        }
+        if (!selectedRoles.Any())
+        {
+            e.AddError(nameof(user.Roles), "Users must have at least one Role.");
+        }
+        // If the email has changed, but the user is registered in other companies, prevent saving unless it's being done through admin view
+        if (!AdminView && !originalEmail.IsNullOrEmpty() && !originalEmail.Equals(user.Email, StringComparison.InvariantCultureIgnoreCase) && user.AuthorizedCompanyIds.Any(x => x != ParentCompany.Id))
+        {
+            e.AddError(nameof(user.Email), $"Cannot update this user's email as their account is registered in more than one company. You will need to contact a PlanetTogether administrator to request an email change.");
+        }
+        
+        if (user.DisplayLanguage.IsNullOrEmpty())
+        {
+            e.AddError(nameof(user.DisplayLanguage), "The Language field is required.");
+        }
+    }
+    
+    protected async Task DeleteItem(object a_item)
+    {
+        var editModel = (a_item as User);
+        bool success = false;
+        if (editModel != null)
+        {
+            if (AdminView)
+            {
+                success = await m_userService.DeleteAsync(editModel.Id);
+            } 
+            else
+            {
+                success = await m_userService.RemoveAsync(editModel.Id, ParentCompany.Id);
+            }
+            if (success) Users.Remove(editModel);
+            StateHasChanged();
+        }
+    }
+
+    void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+        if (e.FieldName == "Roles")
+        {
+            var id = Convert.ToDecimal(e.GetRowValue("Id"));
+
+            var dataItem = Users.Find(delegate (User c)
+                {
+                    return c.Id == id;
+                });
+            if (dataItem != null)
+            {
+                if ((dataItem.Roles?.Count ?? 0) > 0)
+                {
+                    List<string> w;
+                    if (AdminView)
+                    {
+                        w = dataItem.Roles.Select(x => x.DetailDisplayValue).ToList();
+                    } 
+                    else
+                    {
+                        w = dataItem.Roles.Where(x => x.CompanyId == ParentCompany.Id).Select(x => x.Name).ToList();
+                    }
+                    e.Value = CommonUtils.ListToString(w);
+                }
+            }
+        }
+        if (e.FieldName == "Companies")
+        {
+            var id = Convert.ToDecimal(e.GetRowValue("Id"));
+
+            var dataItem = Users.Find(delegate (User c)
+                {
+                    return c.Id == id;
+                });
+            if (dataItem != null)
+            {
+                if (dataItem.AuthorizedCompanies.Count() > 0)
+                {
+                    List<string> w = dataItem.AuthorizedCompanies.Select(x => x.Name).ToList();
+                    e.Value = CommonUtils.ListToString(w);
+                } 
+                else
+                {
+                    e.Value = dataItem.Company.Name;
+                }
+            }
+        }
+    }
+
+    private void GenerateNewToken()
+    {
+        ShowTokenBox = true;
+        ServiceToken = RandomNumberGenerator.GetString("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%^&*()_-{}[]:;+", 64);
+    }
+
+    private void SvcUserNameChanged(string name, User user)
+    {
+        user.Name = name;
+        var companyAdminEmail = User.Company.Email; //this might not be right? but we need an email for the form to validate. will update the email later on to make sure its right.
+        string domain = companyAdminEmail.Split('@')[^1];
+        user.Email = $"pt.svc.{user.Name}@{domain}.invalid";
+        user.LastName = "";
+    }
+
+}

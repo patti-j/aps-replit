@@ -1,0 +1,34 @@
+﻿@using ReportsWebApp.DB.Models
+@using DevExpress.Blazor
+
+<DxFormLayout>
+    <DxFormLayoutGroup Caption="Product Settings">
+        <Items>
+            <DxFormLayoutItem Field="Request.ItemExternalId" Caption="Item External ID">
+                <DxTextBox @bind-Text="Request.ItemExternalId" />
+            </DxFormLayoutItem>
+
+            <DxFormLayoutItem Field="Request.WarehouseExternalId" Caption="Warehouse External ID">
+                <DxTextBox @bind-Text="Request.WarehouseExternalId" />
+            </DxFormLayoutItem>
+
+            <DxFormLayoutItem Field="Request.RequiredQty" Caption="Required Quantity">
+                <DxSpinEdit @bind-Value="Request.RequiredQty" />
+            </DxFormLayoutItem>
+
+            <DxFormLayoutItem Field="Request.NeedDate" Caption="Need Date">
+                <DxDateEdit @bind-Date="Request.NeedDate" />
+            </DxFormLayoutItem>
+
+            <DxFormLayoutItem Field="Request.RequiredPathId" Caption="Required Path ID">
+                <DxTextBox @bind-Text="Request.RequiredPathId" />
+            </DxFormLayoutItem>
+        </Items>
+    </DxFormLayoutGroup>
+</DxFormLayout>
+
+@code {
+    [Parameter] public bool IsReadOnly { get; set; }
+
+    [Parameter] public CtpRequest Request { get; set; } = new();
+}

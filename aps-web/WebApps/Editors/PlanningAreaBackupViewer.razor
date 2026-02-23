@@ -1,0 +1,61 @@
+﻿@using ReportsWebApp.DB
+@using ReportsWebApp.Pages
+@inject ServiceContainer ServiceContainer
+
+<DxPopup Visible="Visible" MaxWidth="800px" HeaderText="Backup Versions" ShowFooter="true" Closed="OnCancel">
+    <BodyContentTemplate Context="popupBodyContext">
+        <DxLoadingPanel Visible="Backups == null || PlanningArea == null">
+            <DxGrid Data="Backups">
+                <Columns>
+                    <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                        <HeaderTemplate></HeaderTemplate>
+                        <CellDisplayTemplate Context="cellContext">
+                            @{
+                                var dataItem = (PADetails)cellContext.DataItem;
+                            }
+                            <ActionDropdown DataItem="dataItem" Actions="Actions"/>
+                        </CellDisplayTemplate>
+                    </DxGridCommandColumn>
+                    <DxGridDataColumn FieldName="Version"></DxGridDataColumn>
+                    <DxGridDataColumn FieldName="UpdateDate" Caption="Backup Date"></DxGridDataColumn>
+                </Columns>
+            </DxGrid>
+        </DxLoadingPanel>
+    </BodyContentTemplate>
+</DxPopup>
+
+@code {
+    [Parameter] public PADetails? PlanningArea { get; set; } = new();
+    [Parameter] public List<PADetails>? Backups { get; set; }
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public Func<PADetails, PADetails, Task> OnRestoreBackup { get; set; }
+    [Parameter] public Func<PADetails, Task> OnDeleteBackup { get; set; }
+    [Parameter] public Action OnCancel { get; set; }
+    private IEnumerable<ActionItem<PADetails>> Actions;
+
+    private string? SelectedVersion = null;
+    private bool StartAfterUpgrade = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        Actions = new List<ActionItem<PADetails>>
+        {
+            new ActionItem<PADetails>
+            {
+                ActionText = "Restore",
+                IconCssClass = "fas fa-pencil-alt",
+                Action = async dataItem => await OnRestoreBackup(PlanningArea, dataItem),
+                ShouldActionButtonBeEnabled = dataItem => dataItem.RegistrationStatus == ERegistrationStatus.Created.ToString()
+            },
+            new ActionItem<PADetails>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fas fa-trash-alt",
+                Action = async dataItem => await OnDeleteBackup(dataItem),
+                ShouldActionButtonBeEnabled = (_) => true // always show this option, even if the PA hasn't been created yet.
+            }
+        };
+
+    }
+}

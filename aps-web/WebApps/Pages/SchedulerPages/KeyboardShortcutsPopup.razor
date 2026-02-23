@@ -1,0 +1,74 @@
+﻿@using DevExpress.Blazor
+@inject ServiceContainer ServiceContainer
+@inject ShortcutService ShortcutService
+
+<DxPopup @bind-Visible="@ShowPopup" CloseOnOutsideClick="true" Width="650px" Height="auto" HeaderText="Keyboard Shortcuts">
+    <div class="keyboard-shortcuts">
+        @foreach (var section in ShortcutSections)
+        {
+            <div class="section">
+                <h3>@(section.Title)</h3>
+                @foreach (var shortcut in section.Shortcuts)
+                {
+                    <div class="shortcut">
+                        <div class="command">@shortcut.Action.GetDisplayText()</div>
+                        <ShortcutKeys Keys="@shortcut.Key" />
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</DxPopup>
+
+@code {
+    [Parameter]
+    public bool ShowPopup { get; set; }
+    [Parameter] public EventCallback<bool> ShowPopupChanged { get; set; }
+
+    private List<ShortcutSection> ShortcutSections { get; set; } = new List<ShortcutSection>();
+
+    protected override void OnInitialized()
+    {
+        ServiceContainer.PopupManager.OnChange += StateHasChanged;
+        ShortcutSections = ShortcutService.GetShortcutSections();
+    }
+
+    private void SaveChanges()
+    {
+        // Logic to save changes to a persistent storage or service
+        // For now, we will just output the updated shortcuts to the console
+        foreach (var section in ShortcutSections)
+        {
+            foreach (var shortcut in section.Shortcuts)
+            {
+                Console.WriteLine($"Key: {shortcut.Key}, Action: {shortcut.Action}");
+            }
+        }
+    }
+}
+
+<style>
+.keyboard-shortcuts {
+    display: flex;
+    gap: 10px;
+}
+.section {
+    display: flex;
+    flex-direction: column;
+}
+h3 {
+    margin-bottom: 10px;
+}
+.shortcut {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+}
+.key, .action {
+    flex: 1;
+    margin: 0 5px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+</style>

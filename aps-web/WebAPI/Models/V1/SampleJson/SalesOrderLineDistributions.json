@@ -1,0 +1,32 @@
+[
+  {
+    "importDate": "2024-02-05T10:30:00Z",
+    "SalesOrderLineId": 12345,
+    "SalesOrderLineDistributionId": 67890,
+    "AllowPartialAllocations": true,
+    "BacklogQty": 10.5,
+    "Hold": false,
+    "HoldReason": "Not Applicable",
+    "MaximumLatenessDays": 5.5,
+    "MaterialAllocation": "Sample Material Allocation",
+    "MinAllocationQty": 2.0,
+    "MinSourceQty": 1.0,
+    "MaxSourceQty": 5.0,
+    "MaterialSourcing": "Sample Material Sourcing",
+    "MissedSalesQty": 3.0,
+    "MustSupplyFromWarehouseId": 987,
+    "Priority": 1,
+    "QtyAllocatedFromOnHandInventory": 7.0,
+    "QtyAllocatedFromProjectedInventory": 6.0,
+    "QtyNotAllocated": 4.5,
+    "QtyShipped": 2.5,
+    "QtyOrdered": 15.0,
+    "RequiredAvailableDate": "2024-02-15T00:00:00Z",
+    "SalesRegion": "North",
+    "ShipToZone": "Zone A",
+    "StockShortageRule": "Rule 1",
+    "SupplyingWarehouseId": 654,
+    "AvailableDate": "2024-02-10T00:00:00Z",
+    "EligibleLots": "Lot1, Lot2"
+  }
+]

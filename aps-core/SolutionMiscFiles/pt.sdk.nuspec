@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata>
+		<!-- Required elements-->
+		<id>PT.SDK</id>
+		<version>$version$</version>
+		<description>PlanetTogether libraries required to build packages and run the sdk PlanetTogetherClient</description>
+		<authors>PlanetTogether Inc</authors>
+
+		<!-- Optional elements -->
+		<icon>images\logo_500px.png</icon>
+		<copyright>PlanetTogether Inc 2023</copyright>
+		<!-- ... -->
+
+		<dependencies>
+			<group targetFramework="net8.0-windows10.0.22000.0">
+				<!--PT.SDK.Packages-->
+				<dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.9" exclude="Build,Analyzers" />
+				<dependency id="Microsoft.AspNet.WebApi" version="5.2.9" exclude="Build,Analyzers" />
+				<dependency id="Microsoft.AspNet.WebApi.Owin" version="5.2.9" exclude="Build,Analyzers" />
+				<dependency id="Microsoft.AspNetCore.Owin" version="6.0.12" exclude="Build,Analyzers" />
+				<dependency id="Swashbuckle" version="5.6.0" exclude="Build,Analyzers" />
+				<dependency id="Swashbuckle.AspNetCore.Swagger" version="6.4.0" exclude="Build,Analyzers" />
+				<dependency id="Swashbuckle.AspNetCore.SwaggerGen" version="6.4.0" exclude="Build,Analyzers" />
+				<dependency id="Swashbuckle.AspNetCore.SwaggerUI" version="6.4.0" exclude="Build,Analyzers" />
+			</group>
+		</dependencies>
+		<frameworkReferences>
+			<group targetFramework="net8.0-windows10.0.22000.0">
+				<frameworkReference name="Microsoft.WindowsDesktop.App.WindowsForms" />
+			</group>
+		</frameworkReferences>
+	</metadata>
+	<files>
+		<!--Required for APS Client, but not for creating packages-->
+		<file src="..\Services\PlanetTogetherAPI\bin\Release\PlanetTogetherAPI.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\Services\PlanetTogetherAPI\bin\Release\PlanetTogetherAPI.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\Services\Definitions\APIDefintion\bin\Release\PT.APIDefinitions.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\Services\Definitions\APIDefintion\bin\Release\PT.APIDefinitions.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\ImportAndPublishing\CustomInterface\bin\Release\PT.CustomInterface.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\ImportAndPublishing\CustomInterface\bin\Release\PT.CustomInterface.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\Services\ServerManager\ServerManagerAPIProxy\bin\Release\PT.ServerManagerAPIProxy.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\Services\ServerManager\ServerManagerAPIProxy\bin\Release\PT.ServerManagerAPIProxy.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\Services\SystemService\SystemServiceDefinitions\bin\Release\PT.SystemServiceDefinitions.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\Services\SystemService\SystemServiceDefinitions\bin\Release\PT.SystemServiceDefinitions.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\Services\SystemService\SystemServiceProxy\SystemServiceProxy\bin\Release\PT.SystemServiceProxy.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\Services\SystemService\SystemServiceProxy\SystemServiceProxy\bin\Release\PT.SystemServiceProxy.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\UserInterface\PlanetTogetherClient\bin\Release\PT.UI.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\UserInterface\UI\bin\Release\PT.UI.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+		<file src="logo_500px.png" target="images\" />
+	</files>
+</package>
+<!--Example publish command: /nuget.exe pack pt.sdk.nuspec -Version 12.0.2 -properties config=Release -->

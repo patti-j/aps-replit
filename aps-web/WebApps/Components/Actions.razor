@@ -1,0 +1,364 @@
+﻿@page "/servermanager/actions"
+@using Microsoft.EntityFrameworkCore
+@using System.Text.Json
+@using System.Globalization
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.Helpers
+@using Utils = ReportsWebApp.Shared.Utils
+@inject ServerActionsService _actionsService
+@inject ServiceContainer _serviceContainer
+@inject IToastNotificationService _toastService
+@inject INavigationStateService NavigationStateService
+@implements IDisposable
+
+<h3>Server Manager Actions - Queue</h3>
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+        <span class="loading-text">Loading...</span>
+    </div>
+}
+else if (hasError)
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Error:</strong> Unable to load actions. Please try again later.
+    </div>
+}
+else if (actions == null || !actions.Any())
+{
+    <div class="alert alert-info" role="alert">
+        <strong>No Actions Found:</strong> There are no actions to display.
+    </div>
+}
+else
+{
+    <DxGrid Data="@filteredActions"
+            ShowFilterRow="true"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSize="10"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 50 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer"
+            CssClass="ch-480"
+            @ref="m_grid">
+        <Columns>
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth" NewButtonVisible="false">
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = (ServerManagerActionRequest)context.DataItem;
+                    }
+                    @if (dataItem.RequestStatus == EActionRequestStatuses.New.ToString() || dataItem.RequestStatus == EActionRequestStatuses.Processing.ToString())
+                    {
+                        <ActionDropdown DataItem="dataItem" Actions="_actions" />
+                    }
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+            <!-- TransactionId Column -->
+            <DxGridDataColumn FieldName="TransactionId" Caption="Transaction ID" MinWidth="200" Visible="false" />
+
+            <!-- Server Column -->
+            <DxGridDataColumn FieldName="Server" Caption="Server" MinWidth="150">
+                 <EditSettings>
+                    <DxComboBoxSettings Data="@servers"
+                                NullText="Select Server"
+                                ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+                </EditSettings> 
+                <CellDisplayTemplate Context="displayContext">
+                    <span>@((CompanyServer)displayContext.Value)</span>
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+
+            <!-- Action Column -->
+            <DxGridDataColumn FieldName="Action" Caption="Action" MinWidth="150">
+                <EditSettings>
+                    <DxComboBoxSettings Data="@actionsList"
+                                NullText="Select Action"
+                                ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+                </EditSettings> 
+            </DxGridDataColumn>
+
+            <!-- RequestStatus Column -->
+            <DxGridDataColumn FieldName="RequestStatus" Caption="Request Status" MinWidth="150">
+                <EditSettings>
+                    <DxComboBoxSettings Data="@statuses"
+                                NullText="Select Status"
+                                ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+                </EditSettings> 
+                <CellDisplayTemplate Context="displayContext">
+                    @if (!string.IsNullOrEmpty(displayContext.Value?.ToString()))
+                    {
+                        var status = displayContext.Value.ToString().ToLower();
+
+                        <span class="badge @(GetStatusBadgeClass(status))">
+                            <i class="@(GetStatusIconClass(status))"></i>
+                            @CultureInfo.CurrentCulture.TextInfo.ToTitleCase(status)
+                        </span>
+                    }
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+
+            <!-- RequestedDateTime Column -->
+            <DxGridDataColumn FieldName="RequestedDateTime" Caption="Requested Date" MinWidth="200" DisplayFormat="d" SortOrder="GridColumnSortOrder.Descending" SortIndex="0">
+                <CellDisplayTemplate Context="displayContext">
+                    @{
+                        var dateValue = displayContext.Value as DateTime?;
+                        var tz = _serviceContainer.UserTimeZone ?? "UTC";
+                    }
+                    @Utils.FormatUtcDate(dateValue, currentUser)
+                </CellDisplayTemplate> 
+            </DxGridDataColumn>
+
+            <!-- ParameterJson Column. TODO: Hiding for now as it shows way too much info (including potentially sensitive info). If we really want to show, need to limit/ give own dialogue -->
+            <DxGridDataColumn FieldName="ParameterJson" Caption="Parameters" MinWidth="250" Visible="false">
+                 <CellDisplayTemplate Context="displayContext">
+                    @if (!string.IsNullOrWhiteSpace(displayContext.Value?.ToString()))
+                    {
+                        <ul>
+                            @foreach (var kvp in ParseJson(displayContext.Value.ToString()))
+                            {
+                                <li><strong>@kvp.Key:</strong> @kvp.Value</li>
+                            }
+                        </ul>
+                    }
+                </CellDisplayTemplate> 
+            </DxGridDataColumn>
+
+            <!-- UpdatedDateTime Column -->
+            <DxGridDataColumn FieldName="UpdatedDateTime" Caption="Updated Date" MinWidth="200" DisplayFormat="d">
+                <CellDisplayTemplate Context="displayContext">
+                    @{
+                        var dateValue = displayContext.Value as DateTime?;
+                        var tz = _serviceContainer.UserTimeZone ?? "UTC";
+                    }
+                    @Utils.FormatUtcDate(dateValue, currentUser)
+                </CellDisplayTemplate> 
+            </DxGridDataColumn>
+
+            <!-- ErrorMessage Column -->
+            <DxGridDataColumn FieldName="ErrorMessage" Caption="Error Message" MinWidth="250" />
+
+            <!-- RequestedBy Column -->
+            <DxGridDataColumn FieldName="RequestedBy" Caption="Requested By" MinWidth="150" />
+        </Columns>
+    </DxGrid>
+    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+}
+
+@code {
+    private List<ServerManagerActionRequest>? actions;
+    private List<ServerManagerActionRequest>? filteredActions;
+    private List<CompanyServer> servers = new();
+    private List<string> actionsList = new();
+    private List<string> statuses = new();
+    private IEnumerable<ActionItem<ServerManagerActionRequest>> _actions = new List<ActionItem<ServerManagerActionRequest>>();
+    private ConfirmationDialog Dialog;
+
+    private CompanyServer? selectedServer;
+    private string? selectedAction;
+    private string? selectedStatus;
+    private User currentUser;
+
+    private bool isLoading = true;
+    private bool hasError = false;
+    private DxGrid m_grid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isLoading = true;
+
+            currentUser = await _serviceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+
+            if (Shared.Utils.BlockUsersByAuthStatus(currentUser, Permission.EditUsers, NavigationManager, true)) return;
+
+            actions = await _actionsService.GetActionsAsync(currentUser.CompanyId);
+
+            if (actions != null)
+            {
+                servers = actions
+                    .Select(a => (CompanyServer)a.Server)
+                    .DistinctBy(s => s.Id)
+                    .ToList();
+
+                actionsList = actions
+                    .Select(a => a.Action)
+                    .Distinct()
+                    .ToList();
+
+                statuses = actions
+                    .Select(a => a.RequestStatus)
+                    .Distinct()
+                    .ToList();
+
+                filteredActions = new List<ServerManagerActionRequest>(actions);
+            }
+
+            _actions = new List<ActionItem<ServerManagerActionRequest>>
+            {
+                new ActionItem<ServerManagerActionRequest>
+                {
+                    ActionText = "Cancel",
+                    IconCssClass = "fa fa-ban",
+                    Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, CancelAction, Dialog, a_action: "cancel", 
+                        a_additionalText: "This will not stop any changes that have already been picked up by the Server.")
+                }
+            };
+            if (StatusUpdateListener == null)
+            {
+                StatusUpdateListener = new EventBusListener((ev) =>
+                {
+                    bool somethingChanged = false;
+                    if (ev is ActionStatusUpdateEvent @event)
+                    {
+                        foreach (var action in @event.ActionStatusList.StatusList)
+                        {
+                            ServerManagerActionRequest? act;
+                            if ((act = filteredActions?.FirstOrDefault(s => s.TransactionId == action.TransactionId)) != null)
+                            {
+                                if (act.RequestStatus != action.RequestStatus || act.UpdatedDateTime != action.UpdatedDateTime )
+                                {
+                                    act.RequestStatus = action.RequestStatus;
+                                    act.ErrorMessage = action.ErrorMessage;
+                                    act.UpdatedDateTime = action.UpdatedDateTime;
+                                    somethingChanged = true;
+                                }
+                            }
+                        }
+
+                        if (somethingChanged)
+                        {
+                            InvokeAsync(StateHasChanged);
+                        }     
+                    }
+                }, typeof(ActionStatusUpdateEvent));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading actions: {ex.Message}");
+            hasError = true;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private EventBusListener? StatusUpdateListener;
+
+    private async Task CancelAction(object item)
+    {
+        if (item is ServerManagerActionRequest action)
+        {
+            var updateAction = await _actionsService.CancelServerAction(action);
+            if (updateAction == null)
+            {
+                _toastService.ShowToast("Already Done", "The action you tried to cancel was already completed.", ToastRenderStyle.Danger, 15);
+                actions = await _actionsService.GetActionsAsync(currentUser.CompanyId);
+            }
+            else
+            {
+                updateAction.Server = action.Server;
+                actions.Replace(updateAction, (x, y) => x.TransactionId == y.TransactionId);
+                filteredActions.Replace(updateAction, (x, y) => x.TransactionId == y.TransactionId);
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void OnServerFilterChanged(CompanyServer? value)
+    {
+        selectedServer = value;
+        Console.WriteLine($"Server filter changed. Selected Server: {value?.Name ?? "None"}");
+        ApplyFilters();
+    }
+
+    private void OnActionFilterChanged(string? value)
+    {
+        selectedAction = value;
+        Console.WriteLine($"Action filter changed. Selected Action: {value ?? "None"}");
+        ApplyFilters();
+    }
+
+    private void OnStatusFilterChanged(string? value)
+    {
+        selectedStatus = value;
+        Console.WriteLine($"Status filter changed. Selected Status: {value ?? "None"}");
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        if (actions == null)
+        {
+            filteredActions = new List<ServerManagerActionRequest>();
+            return;
+        }
+
+        filteredActions = actions
+            .Where(a => (selectedServer == null || a.Server.Id == selectedServer.Id) &&
+                        (string.IsNullOrEmpty(selectedAction) || a.Action == selectedAction) &&
+                        (string.IsNullOrEmpty(selectedStatus) || a.RequestStatus == selectedStatus))
+            .ToList();
+    }
+    /// <summary>
+    /// Parses a JSON string into a dictionary of key-value pairs.
+    /// </summary>
+    private Dictionary<string, object> ParseJson(string json)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, object>>(json) ?? new Dictionary<string, object>();
+        }
+        catch
+        {
+            return new Dictionary<string, object>
+            {
+                { "Error", "Invalid JSON format" }
+            };
+        }
+    }    /// <summary>
+         /// Returns a CSS class for the status badge based on the action's status.
+         /// </summary>
+    private string GetStatusBadgeClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "error" => "pill-tone-red",
+            "cancelled" => "pill-tone-2",
+            _ => "pill-tone-3"
+        };
+    }
+
+    /// <summary>
+    /// Returns the appropriate icon class for a given request status.
+    /// </summary>
+    private string GetStatusIconClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "ready" => "fas fa-clipboard-check",     
+            "new" => "fa-solid fa-sparkles",    
+            "completed" => "fas fa-check-circle",   // Icon for "Completed" (e.g., Check Circle)
+            "success" => "fas fa-check-circle",   // Icon for "Completed" (e.g., Check Circle)
+            "failed" => "fas fa-times-circle",      // Icon for "Failed" (e.g., Times Circle)
+            "error" => "fas fa-times-circle",      // Icon for "Failed" (e.g., Times Circle)
+            "cancelled" => "fas fa-ban",      // Icon for "Cancelled" (e.g., Circle wit Slash)
+            "in-progress" => "fas fa-spinner fa-spin", // Icon for "In Progress" (e.g., Spinner)
+            _ => "fas fa-question-circle"           // Default icon for unknown statuses
+        };
+    }
+
+    public void Dispose()
+    {
+        StatusUpdateListener?.Dispose();
+    }
+
+}

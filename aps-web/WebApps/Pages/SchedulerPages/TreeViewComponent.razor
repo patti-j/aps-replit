@@ -1,0 +1,93 @@
+﻿@using DevExpress.Blazor
+
+<div class="left-panel mx-1">
+    <strong>Fields list</strong>
+    <DxTextBox CssClass="m-2"
+               NullText="Search..."
+               Text="@searchTerm"
+               ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+               @oninput="OnSearchTextInput" />
+    <DxTreeView AllowSelectNodes="true" NodeClick="OnNodeClick">
+        <Nodes>
+            @if (!FilteredTreeNodes.Any())
+            {
+                <DxTreeViewNode Text="No results found" />
+            }
+            else
+            {
+                @foreach (var node in FilteredTreeNodes)
+                {
+                    <DxTreeViewNode Text="@node.Text" Expanded="true">
+                        <Nodes>
+                            @foreach (var child in node.Children)
+                            {
+                                <DxTreeViewNode Text="@child.Title" Name="@child.Value" NavigateUrl="@child.Text">
+                                    <Template>
+                                        <div class="my-0 p-2 d-flex align-items-center justify-content-between" style="cursor: pointer">
+                                            <strong class="mr-3">@context.Text</strong>
+                                            <small>@context.Name</small>
+                                        </div>
+                                    </Template>
+                                </DxTreeViewNode>
+                            }
+                        </Nodes>
+                    </DxTreeViewNode>
+                }
+            }
+        </Nodes>
+    </DxTreeView>
+</div>
+
+@code {
+    [Parameter]
+    public List<TreeNode> TreeNodes { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<string> OnNodeSelected { get; set; }
+
+    private string searchTerm = "";
+
+    // Property to hold the filtered nodes
+    private List<TreeNode> FilteredTreeNodes => FilterNodes(TreeNodes, searchTerm);
+
+    private async Task OnNodeClick(TreeViewNodeClickEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(e.NodeInfo.NavigateUrl))
+        {
+            await OnNodeSelected.InvokeAsync(e.NodeInfo.NavigateUrl);
+        }
+    }
+
+    private void OnSearchTextInput(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+        StateHasChanged(); // Ensure the UI updates with the new search term
+    }
+
+    // Method to filter nodes based on the search term
+    private List<TreeNode> FilterNodes(List<TreeNode> nodes, string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return nodes;
+        }
+
+        var filteredNodes = new List<TreeNode>();
+
+        foreach (var node in nodes)
+        {
+            var filteredChildren = node.Children.Where(child => child.Text.ToLower().Contains(searchTerm.ToLower())).ToList();
+            if (filteredChildren.Any())
+            {
+                var newNode = new TreeNode
+                    {
+                        Text = node.Text,
+                        Children = filteredChildren
+                    };
+                filteredNodes.Add(newNode);
+            }
+        }
+
+        return filteredNodes;
+    }
+}

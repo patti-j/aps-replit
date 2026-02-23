@@ -1,0 +1,68 @@
+﻿
+.h0px {
+    height: 0px;
+}
+
+.h10px {
+    height: 10px;
+}
+
+.h25px {
+    height: 25px;
+}
+
+.h15px {
+    height: 25px;
+}
+
+.h35px {
+    height: 35px;
+}
+
+.h45px {
+    height: 45px;
+}
+
+.w10px {
+    width: 10px;
+}
+
+.w25px {
+    width: 25px;
+}
+
+.w15px {
+    width: 25px;
+}
+
+.w35px {
+    width: 35px;
+}
+
+.w45px {
+    width: 45px;
+}
+
+.w100px {
+    width: 100px;
+}
+
+.top-5 {
+    position: relative;
+    top: 5px;
+}
+
+.top-10 {
+    position: relative;
+    top: 5px;
+}
+
+.top-15 {
+    position: relative;
+    top: 15px;
+}
+
+.top-25 {
+    position: relative;
+    top: 25px;
+}

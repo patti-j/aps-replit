@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="APS_InstancesDataSet" targetNamespace="http://tempuri.org/APS_InstancesDataSet.xsd" xmlns:mstns="http://tempuri.org/APS_InstancesDataSet.xsd" xmlns="http://tempuri.org/APS_InstancesDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections>
+          <Connection AppSettingsObjectName="Settings" AppSettingsPropertyName="APS_InstancesConnectionString" IsAppSettingsProperty="true" Modifier="Assembly" Name="APS_InstancesConnectionString (Settings)" ParameterPrefix="@" PropertyReference="ApplicationSettings.PT.ServerManagerSharedLib.Properties.Settings.GlobalReference.Default.APS_InstancesConnectionString" Provider="System.Data.SqlClient" />
+        </Connections>
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="APS_InstancesDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="APS_InstancesDataSet" msprop:EnableTableAdapterManager="True" msprop:Generator_DataSetName="APS_InstancesDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="InstanceSettings" msprop:Generator_RowEvHandlerName="InstanceSettingsRowChangeEventHandler" msprop:Generator_RowDeletedName="InstanceSettingsRowDeleted" msprop:Generator_RowDeletingName="InstanceSettingsRowDeleting" msprop:Generator_RowEvArgName="InstanceSettingsRowChangeEvent" msprop:Generator_TablePropName="InstanceSettings" msprop:Generator_RowChangedName="InstanceSettingsRowChanged" msprop:Generator_UserTableName="InstanceSettings" msprop:Generator_RowChangingName="InstanceSettingsRowChanging" msprop:Generator_RowClassName="InstanceSettingsRow" msprop:Generator_TableClassName="InstanceSettingsDataTable" msprop:Generator_TableVarName="tableInstanceSettings">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_UserColumnName="Name" msprop:Generator_ColumnVarNameInTable="columnName">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="Version" msprop:Generator_ColumnPropNameInTable="VersionColumn" msprop:Generator_ColumnPropNameInRow="Version" msprop:Generator_UserColumnName="Version" msprop:Generator_ColumnVarNameInTable="columnVersion">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="16" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="Server" msprop:Generator_ColumnPropNameInTable="ServerColumn" msprop:Generator_ColumnPropNameInRow="Server" msprop:Generator_UserColumnName="Server" msprop:Generator_ColumnVarNameInTable="columnServer">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="16" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="Settings" msprop:Generator_ColumnPropNameInTable="SettingsColumn" msprop:Generator_ColumnPropNameInRow="Settings" msprop:Generator_UserColumnName="Settings" msprop:Generator_ColumnVarNameInTable="columnSettings" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Configuration" msprop:Generator_RowEvHandlerName="ConfigurationRowChangeEventHandler" msprop:Generator_RowDeletedName="ConfigurationRowDeleted" msprop:Generator_RowDeletingName="ConfigurationRowDeleting" msprop:Generator_RowEvArgName="ConfigurationRowChangeEvent" msprop:Generator_TablePropName="Configuration" msprop:Generator_RowChangedName="ConfigurationRowChanged" msprop:Generator_UserTableName="Configuration" msprop:Generator_RowChangingName="ConfigurationRowChanging" msprop:Generator_RowClassName="ConfigurationRow" msprop:Generator_TableClassName="ConfigurationDataTable" msprop:Generator_TableVarName="tableConfiguration">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="DbVersion" msprop:Generator_ColumnPropNameInTable="DbVersionColumn" msprop:Generator_ColumnPropNameInRow="DbVersion" msprop:Generator_UserColumnName="DbVersion" msprop:Generator_ColumnVarNameInTable="columnDbVersion" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="ServerSettings" msprop:Generator_RowEvHandlerName="ServerSettingsRowChangeEventHandler" msprop:Generator_RowDeletedName="ServerSettingsRowDeleted" msprop:Generator_RowDeletingName="ServerSettingsRowDeleting" msprop:Generator_RowEvArgName="ServerSettingsRowChangeEvent" msprop:Generator_TablePropName="ServerSettings" msprop:Generator_RowChangedName="ServerSettingsRowChanged" msprop:Generator_UserTableName="ServerSettings" msprop:Generator_RowChangingName="ServerSettingsRowChanging" msprop:Generator_RowClassName="ServerSettingsRow" msprop:Generator_TableClassName="ServerSettingsDataTable" msprop:Generator_TableVarName="tableServerSettings">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_UserColumnName="Name" msprop:Generator_ColumnVarNameInTable="columnName" type="xs:string" minOccurs="0" />
+              <xs:element name="ServerManagerPath" msprop:Generator_ColumnPropNameInTable="ServerManagerPathColumn" msprop:Generator_ColumnPropNameInRow="ServerManagerPath" msprop:Generator_UserColumnName="ServerManagerPath" msprop:Generator_ColumnVarNameInTable="columnServerManagerPath" type="xs:string" minOccurs="0" />
+              <xs:element name="Thumbprint" msprop:Generator_ColumnPropNameInTable="ThumbprintColumn" msprop:Generator_ColumnPropNameInRow="Thumbprint" msprop:Generator_UserColumnName="Thumbprint" msprop:Generator_ColumnVarNameInTable="columnThumbprint" type="xs:string" minOccurs="0" />
+              <xs:element name="SsoDomain" msprop:Generator_ColumnPropNameInTable="SsoDomainColumn" msprop:Generator_ColumnPropNameInRow="SsoDomain" msprop:Generator_UserColumnName="SsoDomain" msprop:Generator_ColumnVarNameInTable="columnSsoDomain" type="xs:string" minOccurs="0" />
+              <xs:element name="SsoClientId" msprop:Generator_ColumnPropNameInTable="SsoClientIdColumn" msprop:Generator_ColumnPropNameInRow="SsoClientId" msprop:Generator_UserColumnName="SsoClientId" msprop:Generator_ColumnVarNameInTable="columnSsoClientId" type="xs:string" minOccurs="0" />
+              <xs:element name="WebAppUrl" msprop:Generator_UserColumnName="WebAppUrl" msprop:Generator_ColumnPropNameInTable="WebAppUrlColumn" msprop:Generator_ColumnPropNameInRow="WebAppUrl" msprop:Generator_ColumnVarNameInTable="columnWebAppUrl" type="xs:string" minOccurs="0" />
+              <xs:element name="WebAppClientId" msprop:Generator_ColumnPropNameInRow="WebAppClientId" msprop:Generator_ColumnPropNameInTable="WebAppClientIdColumn" msprop:Generator_ColumnVarNameInTable="columnWebAppClientId" msprop:Generator_UserColumnName="WebAppClientId" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:InstanceSettings" />
+      <xs:field xpath="mstns:Name" />
+      <xs:field xpath="mstns:Version" />
+      <xs:field xpath="mstns:Server" />
+    </xs:unique>
+    <xs:unique name="ServerSettingsKey1">
+      <xs:selector xpath=".//mstns:ServerSettings" />
+      <xs:field xpath="mstns:Name" />
+    </xs:unique>
+  </xs:element>
+</xs:schema>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ChangeOrdersDataSet" targetNamespace="http://tempuri.org/ChangeOrdersDataSet.xsd" xmlns:mstns="http://tempuri.org/ChangeOrdersDataSet.xsd" xmlns="http://tempuri.org/ChangeOrdersDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="ChangeOrdersDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_DataSetName="ChangeOrdersDataSet" msprop:Generator_UserDSName="ChangeOrdersDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="ChangeOrder" msprop:Generator_TableClassName="ChangeOrderDataTable" msprop:Generator_TableVarName="tableChangeOrder" msprop:Generator_TablePropName="ChangeOrder" msprop:Generator_RowDeletingName="ChangeOrderRowDeleting" msprop:Generator_RowChangingName="ChangeOrderRowChanging" msprop:Generator_RowEvHandlerName="ChangeOrderRowChangeEventHandler" msprop:Generator_RowDeletedName="ChangeOrderRowDeleted" msprop:Generator_UserTableName="ChangeOrder" msprop:Generator_RowChangedName="ChangeOrderRowChanged" msprop:Generator_RowEvArgName="ChangeOrderRowChangeEvent" msprop:Generator_RowClassName="ChangeOrderRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="CreateDate" msprop:Generator_ColumnVarNameInTable="columnCreateDate" msprop:Generator_ColumnPropNameInRow="CreateDate" msprop:Generator_ColumnPropNameInTable="CreateDateColumn" msprop:Generator_UserColumnName="CreateDate" type="xs:date" minOccurs="0" />
+              <xs:element name="Job" msprop:Generator_ColumnVarNameInTable="columnJob" msprop:Generator_ColumnPropNameInRow="Job" msprop:Generator_ColumnPropNameInTable="JobColumn" msprop:Generator_UserColumnName="Job" type="xs:string" minOccurs="0" />
+              <xs:element name="Status" msprop:Generator_ColumnVarNameInTable="columnStatus" msprop:Generator_ColumnPropNameInRow="Status" msprop:Generator_ColumnPropNameInTable="StatusColumn" msprop:Generator_UserColumnName="Status" type="xs:short" minOccurs="0" />
+              <xs:element name="Applied" msprop:Generator_ColumnVarNameInTable="columnApplied" msprop:Generator_ColumnPropNameInRow="Applied" msprop:Generator_ColumnPropNameInTable="AppliedColumn" msprop:Generator_UserColumnName="Applied" type="xs:boolean" minOccurs="0" />
+              <xs:element name="QtyChange" msprop:Generator_ColumnVarNameInTable="columnQtyChange" msprop:Generator_ColumnPropNameInRow="QtyChange" msprop:Generator_ColumnPropNameInTable="QtyChangeColumn" msprop:Generator_UserColumnName="QtyChange" type="xs:boolean" minOccurs="0" />
+              <xs:element name="DateChange" msprop:Generator_ColumnVarNameInTable="columnDateChange" msprop:Generator_ColumnPropNameInRow="DateChange" msprop:Generator_ColumnPropNameInTable="DateChangeColumn" msprop:Generator_UserColumnName="DateChange" type="xs:boolean" minOccurs="0" />
+              <xs:element name="BreakOff" msprop:Generator_ColumnVarNameInTable="columnBreakOff" msprop:Generator_ColumnPropNameInRow="BreakOff" msprop:Generator_ColumnPropNameInTable="BreakOffColumn" msprop:Generator_UserColumnName="BreakOff" type="xs:boolean" minOccurs="0" />
+              <xs:element name="Priority" msprop:Generator_ColumnVarNameInTable="columnPriority" msprop:Generator_ColumnPropNameInRow="Priority" msprop:Generator_ColumnPropNameInTable="PriorityColumn" msprop:Generator_UserColumnName="Priority" type="xs:short" minOccurs="0" />
+              <xs:element name="Closed" msprop:Generator_ColumnVarNameInTable="columnClosed" msprop:Generator_ColumnPropNameInRow="Closed" msprop:Generator_ColumnPropNameInTable="ClosedColumn" msprop:Generator_UserColumnName="Closed" type="xs:boolean" minOccurs="0" />
+              <xs:element name="Requester" msprop:Generator_ColumnVarNameInTable="columnRequester" msprop:Generator_ColumnPropNameInRow="Requester" msprop:Generator_ColumnPropNameInTable="RequesterColumn" msprop:Generator_UserColumnName="Requester" type="xs:long" minOccurs="0" />
+              <xs:element name="Planner" msprop:Generator_ColumnVarNameInTable="columnPlanner" msprop:Generator_ColumnPropNameInRow="Planner" msprop:Generator_ColumnPropNameInTable="PlannerColumn" msprop:Generator_UserColumnName="Planner" type="xs:long" minOccurs="0" />
+              <xs:element name="RequesterRemarks" msprop:Generator_ColumnVarNameInTable="columnRequesterRemarks" msprop:Generator_ColumnPropNameInRow="RequesterRemarks" msprop:Generator_ColumnPropNameInTable="RequesterRemarksColumn" msprop:Generator_UserColumnName="RequesterRemarks" type="xs:string" minOccurs="0" />
+              <xs:element name="PlannerRemarks" msprop:Generator_ColumnVarNameInTable="columnPlannerRemarks" msprop:Generator_ColumnPropNameInRow="PlannerRemarks" msprop:Generator_ColumnPropNameInTable="PlannerRemarksColumn" msprop:Generator_UserColumnName="PlannerRemarks" type="xs:string" minOccurs="0" />
+              <xs:element name="Id" msprop:Generator_ColumnVarNameInTable="columnId" msprop:Generator_ColumnPropNameInRow="Id" msprop:Generator_ColumnPropNameInTable="IdColumn" msprop:Generator_UserColumnName="Id" type="xs:long" />
+              <xs:element name="JobId" msprop:Generator_ColumnVarNameInTable="columnJobId" msprop:Generator_ColumnPropNameInRow="JobId" msprop:Generator_ColumnPropNameInTable="JobIdColumn" msprop:Generator_UserColumnName="JobId" type="xs:long" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="NeedDateChanges" msprop:Generator_TableClassName="NeedDateChangesDataTable" msprop:Generator_TableVarName="tableNeedDateChanges" msprop:Generator_TablePropName="NeedDateChanges" msprop:Generator_RowDeletingName="NeedDateChangesRowDeleting" msprop:Generator_RowChangingName="NeedDateChangesRowChanging" msprop:Generator_RowEvHandlerName="NeedDateChangesRowChangeEventHandler" msprop:Generator_RowDeletedName="NeedDateChangesRowDeleted" msprop:Generator_UserTableName="NeedDateChanges" msprop:Generator_RowChangedName="NeedDateChangesRowChanged" msprop:Generator_RowEvArgName="NeedDateChangesRowChangeEvent" msprop:Generator_RowClassName="NeedDateChangesRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="NewNeedDate" msprop:Generator_ColumnVarNameInTable="columnNewNeedDate" msprop:Generator_ColumnPropNameInRow="NewNeedDate" msprop:Generator_ColumnPropNameInTable="NewNeedDateColumn" msprop:Generator_UserColumnName="NewNeedDate" type="xs:date" minOccurs="0" />
+              <xs:element name="NeedAsap" msprop:Generator_ColumnVarNameInTable="columnNeedAsap" msprop:Generator_ColumnPropNameInRow="NeedAsap" msprop:Generator_ColumnPropNameInTable="NeedAsapColumn" msprop:Generator_UserColumnName="NeedAsap" type="xs:boolean" minOccurs="0" />
+              <xs:element name="ChangeOrderId" msprop:Generator_ColumnVarNameInTable="columnChangeOrderId" msprop:Generator_ColumnPropNameInRow="ChangeOrderId" msprop:Generator_ColumnPropNameInTable="ChangeOrderIdColumn" msprop:Generator_UserColumnName="ChangeOrderId" type="xs:long" minOccurs="0" />
+              <xs:element name="JobId" msprop:Generator_ColumnVarNameInTable="columnJobId" msprop:Generator_ColumnPropNameInRow="JobId" msprop:Generator_ColumnPropNameInTable="JobIdColumn" msprop:Generator_UserColumnName="JobId" type="xs:long" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="QtyChanges" msprop:Generator_TableClassName="QtyChangesDataTable" msprop:Generator_TableVarName="tableQtyChanges" msprop:Generator_TablePropName="QtyChanges" msprop:Generator_RowDeletingName="QtyChangesRowDeleting" msprop:Generator_RowChangingName="QtyChangesRowChanging" msprop:Generator_RowEvHandlerName="QtyChangesRowChangeEventHandler" msprop:Generator_RowDeletedName="QtyChangesRowDeleted" msprop:Generator_UserTableName="QtyChanges" msprop:Generator_RowChangedName="QtyChangesRowChanged" msprop:Generator_RowEvArgName="QtyChangesRowChangeEvent" msprop:Generator_RowClassName="QtyChangesRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="ChangeOrderId" msprop:Generator_ColumnVarNameInTable="columnChangeOrderId" msprop:Generator_ColumnPropNameInRow="ChangeOrderId" msprop:Generator_ColumnPropNameInTable="ChangeOrderIdColumn" msprop:Generator_UserColumnName="ChangeOrderId" type="xs:long" minOccurs="0" />
+              <xs:element name="NewQty" msprop:Generator_ColumnVarNameInTable="columnNewQty" msprop:Generator_ColumnPropNameInRow="NewQty" msprop:Generator_ColumnPropNameInTable="NewQtyColumn" msprop:Generator_UserColumnName="NewQty" type="xs:decimal" minOccurs="0" />
+              <xs:element name="Product" msprop:Generator_ColumnVarNameInTable="columnProduct" msprop:Generator_ColumnPropNameInRow="Product" msprop:Generator_ColumnPropNameInTable="ProductColumn" msprop:Generator_UserColumnName="Product" type="xs:string" minOccurs="0" />
+              <xs:element name="JobId" msprop:Generator_ColumnVarNameInTable="columnJobId" msprop:Generator_ColumnPropNameInRow="JobId" msprop:Generator_ColumnPropNameInTable="JobIdColumn" msprop:Generator_UserColumnName="JobId" type="xs:long" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="BreakOffs" msprop:Generator_TableClassName="BreakOffsDataTable" msprop:Generator_TableVarName="tableBreakOffs" msprop:Generator_TablePropName="BreakOffs" msprop:Generator_RowDeletingName="BreakOffsRowDeleting" msprop:Generator_RowChangingName="BreakOffsRowChanging" msprop:Generator_RowEvHandlerName="BreakOffsRowChangeEventHandler" msprop:Generator_RowDeletedName="BreakOffsRowDeleted" msprop:Generator_UserTableName="BreakOffs" msprop:Generator_RowChangedName="BreakOffsRowChanged" msprop:Generator_RowEvArgName="BreakOffsRowChangeEvent" msprop:Generator_RowClassName="BreakOffsRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="ChangeOrderId" msprop:Generator_ColumnVarNameInTable="columnChangeOrderId" msprop:Generator_ColumnPropNameInRow="ChangeOrderId" msprop:Generator_ColumnPropNameInTable="ChangeOrderIdColumn" msprop:Generator_UserColumnName="ChangeOrderId" type="xs:long" minOccurs="0" />
+              <xs:element name="BreakOffQty" msprop:Generator_ColumnVarNameInTable="columnBreakOffQty" msprop:Generator_ColumnPropNameInRow="BreakOffQty" msprop:Generator_ColumnPropNameInTable="BreakOffQtyColumn" msprop:Generator_UserColumnName="BreakOffQty" type="xs:decimal" minOccurs="0" />
+              <xs:element name="BreakOffNeedDate" msprop:Generator_ColumnVarNameInTable="columnBreakOffNeedDate" msprop:Generator_ColumnPropNameInRow="BreakOffNeedDate" msprop:Generator_ColumnPropNameInTable="BreakOffNeedDateColumn" msprop:Generator_UserColumnName="BreakOffNeedDate" type="xs:date" minOccurs="0" />
+              <xs:element name="Product" msprop:Generator_ColumnVarNameInTable="columnProduct" msprop:Generator_ColumnPropNameInRow="Product" msprop:Generator_ColumnPropNameInTable="ProductColumn" msprop:Generator_UserColumnName="Product" type="xs:string" minOccurs="0" />
+              <xs:element name="JobId" msprop:Generator_ColumnVarNameInTable="columnJobId" msprop:Generator_ColumnPropNameInRow="JobId" msprop:Generator_ColumnPropNameInTable="JobIdColumn" msprop:Generator_UserColumnName="JobId" type="xs:long" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="ChangeOrdersDataSetKey1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:ChangeOrder" />
+      <xs:field xpath="mstns:Id" />
+      <xs:field xpath="mstns:JobId" />
+    </xs:unique>
+    <xs:keyref name="ChangeOrderBreakOffs" refer="ChangeOrdersDataSetKey1" msprop:rel_Generator_UserChildTable="BreakOffs" msprop:rel_Generator_ChildPropName="GetBreakOffsRows" msprop:rel_Generator_UserRelationName="ChangeOrderBreakOffs" msprop:rel_Generator_ParentPropName="ChangeOrderRowParent" msprop:rel_Generator_RelationVarName="relationChangeOrderBreakOffs" msprop:rel_Generator_UserParentTable="ChangeOrder" msdata:AcceptRejectRule="Cascade">
+      <xs:selector xpath=".//mstns:BreakOffs" />
+      <xs:field xpath="mstns:ChangeOrderId" />
+      <xs:field xpath="mstns:JobId" />
+    </xs:keyref>
+    <xs:keyref name="ChangeOrderQtyChanges" refer="ChangeOrdersDataSetKey1" msprop:rel_Generator_UserChildTable="QtyChanges" msprop:rel_Generator_ChildPropName="GetQtyChangesRows" msprop:rel_Generator_UserRelationName="ChangeOrderQtyChanges" msprop:rel_Generator_ParentPropName="ChangeOrderRowParent" msprop:rel_Generator_RelationVarName="relationChangeOrderQtyChanges" msprop:rel_Generator_UserParentTable="ChangeOrder" msdata:AcceptRejectRule="Cascade">
+      <xs:selector xpath=".//mstns:QtyChanges" />
+      <xs:field xpath="mstns:ChangeOrderId" />
+      <xs:field xpath="mstns:JobId" />
+    </xs:keyref>
+    <xs:keyref name="ChangeOrderNeedDateChanges" refer="ChangeOrdersDataSetKey1" msprop:rel_Generator_UserChildTable="NeedDateChanges" msprop:rel_Generator_ChildPropName="GetNeedDateChangesRows" msprop:rel_Generator_UserRelationName="ChangeOrderNeedDateChanges" msprop:rel_Generator_ParentPropName="ChangeOrderRowParent" msprop:rel_Generator_RelationVarName="relationChangeOrderNeedDateChanges" msprop:rel_Generator_UserParentTable="ChangeOrder" msdata:AcceptRejectRule="Cascade">
+      <xs:selector xpath=".//mstns:NeedDateChanges" />
+      <xs:field xpath="mstns:ChangeOrderId" />
+      <xs:field xpath="mstns:JobId" />
+    </xs:keyref>
+  </xs:element>
+</xs:schema>

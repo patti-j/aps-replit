@@ -1,0 +1,118 @@
+﻿@page "/editReportViewer"
+@inject IJSRuntime JSRuntime
+@using Microsoft.PowerBI.Api;
+@using Microsoft.PowerBI.Api.Models;
+@using Microsoft.Rest;
+@using ReportsWebApp.DB.Services;
+@using ReportsWebApp.Data;
+@using Report = Microsoft.PowerBI.Api.Models.Report
+
+@if (viewPermission)
+{
+    <h3>Edit Report</h3>
+    <RadzenProgressBar Visible="@ShowProgressBar"
+                       Value="100" ShowValue="false"
+                       Mode="ProgressBarMode.Indeterminate"
+                       Style="margin-bottom: 20px" />
+    <div class="row">
+        <div class="col-md-1">
+            <label class="control-label">Workspaces:</label>
+        </div>
+        <div class="col-md-11">
+            <DxComboBox Data="@AvailalbleWorkspaces"
+                        TextFieldName="@nameof(PBIWorkspace.Name)"
+                        ValueFieldName="@nameof(PBIWorkspace.PBIWorkspaceId)"
+                        @bind-Value="@SelectedWorkspaceId"
+                        SelectedItemChanged="@((PBIWorkspace pBIWorkspace) => WorkspaceSelected(pBIWorkspace))" />
+        </div>
+    </div>
+    <div class="row pt-3">
+        <div class="col-md-1">
+            <label class="control-label">Reports:</label>
+        </div>
+        <div class="col-md-11">
+            <DxComboBox Data="@powerBIReportsOptions"
+                        TextFieldName="@nameof(PBIReportNameDropdownOption.OptionName)"
+                        ValueFieldName="@nameof(PBIReportNameDropdownOption.OptionValue)"
+                        @bind-Value="@_SelectedReportId"
+                        SelectedItemChanged="@((PBIReportNameDropdownOption pBIWorkspace) => OnReportSelectionChanged(pBIWorkspace))" />
+        </div>
+    </div>
+}
+
+<ReportEditor WorkspaceId="@SelectedWorkspaceId" ReportId="@SelectedReportId" />
+
+@code {
+    [Inject]
+    PowerBIService PowerBIService { get; set; }
+    [Inject]
+    IReportService reportService { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    public List<PBIWorkspace> AvailalbleWorkspaces { get; set; } = new List<PBIWorkspace>();
+    public List<PBIReportNameDropdownOption> powerBIReportsOptions { get; } = new();
+    private DB.Models.User User { get; set; }
+    private ElementReference PowerBIElement;
+    bool ShowProgressBar = false;
+    //List<DTODatasets> colDatasets = new List<DTODatasets>();
+    string SelectedWorkspaceId = "0";
+    string SelectedReportId = "0";
+    string _SelectedReportId = "0";
+    private bool viewPermission = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ShowProgressBar = true;
+        StateHasChanged();
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.ManageReports, NavigationManager)) return;
+        viewPermission = true;
+
+        AvailalbleWorkspaces = reportService.GetWorkspaces(User.CompanyId);
+        var result = await PowerBIService.GetWorkspacesAsync();
+
+        SelectedWorkspaceId = "0";
+
+        ShowProgressBar = false;
+        StateHasChanged();
+    }
+
+    private void OnReportSelectionChanged(PBIReportNameDropdownOption value)
+    {
+        if (value != null)
+        {
+            SelectedReportId = value.OptionValue;
+            StateHasChanged(); // Notify the component that its state has changed
+        }
+        // Additional logic when the selection changes
+    }
+
+    public async Task WorkspaceSelected(PBIWorkspace pBIWorkspace)
+    {
+        SelectedReportId = "";
+
+        if (pBIWorkspace?.PBIWorkspaceId != null)
+        {
+            ShowProgressBar = true;
+            StateHasChanged();
+
+            GetReportsResults result = await @PowerBIService.GetReportsAsync(pBIWorkspace.PBIWorkspaceId);
+
+            //colDatasets = result.datasetsList;
+
+            powerBIReportsOptions.Clear();
+            powerBIReportsOptions.Add(new PBIReportNameDropdownOption() { OptionName = "Select...", OptionValue = "0" });
+
+            foreach (var report in result.reportsList)
+            {
+                powerBIReportsOptions.Add(new PBIReportNameDropdownOption() { OptionName = report.Reportname, OptionValue = report.Id });
+            }
+
+            SelectedReportId = "0";
+
+            ShowProgressBar = false;
+            StateHasChanged();
+        }
+    }
+
+}

@@ -1,0 +1,21 @@
+﻿/* Color preview and color card styles */
+.color-preview {
+    width: 30px;
+    height: 20px;
+    border: 1px solid #ddd; /* Light grey border */
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Subtle shadow */
+}
+
+.color-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease-in-out;
+}
+
+    .color-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }

@@ -1,0 +1,521 @@
+@page "/bulkImportUsers"
+@using Newtonsoft.Json.Linq
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Text.RegularExpressions
+@using ReportsWebApp.Controllers.Models;
+@using System.Text.Json;
+@using DevExpress.SpreadsheetSource.Csv
+@using Newtonsoft.Json
+@using Group = ReportsWebApp.DB.Models.Role
+@using ReportsWebApp.DB.Services.Interfaces
+@using Microsoft.EntityFrameworkCore.Storage.Json
+@using System.Text
+@inject NavigationManager NavigationManager
+@inject IToastNotificationService ToastService
+@if (viewPermission)
+{
+    <h3>Upload CSV</h3>
+    <div class="col-md-6" style="padding-bottom: 12px">
+        <a href="data:text/plain;base64,Rmlyc3QgTmFtZSxMYXN0IE5hbWUsRGlzcGxheSBMYW5ndWFnZSxDb21wcmVzc2lvbiBUeXBlDQpUZXN0LFVzZXIsRW5nbGlzaCwwDQppYW11c2luZ0Bzc28uY29tLCxFbmdsaXNoLE5vcm1hbA0KVGVzdGluZyxVc2VycyxFbmdsaXNoLEhpZ2gNCkZvbyxCYXIsRW5nbGlzaCwy"
+           download="SampleBulkUserData.csv">Click here to download a sample CSV file</a>
+        <div id="overviewDemoDropZone" class="card custom-drop-zone rounded-3 w-100 m-0">
+            <span class="drop-file-icon mb-3"></span>
+            <span class="m-1">Drag and Drop File Here or</span>
+            <button id="overviewDemoSelectButton" class="btn border-primary btn-primary m-1">Select File</button>
+        </div>
+        <DxFileInput 
+            @ref="FileInput"
+            MaxFileSize="629145600"
+            MaxFileCount="1"
+            ExternalSelectButtonCssSelector="#overviewDemoSelectButton"
+            ExternalDropZoneCssSelector="#overviewDemoDropZone"
+            ExternalDropZoneDragOverCssClass="border-secondary text-dark"
+            CssClass="w-100 hide-bar"
+            AllowedFileExtensions="@(new List<string> { ".csv" })"
+            SelectedFilesChanged="@SelectedFilesChanged"
+            AllowMultiFileUpload="false"
+            FilesUploading="OnFilesUploading"
+            >
+        </DxFileInput>
+    </div>
+    <DxButton CssClass="col-md-6" Click="UploadFile" Enabled="selectedFile != null && !uploadInProgress">Upload File</DxButton>
+    <div class="col-md-6" style="padding-bottom: 12px">
+        @if(progressMessage != "")
+        {
+            <DxProgressBar 
+                Status="GetStatus(progressMessage, currentProgress)" 
+                Size="100%"  
+                Value="@currentProgress" 
+                Label="@(progressMessage.StartsWith("Error") ? "An Error occurred during the Import:" : progressMessage)" MaxValue="1" MinValue="0"></DxProgressBar>
+            if (progressMessage.StartsWith("Error"))
+            {
+                var list = progressMessage.Split('\n');
+                foreach (var item in list)
+                {
+                    <p>@item</p>
+                }
+            }
+        }
+    </div>
+    @if (usersToImport.Count > 0)
+    {
+        <div class="border" style="padding: 12px; border-radius: 6px">
+            <div style="display: flex;">
+                <div style="flex-grow: 1; color: red">
+                        @foreach (var item in ValidationErrors)
+                        {
+                            @item <br/>
+                        }
+                </div>
+                <div>
+                    <DxButton Text="Import" Enabled="CanImport" Visible="@(usersToImport.Count > 0)" Click="Import" SizeMode="SizeMode.Medium"/>
+                </div>
+            </div>
+
+            <UserGrid User="User" Users="usersToImport" Roles="Groups" ParentCompany="User.Company" OnSave="OnSaveUser"
+                      RefreshComponent="RefreshComponent" LimpMode="true"
+                      GridCaption="Users to Import"/>
+
+
+            <div style="padding-top: 32px"></div>
+
+            @if (permGroupsToImport.Count > 0)
+            {
+                <PermissionGroupGrid Company="User.Company" PermissionGroups="permGroupsToImport"
+                                     OnSave="SavePermissionGroup" OnAfterSave="AfterSavePermissionGroup" OnDelete="DeletePermissionGroup" GridCaption="PA Permission Groups to Import"/>
+            }
+        </div>
+    }
+
+    <DxPopup
+    HeaderText="Error"
+    @bind-Visible="@PopupVisible"
+    BodyText="@ErrorMessage">
+    </DxPopup>
+}
+
+@code {
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    ICompanyDbService m_companyService { get; set; }
+    [Inject]
+    IRoleService RoleService { get; set; }
+    [Inject]
+    IPlanningAreaLoginService m_loginService { get; set; }
+    [Inject]
+    IConfiguration _configuration { get; set; }
+    DxFileInput FileInput { get; set; }
+    private DB.Models.User User { get; set; }
+    private List<CompanyDb> companyDbs = new();
+    private CompanyDb selectedDb;
+    bool PopupVisible { get; set; } = false;
+    string ErrorMessage = "";
+    private bool viewPermission = false;
+    private double currentProgress { get; set; } = 0;
+    private string progressMessage { get; set; } = "";
+    private IFileInputSelectedFile? selectedFile { get; set; }
+    private string uploadFileName { get; set; }
+    private bool uploadInProgress { get; set; }
+    List<User> usersToImport = new ();
+    List<PAPermissionGroup> permGroupsToImport = new ();
+    List<Group> Groups = new ();
+    private HubConnection? hubConnection;
+    [Inject]
+    IAppInsightsLogger logger { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.ManageUsers, NavigationManager)) return;
+        viewPermission = true;
+
+        companyDbs = m_companyService.GetImportDbs(User.CompanyId);
+        Groups = await RoleService.GetRoles(User.CompanyId);
+    }
+
+    private ProgressBarStatus GetStatus(string message, double progress)
+    {
+        if (message.StartsWith("Error"))
+        {
+            return ProgressBarStatus.Error;
+        }
+        else if (progress >= 1)
+        {
+            return ProgressBarStatus.Success;
+        }
+        else
+        {
+            return ProgressBarStatus.InProgress;
+        }
+    }
+
+    protected void SelectedFilesChanged(IEnumerable<UploadFileInfo> files) {
+        // Reset progress bar when a new excel file is uploaded
+        if (files.Any())
+        {
+            progressMessage = "";
+            currentProgress = 0;
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    protected async Task OnFilesUploading(FilesUploadingEventArgs args)
+    {
+        selectedFile = args.Files.FirstOrDefault();
+        progressMessage = "";
+        currentProgress = 0;
+    }
+
+    private int m_rowFirstName = 0;
+    private int m_rowLastName = 1;
+    private int m_rowDisplayLanguage = 2;
+    private int m_rowCompressionType = 3;
+    private int m_rowExternalId = 4;
+    
+    protected async Task UploadFile()
+    {
+        if (!uploadInProgress)
+        {
+            uploadInProgress = true;
+            progressMessage = "Transferring File...";
+            
+            if (selectedFile != null)
+            {
+                await using var stream = selectedFile.OpenReadStream();
+                using var reader = new StreamReader(stream);
+                var csv = await reader.ReadToEndAsync();
+                string[] rows = csv.ReplaceLineEndings().Split(Environment.NewLine);
+
+                string header = rows[0];
+
+                string[] columnNames = header.Split(',');
+                for (int i = 0; i < columnNames.Length; i++)
+                {
+                    var col = columnNames[i];
+                    if (col == "First Name")
+                    {
+                        m_rowFirstName = i;
+                    }
+                    else if (col == "Last Name")
+                    {
+                        m_rowLastName = i;
+                    }
+                    else if (col == "Display Language")
+                    {
+                        m_rowDisplayLanguage = i;
+                    }
+                    else if (col == "Compression Type")
+                    {
+                        m_rowCompressionType = i;
+                    }
+                    else if (col == "External Id")
+                    {
+                        m_rowExternalId = i;
+                    }
+                }
+
+                rows = rows[1..];
+
+                List<User> newUsers = new ();
+                Dictionary<string, (string groupName, string[] permissionKeys, int[] members)> permissionGroups = new ();
+                int uId = -1; //user ids cant be negative so when we go to create all the users it will be easy to map temp ids -> real ids without there being possible mixups
+                
+                foreach (string row in rows)
+                {
+                    User userToAdd = new User();
+                    string permGroupName = "";
+                    var columns = row.Split(',');
+                    for (var i = 0; i < columns.Length; i++)
+                    {
+                        try 
+                        {
+                            userToAdd.Id = uId--; //temporary
+                            string cur = columns[i];
+                            if (i == m_rowFirstName)
+                            {
+                                if (cur.Contains('@'))
+                                {
+                                    //sso company, username is their email
+                                    userToAdd.Email = cur;
+                                }
+                                else
+                                {
+                                    userToAdd.Name = cur;
+                                }
+                            }
+                            else if (i == m_rowLastName)
+                            {
+                                userToAdd.LastName = cur ?? "";
+                            }
+                            else if (i == m_rowDisplayLanguage)
+                            {
+                                userToAdd.DisplayLanguage = cur;
+                            }
+                            else if (i == m_rowCompressionType)
+                            {
+                                if (int.TryParse(cur, out int type))
+                                {
+                                    userToAdd.CompressionType = (ECompressionType)type;
+                                }
+                                else
+                                {
+                                    if (Enum.TryParse(typeof(ECompressionType), cur, true, out object? cType))
+                                    {
+                                        userToAdd.CompressionType = (ECompressionType)cType;
+                                    }
+                                }
+                                
+                            }
+                            else if (i == m_rowExternalId)
+                            {
+                                if (Guid.TryParse(cur, out Guid guid))
+                                {
+                                    userToAdd.ExternalId = cur;
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            //TODO: show message to indicate one or more rows failed to import
+                        }
+                        
+                    }
+                    
+                    newUsers.Add(userToAdd);
+                }
+
+                usersToImport = newUsers;
+                foreach (var pGroup in permissionGroups)
+                {
+                    PAPermissionGroup group = new ();
+                    group.CompanyId = User.CompanyId;
+                    group.Permissions = pGroup.Value.permissionKeys
+                                              .Select(x => PermissionsGroupConstants.DefaultPermissions.FirstOrDefault(p => p.PackageObjectId == x))
+                                              .Where(x => x != null)
+                                              .Distinct().ToList() ?? new();
+                    group.Name = pGroup.Key;
+                    permGroupsToImport.Add(group);
+                }
+
+                await ValidateData();
+                StateHasChanged();
+            }
+
+            progressMessage = "";
+        }
+    }
+
+    bool ErrorVisible { get; set; } = false;
+    string MyError { get; set; }
+    public bool CanImport { get; set; }
+    public List<string> ValidationErrors { get; set; } = new ();
+
+    void OnUploadError(FileUploadErrorEventArgs e)
+    {
+        MyError = e.RequestInfo.ResponseText;
+        ErrorVisible = true;
+        PopupVisible = true;
+        List<string> values = new List<string>();
+        JObject jsonObject = JObject.Parse(e.RequestInfo.ResponseText);
+        var node = jsonObject["errors"];
+        if (node is JObject obj)
+        {
+            foreach (var property in obj.Properties())
+            {
+                values.Add(Regex.Replace(property.Value.ToString(), @"[\[\]\n]", "")); 
+            }
+        }
+            ErrorMessage = string.Join("\n", values);
+        
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task<User> OnSaveUser(User a_user)
+    {
+        usersToImport.Replace(a_user, (u1, u2) => u1.Id == u2.Id);
+        await ValidateData();
+        StateHasChanged();
+        return a_user;
+    }
+
+    private async Task RefreshComponent()
+    {
+        return;
+    }
+
+    private async Task<PAPermissionGroup> SavePermissionGroup(PAPermissionGroup a_group)
+    {
+        return a_group;
+    }
+    private async Task<PAPermissionGroup> AfterSavePermissionGroup(PAPermissionGroup a_group)
+    {
+        await ValidateData();
+        return a_group;
+    }
+
+    private async Task DeletePermissionGroup(int a_arg)
+    {
+        await ValidateData();
+        return;
+    }
+
+    private async Task ValidateData()
+    {
+        ValidationErrors.Clear();
+        bool missingEmail = false;
+        bool missingPermissionGroups = false;
+        bool noFirstName = false;
+        foreach (User user in usersToImport)
+        {
+            if (string.IsNullOrEmpty(user.Email))
+            {
+                missingEmail = true;
+            }
+
+            if (string.IsNullOrEmpty(user.Name))
+            {
+                noFirstName = true;
+            }
+
+            if (user.Roles.Count <= 0)
+            {
+                missingPermissionGroups = true;
+            }
+        }
+
+        if (missingEmail)
+        {
+            ValidationErrors.Add("• One or more users have no email.");
+        }
+        
+        if (missingEmail)
+        {
+            ValidationErrors.Add("• One or more users have no Name.");
+        }
+
+        if (missingPermissionGroups)
+        {
+            ValidationErrors.Add("• One or more users have no assigned Permission Groups");
+        }
+
+        var existingGroups = await m_loginService.GetPermissionGroupsAsync(User.Company);
+        bool unnamedGroup = false;
+        bool groupAlreadyExists = false;
+        foreach (PAPermissionGroup group in permGroupsToImport)
+        {
+            if (string.IsNullOrEmpty(group.Name))
+            {
+                unnamedGroup = true;
+            }
+
+            if (!string.IsNullOrEmpty(group.Name) && existingGroups.Any(x => x.Name == group.Name))
+            {
+                groupAlreadyExists = true;
+                ValidationErrors.Add($"• PA Permission Group with name \"{group.Name}\" already exists.");
+            }
+        }
+
+        if (unnamedGroup)
+        {
+            ValidationErrors.Add("• One or more PA Permission Groups have no name.");
+        }
+        
+        if (!missingEmail &&
+            !noFirstName &&
+            !missingPermissionGroups &&
+            !unnamedGroup &&
+            !groupAlreadyExists)
+        {
+            CanImport = true;
+        }
+        else
+        {
+            CanImport = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task Import()
+    {
+        //first import all the users, if we were to try to create permission groups for them we would need to map the old user ids to new user ids
+        //creating the association between users and permission sets will happen later because we are going to change the structure for how that works
+
+        Dictionary<User, Exception> failedUserImports = new ();
+        
+        foreach (User user in usersToImport)
+        {
+            try 
+            {
+                int oldId = user.Id; //use this for when mapping newly created objects to things that havent been imported yet
+                user.Id = 0;
+                user.UpdatedBy = User.Email;
+                user.CompanyId = User.CompanyId;
+                var maybeExisting = m_userService.GetUserByEmail(user.Email);
+                
+                if (maybeExisting.CompanyId != 0)
+                {
+                    //user already exists, we have to somehow join the data to be imported with the data that already exists
+                    //for now this is basically just what web permission groups they have and once we update the user to Permission Set mapping we would do that here as well
+                    maybeExisting.Roles = maybeExisting.Roles.Concat(user.Roles).DistinctBy(x => x.Id).ToList();
+                    maybeExisting.Name = user.Name;
+                    maybeExisting.LastName = user.LastName;
+                    await m_userService.SaveAsync(maybeExisting, false);
+                }
+                else
+                {
+                    await m_userService.SaveAsync(user, false);
+                }
+                
+            }
+            catch (Exception e)
+            {
+                failedUserImports.Add(user, e);
+            }
+            
+        }
+
+        var existingGroup = await m_loginService.GetPermissionGroupsAsync(User.Company);
+        var userPermissions = await m_loginService.GetPAUserPermissionsForCompanyAsync(User.Company);
+        Dictionary<PAPermissionGroup, Exception> failedGroupImports = new ();
+        foreach (PAPermissionGroup group in permGroupsToImport)
+        {
+            try
+            {
+                int oldId = group.Id;
+                group.Id = 0;
+
+                if (existingGroup.Any(x => x.Name == group.Name))
+                {
+                    throw new InvalidOperationException("Attempted to bulk import groups which already exist.");
+                }
+
+                group.Permissions = group.Permissions
+                                         .Select(x => userPermissions.FirstOrDefault(p => p.PackageObjectId == x.PackageObjectId))
+                                         .Where( x=> x != null).ToList();
+                
+                await m_loginService.AddOrUpdatePAPermissionGroupAsync(group);
+            }
+            catch (Exception e)
+            {
+                failedGroupImports.Add(group, e);
+            }
+        }
+        
+        ValidationErrors.Clear();
+        foreach (var failedUserImport in failedUserImports)
+        {
+            ValidationErrors.Add($"Failed to import user \"{failedUserImport.Key.Email}\": {failedUserImport.Value.Message}");
+        }
+        foreach (var failedGroupImport in failedGroupImports)
+        {
+            ValidationErrors.Add($"Failed to import group \"{failedGroupImport.Key.Name}\": {failedGroupImport.Value.Message}");
+        }
+
+        string completedText = $"Successfully Imported {(usersToImport.Count - failedUserImports.Count)} Users" + ((permGroupsToImport.Count > 0) ? $" and {permGroupsToImport.Count - failedGroupImports.Count} Groups" : "");
+        
+        ToastService.ShowToast("Bulk Import Completed", completedText, (failedUserImports.Count > 0 || failedGroupImports.Count > 0) ? ToastRenderStyle.Warning : ToastRenderStyle.Success);
+    }
+
+}

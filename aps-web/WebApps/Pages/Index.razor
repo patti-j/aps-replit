@@ -1,0 +1,312 @@
+﻿@page "/"
+@using Microsoft.PowerBI.Api.Models
+@using Microsoft.Rest
+@using User = ReportsWebApp.DB.Models.User
+@using Microsoft.PowerBI.Api
+@using ReportsWebApp.Data
+@inject IJSRuntime JSRuntime
+@inject DB.Services.ServiceContainer _serviceContainer
+
+@{
+    var canSeeReports = Reports.Count + Dashboards.Count > 0;
+}
+
+@if (!canSeeReports)
+{
+    <h3>Welcome!</h3>
+}
+else
+{
+    <div class="header-container2">
+        <div class="card w-auto float-start border-0">
+            <h3> Home</h3>
+        </div>
+        <div class="card w-auto float-end">
+            <DxMenu Title="Menu"
+                    DisplayMode="MenuDisplayMode.Mobile"
+                    CollapseItemToIconMode="MenuCollapseItemToIconMode.None"
+                    HamburgerButtonPosition="MenuHamburgerButtonPosition.Right"
+                    HamburgerIconCssClass="fa-solid fa-bars"
+                    SizeMode="SizeMode.Small">
+                <Items>
+                    <DxMenuItem Text="Full Screen" IconCssClass="oi oi-monitor" Click="() => FullScreenReport(CurrentReportOrDashboardId)" />
+                </Items>
+            </DxMenu>
+        </div>
+    </div>
+}
+<div class="container mw-100" style="height: 100%">
+
+
+    @if (canSeeReports)
+    {
+
+        PowerBIElements = PowerBIElements == null || PowerBIElements.Length == 0 ? Enumerable.Repeat(new ElementReference(), Reports.Count + Dashboards.Count).ToArray() : PowerBIElements;
+        //PowerBIDashboardElements = Enumerable.Repeat(new ElementReference(), Dashboards.Count).ToList();
+        ReportDisplays = ReportDisplays ?? Enumerable.Repeat(new ReportDisplay(), Reports.Count).ToList();
+        <div class="pbi-overview">
+            <DxTabs ActiveTabIndexChanged="(int index) => TabChanged(index)">
+                @for (int i = 0; i < Dashboards.Count; i++)
+                {
+                    var dashboardText = "Dashboard" + (i + 1).ToString();
+                    <DxTab Text="@Dashboards[i].DisplayName" TabIconCssClass="fa-sharp fa-light fa-gauge" Tooltip="Dashboard"></DxTab>
+                }
+                @for (int i = 0; i < Reports.Count; i++)
+                {
+                    <DxTab Text="@Reports[i].Name" TabIconCssClass="fa-light fa-file-chart-column" Tooltip="Report"></DxTab>
+                }
+            </DxTabs>
+            <div class="pbi-tab">
+                @for (int i = 0; i < Dashboards.Count; i++)
+                {
+                    var index = i;
+                    <div class="@("pbi-report " + (ActiveReportIdx == i ? "show" : "hide"))" @ref="@PowerBIElements[index]" />
+                }
+
+                @for (int i = 0; i < Reports.Count; i++)
+                {
+                    var index = i;
+                    <div class="@("pbi-report " + (ActiveReportIdx == index+Dashboards.Count ? "show" : "hide"))" @ref="@PowerBIElements[index + Dashboards.Count]" />
+                    @if (ReportDisplays[index] != null && ReportDisplays[index].PageDisplayNames.Any() && !ReportDisplays[index].CurrentPage.IsNullOrEmpty())
+                    {
+                        <div class="@("bottom-tabs " + (ActiveReportIdx == index ? "show" : "hide"))">
+                            <DxTabs ActiveTabIndex="ReportDisplays[index].CurrentIndex" ActiveTabIndexChanged="(int pageIndex) => PageChanged(index, pageIndex)">
+                                @for (int i = 0; i < ReportDisplays[index].PageDisplayNames.Count; i++)
+                                {
+                                    <DxTab Text="@ReportDisplays[index].PageDisplayNames[i]"></DxTab>
+                                }
+                            </DxTabs>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div>Please select an option from the menu on left to get started.</div>
+    }
+    <DxPopup @bind-Visible="@showPopup"
+             HeaderText="Error Loading Report"
+             ShowFooter="true"
+             HorizontalAlignment="HorizontalAlignment.Center">
+        <BodyContentTemplate>
+            <div class="popup-spaced">
+                <span class="fa fa-times-circle color-red-main alert-icon" /><p>@ErrorFound</p>
+            </div>
+        </BodyContentTemplate>
+        <FooterContentTemplate>
+            <DxButton Text="OK" Click="@context.CloseCallback"></DxButton>
+        </FooterContentTemplate>
+    </DxPopup>
+</div>
+@code {
+    private User User { get; set; }
+    private bool hasLoaded;
+    private string userEmailClaim;
+    public List<PBIWorkspace> Workspaces { get; set; } = new List<PBIWorkspace>();
+    bool ShowProgressBar = false;
+    Dashboard dashboard;
+    /// <summary>
+    ///  The combined <see cref="Reports"/> and <see cref="Dashboards"/> available for the user, with Dashboards shown first.
+    /// Use this count if you need to refer to all such elements, and subtract Dashboards.Count to align with an index in Reports.
+    /// </summary>
+    private ElementReference[] PowerBIElements;
+    private bool[] LoadedPBIElements;
+    private string ErrorFound { get; set; } = "";
+    private List<DB.Models.Report> Reports = new();
+    private List<Dashboard> Dashboards = new();
+    private bool HideDashboard = true;
+    private double ZoomLevel = 1;
+    private int ActiveReportIdx { get; set; } = 0;
+    private bool showPopup = false;
+    private bool viewPermission = false;
+    private List<ReportDisplay> ReportDisplays { get; set; }
+    private string CurrentReportOrDashboardId { get; set; }
+
+    [Inject]
+    private IUserService m_userService { get; set; }
+    [Inject]
+    IReportService reportService { get; set; }
+    [Inject]
+    PowerBIService PowerBIService { get; set; }
+    [Inject]
+    IAppInsightsLogger logger { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        PowerBIElements = Enumerable.Repeat(new ElementReference(), Reports.Count + Dashboards.Count).ToArray();
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        await LoadWorkspacesAndReports(); 
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !hasLoaded)
+        {
+            var tz = await _serviceContainer.JSRuntime.InvokeAsync<string>("getUserTimeZone");
+            _serviceContainer.UserTimeZone = tz;
+
+            hasLoaded = true;
+
+            if (Shared.Utils.BlockUsersByAuthStatus(User, null, NavigationManager)) return;
+            viewPermission = true;
+
+            // Render the currently selected report or dashboard (index 0)
+            await LoadAndRenderCurrentReportOrDashboard();
+            ShowProgressBar = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadWorkspacesAndReports()
+    {
+        try
+        {
+            if (User.Exists())
+            {
+                Reports = reportService.GetHomePageReports(User.CompanyId, User.Id);
+
+                if (User.IsAuthorizedFor(Permission.ViewReports))
+                {
+                    Workspaces = reportService.GetWorkspaces(User.CompanyId);
+                    if (Workspaces.Any())
+                    {
+                        Dashboards = PowerBIService.GetDashboards(Workspaces.FirstOrDefault().PBIWorkspaceId);
+                    }
+                }
+            }
+
+            // Initialize this array to the same dimension as the PBIElements array
+            LoadedPBIElements = new bool[Reports.Count + Dashboards.Count];
+        }
+        catch (Exception ex)
+        {
+            HandleError(ex, "Error loading workspaces or reports. The workspace may not be correctly configured.");
+        }
+    }
+
+    private async Task LoadAndRenderCurrentReportOrDashboard()
+    {
+        if (PowerBIElements.IsNullOrEmpty())
+        {
+            return;
+        }
+
+        // The first set of reports are dashboards. If the ActiveReport index is higher
+        // than the number of dashboards, then it must be a regular report
+        if (ActiveReportIdx < Dashboards.Count)
+        {
+            await LoadDashboardAsync(Dashboards[ActiveReportIdx], ActiveReportIdx);
+        }
+        else
+        {
+            await LoadReportAsync(Reports[ActiveReportIdx - Dashboards.Count], ActiveReportIdx);
+
+        }
+    }
+
+    private async Task LoadReportAsync(DB.Models.Report report, int index)
+    {
+        try
+        {
+            // Ensure workspace exists and report hasn't already been loaded
+            if (report.PBIWorkspace != null && !LoadedPBIElements[index])
+            {
+                var accessToken = await PowerBIService.GetPowerBIAccessTokenAsync();
+                var tokenCredentials = new TokenCredentials(accessToken, "Bearer");
+                using (var client = new PowerBIClient(new Uri("https://api.powerbi.com/"), tokenCredentials))
+                {
+                    var tokenResponse = await client.Reports.GenerateTokenAsync(
+                        new Guid(report.PBIWorkspace.PBIWorkspaceId),
+                        new Guid(report.PBIReportId),
+                        new GenerateTokenRequest(accessLevel: "view"));
+
+                    var pbireport = await client.Reports.GetReportInGroupAsync(new Guid(report.PBIWorkspace.PBIWorkspaceId), 
+                        new Guid(report.PBIReportId));
+
+                    var reportDisplay = ReportDisplays[index - Dashboards.Count];
+                    reportDisplay.ReportId = pbireport.Id.ToString();
+                    CurrentReportOrDashboardId = pbireport.Id.ToString();
+                    reportDisplay.OnPageChanged += OnReportPageUpdate;
+                    await Interop.ShowReport(JSRuntime, PowerBIElements[index], tokenResponse.Token, pbireport.EmbedUrl, pbireport.Id.ToString(), 
+                        reportDisplay.CurrentPage, DotNetObjectReference.Create(reportDisplay), false);
+                    LoadedPBIElements[index] = true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            HandleError(ex, $"Error loading report: {report.Name}");
+        }
+    }
+
+    private async Task LoadDashboardAsync(Dashboard dashboard, int index)
+    {
+        try
+        {
+            // Ensure dashboard exists and hasn't already been loaded
+            if (dashboard != null && !LoadedPBIElements[index])
+            {
+                ShowProgressBar = true;
+
+                var accessToken = await PowerBIService.GetPowerBIAccessTokenAsync();
+                var tokenCredentials = new TokenCredentials(accessToken, "Bearer");
+
+                using (var client = new PowerBIClient(new Uri("https://api.powerbi.com/"), tokenCredentials))
+                {
+                    var tokenResponse = await client.Dashboards.GenerateTokenAsync(
+                        new Guid(Workspaces.FirstOrDefault().PBIWorkspaceId),
+                        dashboard.Id,
+                        new GenerateTokenRequest(accessLevel: "view"));
+                    CurrentReportOrDashboardId = dashboard.Id.ToString();
+                    await Interop.ShowDashboard(JSRuntime, PowerBIElements[index], tokenResponse.Token, dashboard.EmbedUrl, dashboard.Id.ToString());
+                    LoadedPBIElements[index] = true;
+
+                    HideDashboard = false;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            HandleError(ex, "Error loading dashboard.");
+        }
+    }
+
+    private void HandleError(Exception ex, string message)
+    {
+        logger.LogError(ex);
+        // Log exception to Sentry with full stack trace
+        SentrySdk.CaptureException(ex);
+        ErrorFound = ex.Message.Contains("NotFound") ? $"{message} \nThe item was not found." : $"{message}: {ex.Message}";
+        showPopup = true;
+    }
+
+    //This is never called
+    private void OnReportPageUpdate()
+    {
+        StateHasChanged();
+    }
+
+    private async void TabChanged(int index)
+    {
+        ActiveReportIdx = index;
+        await LoadAndRenderCurrentReportOrDashboard();
+    }
+
+    private void PageChanged(int reportIndex, int pageIndex)
+    {
+        ReportDisplays[reportIndex].SetIndex(pageIndex);
+        Interop.SwitchReportPage(JSRuntime, ReportDisplays[reportIndex].ReportId, ReportDisplays[reportIndex].CurrentPage);
+    }
+
+    private void RedirectToLogin() => NavigationManager.NavigateTo($"./login?redirectUri=/", true);
+    private void RedirectToError() => NavigationManager.NavigateTo($"./error");
+    private void RedirectToLogout() => NavigationManager.NavigateTo($"./logout", true);
+    private void RedirectToCompanyNotActive() => NavigationManager.NavigateTo($"./companynotactive");
+    private void RedirectToUserNotFound() => NavigationManager.NavigateTo($"./usernotfound");
+    private void FullScreenReport(string PBIReportId)
+    {
+        Interop.FullScreenReport(JSRuntime, PowerBIElements[ActiveReportIdx], PBIReportId);
+    }
+}

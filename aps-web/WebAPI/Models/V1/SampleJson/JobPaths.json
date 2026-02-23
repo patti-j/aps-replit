@@ -1,0 +1,13 @@
+[
+  {
+    "importDate": "2024-02-05T08:00:00Z",
+    "JobId": 12345,
+    "ManufacturingOrderId": 67890,
+    "PathId": 54321,
+    "ExternalId": "ABC123",
+    "Name": "Sample Path",
+    "Preference": 1,
+    "AutoUse": "Yes",
+    "AutoUsePathReleaseOffsetDays": 2.5
+  }
+]

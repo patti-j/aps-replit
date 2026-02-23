@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="InvPlanJobDrillDownDataSet" targetNamespace="http://tempuri.org/InvPlanJobDrillDownDataSet.xsd" xmlns:mstns="http://tempuri.org/InvPlanJobDrillDownDataSet.xsd" xmlns="http://tempuri.org/InvPlanJobDrillDownDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="InvPlanJobDrillDownDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="InvPlanJobDrillDownDataSet" msprop:Generator_UserDSName="InvPlanJobDrillDownDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="ExistingJobs" msprop:Generator_TableClassName="ExistingJobsDataTable" msprop:Generator_RowEvArgName="ExistingJobsRowChangeEvent" msprop:Generator_TablePropName="ExistingJobs" msprop:Generator_TableVarName="tableExistingJobs" msprop:Generator_RowEvHandlerName="ExistingJobsRowChangeEventHandler" msprop:Generator_RowDeletingName="ExistingJobsRowDeleting" msprop:Generator_RowChangingName="ExistingJobsRowChanging" msprop:Generator_RowDeletedName="ExistingJobsRowDeleted" msprop:Generator_UserTableName="ExistingJobs" msprop:Generator_RowChangedName="ExistingJobsRowChanged" msprop:Generator_RowClassName="ExistingJobsRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="JobId" msprop:Generator_ColumnVarNameInTable="columnJobId" msprop:Generator_ColumnPropNameInRow="JobId" msprop:Generator_ColumnPropNameInTable="JobIdColumn" msprop:Generator_UserColumnName="JobId" type="xs:long" minOccurs="0" />
+              <xs:element name="Delete" msprop:Generator_ColumnVarNameInTable="columnDelete" msprop:Generator_ColumnPropNameInRow="Delete" msprop:Generator_ColumnPropNameInTable="DeleteColumn" msprop:Generator_UserColumnName="Delete" type="xs:boolean" minOccurs="0" />
+              <xs:element name="Job" msprop:Generator_ColumnVarNameInTable="columnJob" msprop:Generator_ColumnPropNameInRow="Job" msprop:Generator_ColumnPropNameInTable="JobColumn" msprop:Generator_UserColumnName="Job" type="xs:string" minOccurs="0" />
+              <xs:element name="Path" msprop:Generator_ColumnVarNameInTable="columnPath" msprop:Generator_ColumnPropNameInRow="Path" msprop:Generator_ColumnPropNameInTable="PathColumn" msprop:Generator_UserColumnName="Path" type="xs:string" minOccurs="0" />
+              <xs:element name="Qty" msprop:Generator_ColumnVarNameInTable="columnQty" msprop:Generator_ColumnPropNameInRow="Qty" msprop:Generator_ColumnPropNameInTable="QtyColumn" msprop:Generator_UserColumnName="Qty" type="xs:decimal" minOccurs="0" />
+              <xs:element name="Resources" msprop:Generator_ColumnVarNameInTable="columnResources" msprop:Generator_ColumnPropNameInRow="Resources" msprop:Generator_ColumnPropNameInTable="ResourcesColumn" msprop:Generator_UserColumnName="Resources" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="AddJobs" msprop:Generator_TableClassName="AddJobsDataTable" msprop:Generator_RowEvArgName="AddJobsRowChangeEvent" msprop:Generator_TablePropName="AddJobs" msprop:Generator_TableVarName="tableAddJobs" msprop:Generator_RowEvHandlerName="AddJobsRowChangeEventHandler" msprop:Generator_RowDeletingName="AddJobsRowDeleting" msprop:Generator_RowChangingName="AddJobsRowChanging" msprop:Generator_RowDeletedName="AddJobsRowDeleted" msprop:Generator_UserTableName="AddJobs" msprop:Generator_RowChangedName="AddJobsRowChanged" msprop:Generator_RowClassName="AddJobsRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Job" msprop:Generator_ColumnVarNameInTable="columnJob" msprop:Generator_ColumnPropNameInRow="Job" msprop:Generator_ColumnPropNameInTable="JobColumn" msprop:Generator_UserColumnName="Job" type="xs:string" minOccurs="0" />
+              <xs:element name="Path" msprop:Generator_ColumnVarNameInTable="columnPath" msprop:Generator_ColumnPropNameInRow="Path" msprop:Generator_ColumnPropNameInTable="PathColumn" msprop:Generator_UserColumnName="Path" type="xs:long" minOccurs="0" />
+              <xs:element name="Qty" msprop:Generator_ColumnVarNameInTable="columnQty" msprop:Generator_ColumnPropNameInRow="Qty" msprop:Generator_ColumnPropNameInTable="QtyColumn" msprop:Generator_UserColumnName="Qty" type="xs:decimal" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

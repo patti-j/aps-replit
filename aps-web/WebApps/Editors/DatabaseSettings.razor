@@ -1,0 +1,300 @@
+﻿@using System.Data.SqlClient
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@inject IToastNotificationService toastService
+
+<DxPopup @bind-Visible="Visible" Width="500px" Height="auto" HeaderText="Database Settings" ShowFooter="true" Closed="Close">
+    <BodyContentTemplate Context="popupContext">
+        <DxFormLayout>
+            <DxFormLayoutItem CaptionPosition="CaptionPosition.Vertical" Caption="Server Name" ColSpanMd="12">
+                <DxTextBox @bind-Text="ServerName" />
+                @if (IsStringLocalhost(ServerName))
+                {
+                    <p>The entered hostname is a local host and will only work if the DB is hosted on the same machine as the Planning Area. <br/> 
+                        Testing is disabled for this connection.</p>
+                }
+            </DxFormLayoutItem>
+            <DxFormLayoutItem CaptionPosition="CaptionPosition.Vertical" Caption="Database Name" ColSpanMd="12">
+                <DxTextBox @bind-Text="DatabaseName" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem CaptionPosition="CaptionPosition.Vertical" Caption="Integrated Security" ColSpanMd="6">
+                <DxCheckBox @bind-Checked="IntegratedSecurity" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem CaptionPosition="CaptionPosition.Vertical" Caption="Encrypt" ColSpanMd="6">
+                <DxCheckBox @bind-Checked="Encrypt" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem CaptionPosition="CaptionPosition.Vertical" Caption="User Name" ColSpanMd="12">
+                <DxTextBox @bind-Text="UserName" Enabled="!IntegratedSecurity" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem CaptionPosition="CaptionPosition.Vertical" Caption="Password" ColSpanMd="12">
+                <DxTextBox @bind-Text="Password" InputType="Password" Enabled="!IntegratedSecurity" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem CaptionPosition="CaptionPosition.Vertical" Caption="Custom Connection String" ColSpanMd="12">
+                <DxCheckBox @bind-Checked="UseCustomConnectionString" Text="Use Custom Connection String" />
+                <DxMemo @bind-Text="NewConnectionString" Enabled="UseCustomConnectionString" Rows="4" />
+            </DxFormLayoutItem>
+            <DxFormLayoutGroup Caption="Integration User Credentials" Visible="m_isImportDb">
+                <DxFormLayoutItem CaptionPosition="CaptionPosition.Vertical" ColSpanMd="12">
+                    <div title="If provided these credentials will be used by the WebApp when performing integration related actions. These actions may include Applying Integrations to the Import DB, or retrieving DB Schema from the Import DB. These credentials are only needed if the credentials in the Connection String lack the appropriate permissions to make changes to the Import DB.">
+                        <!-- I really wish that ^^ didn't need to be all on one line but its a string lit and new lines/tabs/spaces get captured-->
+                        <h8 style="text-decoration: underline dotted; cursor: default">Optional elevated credentials for use when building integrations.<br/>
+                            These require permissions to view/alter the database schema.</h8>
+                    </div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem CaptionPosition="CaptionPosition.Vertical" Caption="Integration User Name" ColSpanMd="12">
+                    <DxTextBox @bind-Text="IntegrationUserName" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem CaptionPosition="CaptionPosition.Vertical" Caption="Integration Password" ColSpanMd="12">
+                    <DxTextBox @bind-Text="IntegrationPassword" InputType="Password" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanMd="12">
+                    <Template>
+                        <div class="d-flex align-items-center justify-content-between mt-3">
+                            <span>Single Database Layout For Integrations (PT Cloud Integrations only)</span>
+
+                            <DxCheckBox @bind-Checked="UseSeparateDatabases"
+                                        Title="Use when Import and Publish use same database." />
+                        </div>
+                    </Template>
+                </DxFormLayoutItem>
+            </DxFormLayoutGroup>
+        </DxFormLayout>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <DxButton RenderStyle="ButtonRenderStyle.Danger" Text="Cancel" Click="Close" />
+        @if (ShowTestButton)
+        {
+            @if (OnPremCustomer)
+            {
+                <DxButton RenderStyle="ButtonRenderStyle.Secondary" Text="Test" Click="TestConnection" Enabled="@(false)"
+                          Attributes="@(new Dictionary<string, object>
+                                      {
+                                          ["title"] = "Testing database connections is disabled for On-Prem Planning Areas as the PT Web App cannot reliably connect them."
+                                      })"/>
+            }
+            else if (IsStringLocalhost(ServerName))
+            {
+                <DxButton RenderStyle="ButtonRenderStyle.Secondary" Text="Test" Click="TestConnection" Enabled="@(false)"
+                          Attributes="@(new Dictionary<string, object>
+                                      {
+                                          ["title"] = "Testing is disabled for local host connections."
+                                      })"/>
+            }
+            else
+            {
+                <DxButton RenderStyle="ButtonRenderStyle.Secondary" Text="Test" Click="TestConnection" Enabled="testEnabled"/>
+            }
+        }
+        <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Update" Click="Save" />
+    </FooterContentTemplate>
+</DxPopup>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string ConnectionString { get; set; }
+    [Parameter] public EventCallback<(string conString, string? integrationUserAndPass, bool? useSeparateDatabases)> ConnectionStringChanged { get; set; }
+
+    [Parameter]
+    public bool OnPremCustomer { get; set; } = false;
+
+    [Parameter]
+    public bool ShowTestButton { get; set; } = true;
+
+    public string ServerName { get; set; } = "(local)";
+    public string DatabaseName { get; set; } = "MyImportDatabase";
+    public bool IntegratedSecurity { get; set; } = true;
+    public bool Encrypt { get; set; }
+    public string UserName { get; set; }
+    public string Password { get; set; }
+    public string? IntegrationUserName { get; set; }
+    public string? IntegrationPassword { get; set; }
+    public bool? UseSeparateDatabases { get; set; } = false;
+    public bool UseCustomConnectionString { get; set; }
+    private string m_customConnectionString;
+    private bool m_isImportDb;
+    private bool testEnabled = true;
+    public string NewConnectionString
+    {
+        get
+        {
+            if (!UseCustomConnectionString)
+            {
+                var cs = new SqlConnectionStringBuilder
+                {
+                    DataSource = ServerName,
+                    InitialCatalog = DatabaseName,
+                    IntegratedSecurity = IntegratedSecurity,
+                    Encrypt = Encrypt,
+                };
+                if (!IntegratedSecurity)
+                {
+                    cs.UserID = UserName ?? "";
+                    cs.Password = Password ?? "";
+                }
+                m_customConnectionString = cs.ConnectionString;
+            }
+
+            return m_customConnectionString;
+        }
+        set => m_customConnectionString = value;
+    }
+
+    public string? IntegrationUserAndPass
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(IntegrationUserName) &&
+                !string.IsNullOrWhiteSpace(IntegrationPassword))
+            {
+                return $"{IntegrationUserName}||{IntegrationPassword}";
+            }
+            return null;
+        }
+    }
+
+
+
+    public void SetCurrentConnectionInputs(string a_connectionString, string a_dbType, string? a_integrationCreds, bool useSeparateDatabases = false)
+    {        
+
+        UseSeparateDatabases = useSeparateDatabases;
+        m_isImportDb = a_dbType == "import";
+        if (!string.IsNullOrEmpty(a_integrationCreds) && a_integrationCreds.Contains("||"))
+        {
+            var parts = a_integrationCreds.Split(new[] { "||" }, StringSplitOptions.None);
+            IntegrationUserName = parts.Length > 0 ? parts[0] : "";
+            IntegrationPassword = parts.Length > 1 ? parts[1] : "";
+        }
+        else
+        {
+            IntegrationUserName = "";
+            IntegrationPassword = "";
+        }
+
+        if (!string.IsNullOrWhiteSpace(a_connectionString))
+        {
+            try
+            {
+                var builder = new SqlConnectionStringBuilder(a_connectionString);
+                UseCustomConnectionString = ConnectionStringHasUnsupportedElements(builder);
+                NewConnectionString = a_connectionString;
+                ServerName = builder.DataSource;
+                DatabaseName = builder.InitialCatalog;
+                IntegratedSecurity = builder.IntegratedSecurity;
+                Encrypt = builder.Encrypt;
+                UserName = builder.UserID;
+                Password = builder.Password;
+            }
+            catch (Exception ex)
+            {
+                ServerName = "";
+                DatabaseName = "";
+                IntegratedSecurity = true;
+                Encrypt = false;
+                UserName = "";
+                Password = "";
+                UseCustomConnectionString = true;
+                NewConnectionString = a_connectionString;
+            }
+        }
+    }
+
+    // These properties are not supported by our UI. If these are present, it needs custom string
+    private readonly List<string> UnsupportedProps = new()
+    {
+        "ApplicationName",
+        "AttachDBFilename",
+        "ConnectRetryCount",
+        "ConnectRetryInterval",
+        "ConnectTimeout",
+        "CurrentLanguage",
+        "Enlist",
+        "FailoverPartner",
+        "LoadBalanceTimeout",
+        "MaxPoolSize",
+        "MinPoolSize",
+        "MultipleActiveResultSets",
+        "MultiSubnetFailover",
+        "PacketSize",
+        "PersistSecurityInfo",
+        "Pooling",
+        "Replication",
+        "TransactionBinding",
+        "TrustServerCertificate",
+        "TypeSystemVersion",
+        "UserInstance",
+        "WorkstationID",
+
+    };
+
+    private bool ConnectionStringHasUnsupportedElements(SqlConnectionStringBuilder a_builder)
+    {
+        var props = typeof(SqlConnectionStringBuilder).GetProperties();
+        var defaultBuilder = new SqlConnectionStringBuilder();
+        foreach (var prop in props)
+        {
+            // If the prop is not supported by the UI, and has a non-default value, we need to use a custom connection string
+            if (UnsupportedProps.Contains(prop.Name) && !prop.GetValue(a_builder).Equals(prop.GetValue(defaultBuilder)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void Close()
+    {
+        Visible = false;
+        VisibleChanged.InvokeAsync(Visible);
+    }
+
+    private void Save()
+    {
+        ConnectionStringChanged.InvokeAsync((NewConnectionString, IntegrationUserAndPass, UseSeparateDatabases));
+        Close();
+    }
+
+
+    private async Task TestConnection()
+    {
+        try
+        {
+            testEnabled = false;
+            toastService.ShowToast("Connecting", "Trying to connect to the database...", ToastRenderStyle.Info);
+            using var connection = new SqlConnection(NewConnectionString);
+            await connection.OpenAsync();
+            testEnabled = true;
+            toastService.ShowToast("Success", "Connection established successfully.", ToastRenderStyle.Success);
+        }
+        catch (Exception ex)
+        {
+            testEnabled = true;
+            toastService.ShowToast("Connecting", "Connection failed: " + ex.Message, ToastRenderStyle.Warning);
+        }
+    }
+
+    private bool IsStringLocalhost(string conStr)
+    {
+        if (conStr == "(local)" ||
+            conStr == "." ||
+            conStr == "127.0.0.1" ||
+            conStr.StartsWith("(localdb)\\"))
+        {
+            return true;
+        }
+
+        bool isLocal = false;
+        try
+        {
+            isLocal = new Uri(conStr).IsLoopback;
+        }
+        catch (Exception _)
+        {
+            // ignored
+        }
+
+        return isLocal;
+    }
+}

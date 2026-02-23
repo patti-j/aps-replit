@@ -1,0 +1,14 @@
+[
+  {
+    "importDate": "2024-02-05T12:00:00",
+    "LotId": 12345,
+    "ExternalId": "ABC123",
+    "InventoryId": 9876,
+    "LotSource": "SupplierA",
+    "Qty": 100.5,
+    "ProductionDate": "2023-10-15T00:00:00",
+    "Code": "LOT-2023-123",
+    "WearAmount": 5,
+    "LimitMatlSrcToEligibleLots": true
+  }
+]

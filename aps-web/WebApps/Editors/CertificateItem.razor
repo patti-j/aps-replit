@@ -1,0 +1,67 @@
+﻿<div class="card p-3 mb-3 border rounded shadow-sm hover-shadow itemCertificate">
+    <div class="d-flex align-items-start">
+        <!-- Certificate Icon -->
+        <span class="certificate-icon me-3">
+            <i class="fas fa-certificate fa-lg"></i>
+        </span>
+
+        <!-- Certificate Information -->
+        <div class="certificate-info flex-grow-1">
+            <!-- Certificate Name -->
+            <div class="certificate-name fw-bold fs-5 mb-1">
+                <!-- Slightly larger font for name -->
+                @certificate.Name
+            </div>
+
+            <!-- Certificate Subject -->
+            <div class="certificate-subject text-secondary small mb-2">
+                @certificate.SubjectName.Replace("CN=", "")
+            </div>
+
+            <!-- Divider -->
+            <hr class="my-2 border-top border-secondary" />
+
+            <!-- Certificate Details -->
+            <div class="certificate-details text-muted small mt-2">
+                <div class="row">
+                    <!-- Issuer -->
+                    <div class="col-12 col-md-6 mb-2">
+                        <strong>Issuer:</strong> @certificate.Issuer
+                    </div>
+
+                    <!-- Valid From Date with Icon -->
+                    <div class="col-12 col-md-3 d-flex align-items-center mb-1">
+                        <span class="badge text-dark me-2">
+                            <i class="fas fa-calendar-alt fa-sm"></i> Valid From:
+                        </span>
+                        <span>@(certificate.ValidFromDate?.ToString(CommonUtils.DateOfficialFormat))</span>
+                    </div>
+
+                    <!-- Valid Until Date with Icon -->
+                    <div class="col-12 col-md-3 d-flex align-items-center mb-2">
+                        <span class="badge text-dark me-2">
+                            <i class="fas fa-calendar-times fa-sm"></i> Valid Until:
+                        </span>
+                        <span>@(certificate.ValidToDate?.ToString(CommonUtils.DateOfficialFormat))</span>
+                    </div>
+
+                    <!-- Thumbprint with Icon -->
+                    <div class="col-12 col-md-12 d-flex align-items-center mt-1">
+                        <i class="fas fa-fingerprint fa-sm me-1"></i>
+                        <span><strong>Thumbprint:</strong> @certificate.Thumbprint</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<style>
+    .itemCertificate {
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    [Parameter] public ServerCertificate certificate { get; set; }
+}

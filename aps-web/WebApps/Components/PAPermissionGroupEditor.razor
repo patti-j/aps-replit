@@ -1,0 +1,213 @@
+﻿@page "/paPermissionGroupEditor"
+@using ReportsWebApp.DB.Services.Interfaces
+
+@if (viewPermission && Data.Any())
+{
+    <div class="tree-container">
+        <DxTreeList Data="@Data"
+                    @ref="TreeList"
+                    ChildrenFieldName="Children"
+                    PageSize="1000"
+                    SelectedDataItemsChanged="OnSelectedDataItemChange"
+                    TextWrapEnabled="true"
+        >
+            <Columns>
+                <DxTreeListSelectionColumn Width="40px"></DxTreeListSelectionColumn>
+                <DxTreeListDataColumn FieldName="Name" Caption="Permission" />
+            </Columns>
+            <TotalSummary>
+                <DxTreeListSummaryItem FieldName="Name" SummaryType="TreeListSummaryItemType.Count" />
+            </TotalSummary>
+
+        </DxTreeList>
+    </div>
+}
+
+@code {
+
+    private User User { get; set; }
+    ITreeList TreeList { get; set; }
+    public List<Category> Categories { get; set; } = new List<Category>();
+    public List<Role> Roles { get; set; } = new List<Role>();
+    public List<User> Users { get; set; } = new List<User>();
+    private bool viewPermission = false;
+    private List<PermissionRow> Data { get; set; } = new();
+    private List<PermissionRow> SelectedData { get; set; } = new();
+    private List<PAUserPermission> Permissions { get; set; } = new();
+
+    [Parameter]
+    public Func<List<PAUserPermission>, Task> OnChange { get; set; }
+    [Parameter]
+    public PAPermissionGroup Group { get; set; }
+    private bool permissionsSet = false;
+
+    [Inject]
+    IUserService userService { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    IRoleService RoleService { get; set; }
+    [Inject]
+    IPlanningAreaLoginService paService { get; set; }
+    [Inject] IAuthorizationService m_authService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.EditUsers, NavigationManager)) return;
+        viewPermission = true;
+
+        if (User.Exists())
+        {   
+            Roles = await RoleService.GetRoles(User.CompanyId);
+            Permissions = await paService.GetPAUserPermissionsForCompanyAsync(User.Company);
+            int id = 0;
+            foreach (var groupName in PermissionsGroupConstants.DefaultGroups)
+            {
+                var groupRow = new PermissionRow(++id, groupName);
+                var anySelected = false;
+                foreach (var permission in Permissions.Where(x => x.GroupKey == groupName))
+                {
+                    var permissionRow = new PermissionRow(++id, permission.Description, permission: permission, parent: groupRow);
+                    if (Group.Permissions.Any(x => x.PermissionKey == permission.PermissionKey))
+                    {
+                        permissionRow.Selected = true;
+                        SelectedData.Add(permissionRow);
+                        anySelected = true;
+                    }
+                    groupRow.Children.Add(permissionRow);
+
+                }
+
+                // Select parent if any child rows are selected
+                if (anySelected)
+                {
+                    groupRow.Selected = true;
+                    SelectedData.Add(groupRow);
+                }
+
+                if (groupRow.Children.Any())
+                {
+                    Data.Add(groupRow);
+                }
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (viewPermission && TreeList != null && !permissionsSet)
+        {
+            TreeList.BeginUpdate();
+            TreeList.SelectedDataItems = SelectedData;
+            permissionsSet = true;
+            TreeList.EndUpdate();
+        }
+    }
+
+    private void OnSelectedDataItemChange(IReadOnlyList<object> newSelection)
+    {
+        if (newSelection is IGridSelectionChanges changes)
+        {
+            var newSelectedItems = changes.SelectedDataItems.Cast<PermissionRow>();
+            var deselectedItems = changes.DeselectedDataItems.Cast<PermissionRow>();
+            var allItems = TreeList.Data;
+            var selectedItems = TreeList.SelectedDataItems.ToList();
+
+            // Syncronize Parent Selected State to Children
+            foreach (var item in newSelectedItems)
+            {
+                item.Selected = true;
+                if (!item.Children.IsNullOrEmpty())
+                {
+                    // Select children when parent is selected
+                    if (item.Children.Any(x => !x.Selected))
+                    {
+                        var toSelect = item.Children.Where(x => !x.Selected).ToList();
+                        foreach (var sel in toSelect)
+                        {
+                            sel.Selected = true;
+                        }
+                        selectedItems.AddRange(toSelect);
+                    }
+                }
+
+                // Select parent when child is selected
+                if (item.Parent != null && !item.Parent.Selected)
+                {
+                    item.Parent.Selected = false;
+                    selectedItems.Add(item.Parent);
+                }
+            }
+
+            foreach (var item in deselectedItems)
+            {
+                item.Selected = false;
+                if (!item.Children.IsNullOrEmpty())
+                {
+                    if (item.Children.Any(x => x.Selected))
+                    {
+                        // Deselect children when parent is deselected
+                        var toDeSelect = item.Children.Where(x => x.Selected).ToList();
+                        foreach (var sel in toDeSelect)
+                        {
+                            sel.Selected = false;
+                        }
+                        selectedItems.RemoveAll(x => ((PermissionRow)x).Parent?.Id == item.Id);
+                    }
+                }
+
+                // Deselect parent if all children have been deselected
+                if (item.Parent != null)
+                {
+                    if (item.Parent.Children.All(x => !x.Selected))
+                    {
+                        item.Parent.Selected = false;
+                        selectedItems.RemoveAll(x => ((PermissionRow)x).Id == item.Parent.Id);
+                    }
+                }
+            }
+
+            TreeList.BeginUpdate();
+            TreeList.SelectedDataItems = selectedItems;
+            TreeList.EndUpdate();
+
+            var selectedKeys = selectedItems.Cast<PermissionRow>().Select(y => y.Permission?.PermissionKey);
+
+            OnChange(Permissions.Where(x => selectedKeys.Contains(x.PermissionKey)).ToList());
+        }
+
+    }
+
+    public class PermissionRow
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public List<PermissionRow> Children { get; set; }
+        public PermissionRow? Parent { get; set; }
+        public PAUserPermission? Permission { get; set; }
+        private bool selected { get; set; }
+        public bool Selected { get => selected; set
+            {
+                selected = value;
+                if (this.Permission != null)
+                {
+                    this.Permission.Allowed = value;
+                }
+            } }
+
+        public PermissionRow(int id,
+            string name,
+            List<PermissionRow> children = null,
+            PAUserPermission? permission = null,
+            PermissionRow? parent = null
+        )
+        {
+            Id = id;
+            Name = name;
+            Children = children ?? new List<PermissionRow>();
+            Permission = permission;
+            Parent = parent;
+        }
+    }
+}

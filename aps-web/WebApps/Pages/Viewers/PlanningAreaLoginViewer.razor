@@ -1,0 +1,328 @@
+﻿@page "/paviewer"
+@using Microsoft.AspNetCore.SignalR.Client
+@using ReportsWebApp.Resources.Components
+@using Utils = ReportsWebApp.Shared.Utils
+@inject IJSRuntime jsRuntime
+
+@if (viewPermission)
+{
+    <h3>Log in to Planning Area
+        <div class="install-server-manager">
+            <DxButton Text="Install Client Agent" Click="ShowClientInstall" IconCssClass="fa fa-plus"></DxButton>
+        </div>
+    </h3>
+
+    <div class="pa-root">
+        @if (PlanningAreaGroups != null && PlanningAreaGroups.Any())
+        {
+            @foreach (var paGroup in PlanningAreaGroups)
+            {
+                var pa = paGroup.FirstOrDefault(x => x.Status?.State == EServiceState.Started || x.Status?.State == EServiceState.Starting || x.Status?.State == EServiceState.Active || x.Status?.State == EServiceState.Idle);
+                if (pa == null) pa = paGroup.First();
+
+                <PaContainer IsLoading="pa.ConnectionDetails.isLaunching" StatusText="@(GetTextForStatus(pa.ConnectionDetails.LaunchStatus))"
+                             LastLogon=@(pa.Status?.LastLogon ?? MinDateTime) State=@(pa.ServiceState)
+                             TextButton="Connect" EnableMainButton="@(pa.ServiceState == EServiceState.Active || pa.ServiceState == EServiceState.Started)"
+                             ShouldDisplayLogin="ShouldDisplayLogin(pa.Status?.LastLogon)"
+                             SoftwareVersion=@pa.Version
+                             InstanceName=@pa.Name
+                             HideUsersOnline="false"
+                             Click="() => LaunchClient(pa)"
+                             ShowParams="() => ShowLaunchParameters(pa)"/>
+            }
+        }
+        else
+        {
+            if (!loaded)
+            {
+                <span class="pa-none">Loading... </span>
+                <DxWaitIndicator AnimationType="WaitIndicatorAnimationType.Spin" Visible="true"></DxWaitIndicator>
+            }
+            else if (string.IsNullOrEmpty(paError))
+            {
+                <div class="pa-none">We couldn't connect to any Planning Areas you have access to.</div>
+            }
+            else
+            {
+                <div class="pa-none">Failed to get planning areas.</div>
+                <div class="pa-none">@paError</div>
+            }
+        }
+    </div>
+    <DxPopup @bind-Visible="@PopupVisible"
+             HeaderText="Launch Parameters"
+             ShowFooter="true"
+             @ref="Popup">
+        <BodyContentTemplate>
+            <DxScrollViewer CssClass="code-display">
+                @($"{launchParams}")
+            </DxScrollViewer>
+        </BodyContentTemplate>
+        <FooterContentTemplate>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="@(paramsCopied ? "Copied!" : "Copy Params")" Click="CopyCode" />
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Close" Click="x => Popup.CloseAsync()" />
+        </FooterContentTemplate>
+    </DxPopup>
+    <DxPopup @bind-Visible="@PopupDownloadVisible"
+             HeaderText="Install Instructions"
+             ShowFooter="true"
+             @ref="Popup">
+        <BodyContentTemplate>
+            <div>
+                @($"Please download and run the Client Agent Installer.")
+            </div>
+        </BodyContentTemplate>
+        <FooterContentTemplate>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Download Installer" Click="StartDownload" />
+        </FooterContentTemplate>
+    </DxPopup>
+}
+
+@code {
+    private User User { get; set; }
+
+    public List<PADetails> PlanningAreas { get; set; } = new List<PADetails>();
+    public IEnumerable<IGrouping<(int port, int id), PADetails>>? PlanningAreaGroups { get; set; }
+    public List<Role> Groups { get; set; } = new List<Role>();
+    public List<User> Users { get; set; } = new List<User>();
+    private HubConnection? hubConnection;
+    private bool viewPermission = false;
+    private bool loaded = false;
+    private bool PopupVisible = false;
+    private bool paramsCopied = false;
+    private string launchParams = "";
+    private DxPopup Popup { get; set; }
+
+    private string paError { get; set; } = "";
+    readonly DateTime MinDateTime = new DateTime(1800, 1, 1, 0, 0, 0, DateTimeKind.Unspecified);
+
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    IPlanningAreaDataService m_planningAreaService { get; set; }
+    [Inject]
+    ICompanyService companyService { get; set; }
+    [Inject]
+    IToastNotificationService toastService { get; set; }
+    [Inject]
+    AzureTableService tableService { get; set; }
+
+    public bool PopupDownloadVisible { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, null, NavigationManager)) return;
+        viewPermission = true;
+
+        var paList = await m_planningAreaService.GetPlanningAreasForUserAsync(User);
+        foreach (var pa in paList)
+        {
+            // TODO: Regularly update this info rather than requiring a page refresh.
+            PlanningAreaLiteModel paLatestStatus = await m_planningAreaService.GetPlanningAreaStatus(pa.Id);
+
+            if (paLatestStatus == null)
+            {
+                pa.Status = new ServiceStatus() { State = EServiceState.Unknown };
+            }
+            else
+            {
+                pa.Status = paLatestStatus.Status;
+            }
+
+            if (pa.Name.Equals("Debug", StringComparison.OrdinalIgnoreCase) && pa.Version.Equals("0.0"))
+            {
+                // Assume Debug instances online, since they won't be reported as such from the SM checking windows Services
+                pa.Status.State = EServiceState.Started;
+            }
+        }
+        PlanningAreas = paList;
+
+        hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("notificationhub")).Build();
+
+        Type[] paramTypes = new Type[] { typeof(string), typeof(ELaunchStatus) };
+        hubConnection.On("LaunchStatusUpdate", paramTypes, async (arg) =>
+            {
+                var id = (string)arg[0];
+                var status = (ELaunchStatus)arg[1];
+                var pa = PlanningAreas.FirstOrDefault(x => x.ConnectionDetails.LaunchId == id);
+                if (pa != null)
+                {
+                    pa.ConnectionDetails.LaunchStatus = status;
+                    ShowToast("", GetNotificationTextForStatus((int)status), GetNotificationTypeForStatus((int)status));
+                    await InvokeAsync(StateHasChanged);
+                }
+            });
+
+        await hubConnection.StartAsync();
+        await hubConnection.SendCoreAsync("JoinGroup", new[] { User.Email });
+
+        PlanningAreaGroups = PlanningAreas.GroupBy(x => (x.PlanningArea.Settings.SystemServiceSettings.Port, x.ServerId));
+        loaded = true;
+        StateHasChanged();
+    }
+
+    private string GetTextForStatus(ELaunchStatus? status)
+    {
+        if (!status.HasValue)
+        {
+            return "Failed...";
+        }
+        switch (status)
+        {
+            case ELaunchStatus.Initial:
+                return "Looking for Client...";
+            case ELaunchStatus.LauncherStarting:
+                return "Launching Client...";
+            case ELaunchStatus.Success:
+                return "Launched!";
+        }
+        return "Waiting...";
+    }
+
+    private async Task LaunchClient(PADetails pa)
+    {
+        var url = await GetLaunchParameters(pa);
+        pa.ConnectionDetails.LaunchStatus = ELaunchStatus.Initial;
+
+        if (url.IsNullOrEmpty())
+        {
+            // User is not authorized;
+            return;
+        }
+
+        NavigationManager.NavigateTo(url);
+        StateHasChanged();
+
+        // Wait 3 seconds. If no response by then, the launcher likely wasn't found
+        await Task.Delay(3000);
+        if (pa.ConnectionDetails.LaunchStatus == ELaunchStatus.Initial)
+        {
+            pa.ConnectionDetails.LaunchStatus = ELaunchStatus.LauncherNotFound;
+            ShowToast("", GetNotificationTextForStatus((int)pa.ConnectionDetails.LaunchStatus), GetNotificationTypeForStatus((int)pa.ConnectionDetails.LaunchStatus));
+        }
+    }
+
+    private async void ShowLaunchParameters(PADetails pa)
+    {
+        launchParams = Utils.DecodeStringForWeb(await GetLaunchParameters(pa));
+        PopupVisible = true;
+        StateHasChanged();
+    }
+
+    private async Task<string> GetLaunchParameters(PADetails pa)
+    {
+        if (ReportsWebApp.Shared.Utils.BlockUsersByAuthStatus(User, null, NavigationManager, true))
+        {
+            ShowToast("", GetNotificationTextForStatus(60), GetNotificationTypeForStatus(60));
+            return null;
+        }
+        var t = AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var token = t.Result.User.Claims.Where(x => x.Type == "jwtToken").FirstOrDefault();
+        var latestClientVersion = await tableService.GetLatestClientAgentVersion();
+
+        var launchId = Guid.NewGuid().ToString();
+        pa.ConnectionDetails.SourceServer = pa.Server;
+        pa.ConnectionDetails.LaunchId = launchId;
+
+        // Create the Launch URL. This will pass the required information to the launcher through the "planettogether" protocol
+        // This requires the launcher to be installed on the user's system, and the protocol to be registered in the system registry
+        // This should happen automatically when installing a Client that supports web login
+        // The colon ':' characters needs to be encoded, or else the first colon after the protocol will disappear during URL encoding
+        // TODO: we need to encode anything that could include spaces (InstanceName)
+        var url = $"planettogether://InstanceName={Utils.EncodeStringForWeb(pa.PlanningArea.PublicInfo.InstanceName)}," +
+                  $"SoftwareVersion={pa.PlanningArea.PublicInfo.SoftwareVersion}," +
+                  $"SystemServiceUri={Utils.EncodeStringForWeb($"https://{pa.Server.ComputerNameOrIP}:{pa.PlanningArea.Settings.SystemServiceSettings.Port}")}," +
+                  $"ServerManagerUri={Utils.EncodeStringForWeb(pa.ConnectionDetails.SourceServer.Url)}," +
+                  $"JwtToken={token.Value},Thumbprint={pa.ConnectionDetails.SourceServer.Thumbprint}," +
+                  $"Callback={Utils.EncodeStringForWeb(NavigationManager.BaseUri)}," +
+                  $"User={Utils.EncodeStringForWeb(User.Email)}," +
+                  $"LaunchId={launchId}," +
+                  $"CAVersion={latestClientVersion.VersionNumber}";
+
+        return url;
+       
+    }
+
+    private string GetNotificationTextForStatus(int status)
+    {
+        if (status < 10)
+        {
+            return "Attempting to launch the PlanetTogether Client. This may take a few minutes.";
+        }
+        else if (status == 11)
+        {
+            return "Updating your Client Agent before we log you in. This may take a few minutes.";
+        }
+        else if (status == 12)
+        {
+            return "Downloading the correct PT Client version. This may take a few minutes.";
+        }
+        else if (status == 20)
+        {
+            return "Client Launched Successfully. It may still take a few minutes to start up.";
+        }
+        else if (status == 50)
+        {
+            return "We weren't able to connect to your PlanetTogether launcher. Please make sure you have the latest version installed.";
+        }
+        else if (status == 51)
+        {
+            return "We couldn't find the correct version of PlanetTogether installed on your system.";
+        }
+        else if (status == 60)
+        {
+            return "Your login has expired. We're attempting to refresh your session, please wait...";
+        }
+        return "An unknown error has occurred";
+    }
+
+    private ToastRenderStyle GetNotificationTypeForStatus(int status)
+    {
+        if (status < 10)
+        {
+            return ToastRenderStyle.Primary;
+        }
+        else if (status == 20)
+        {
+            return ToastRenderStyle.Success;
+        }
+        else
+        {
+            return ToastRenderStyle.Danger;
+        }
+    }
+
+    private void ShowToast(string title, string message, ToastRenderStyle style)
+    {
+        toastService.ShowToast(new ToastOptions
+            {
+                DisplayTime = TimeSpan.FromSeconds(10),
+                ProviderName = "MainLayout",
+                Title = title,
+                Text = message,
+                ThemeMode = ToastThemeMode.Saturated,
+                RenderStyle = style,
+            });
+    }
+
+    private bool ShouldDisplayLogin(DateTime? date) => date != null && date > MinDateTime;
+
+    protected async Task CopyCode()
+    {
+        await jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", launchParams);
+        paramsCopied = true;
+    }
+
+    private async Task StartDownload()
+    {
+        NavigationManager.NavigateTo("https://deployment.planettogether.com/$web/software/AgentInstaller/PlanetTogetherClient12.exe");
+    }
+
+    private void ShowClientInstall()
+    {
+        PopupDownloadVisible = true;
+    }
+
+}

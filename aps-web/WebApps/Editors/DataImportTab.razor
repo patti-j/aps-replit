@@ -1,0 +1,135 @@
+﻿@using System.Drawing.Imaging
+@using ReportsWebApp.DB.Models
+
+<DxAccordionItem Text="Data Import" Expanded=true>
+    <HeaderTextTemplate>
+        <i class="fas fas fa-database m-2"></i> Data Import
+    </HeaderTextTemplate>
+    <ContentTemplate Context="accordionContext">
+        <DxFormLayout CssClass="w-100 p-3">
+            <DxFormLayoutItem ColSpanMd="4">
+                <DxButton RenderStyle="ButtonRenderStyle.Secondary" IconCssClass="fa fa-database" Text="Import Database Settings" Click="ShowDatabaseSettings" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Enable Integration V2" ColSpanLg="8">
+                <DxCheckBox @bind-Checked="@IsIntegrationV2Enabled" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Program to run before import" ColSpanLg="6">
+                <DxTextBox @bind-Text="@PreImportProgramPath" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Program Arguments" ColSpanLg="6">
+                <DxTextBox @bind-Text="@PreImportProgramArgs" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Run SQL before import" ColSpanLg="3">
+                <DxCheckBox @bind-Checked="@RunPreImportSQL" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="" ColSpanLg="9">
+                <DxMemo @bind-Text="@PreImportSQL" Rows="4" Enabled="@RunPreImportSQL" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Pre-Import URL" ColSpanLg="6">
+                <DxTextBox @bind-Text="@PreImportURL" Enabled="!ExternalIntegrationEnabled"/>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Post-Import URL" ColSpanLg="6">
+                <DxTextBox @bind-Text="@PostImportURL" Enabled="!ExternalIntegrationEnabled" />
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </ContentTemplate>
+</DxAccordionItem>
+
+@code {
+    [Parameter]
+    public PADetails Model { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnShowDatabaseSettings { get; set; }
+    
+    [Parameter]
+    public EventCallback<PADetails> ModelChanged { get; set; }
+
+    // Define properties to bind the fields
+    public bool IsIntegrationV2Enabled
+    {
+        get => Model.PlanningArea.Settings.IntegrationV2Connection?.ToLower() == "true";
+        set
+        {
+            Model.PlanningArea.Settings.IntegrationV2Connection = value ? "true" : "";
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string PreImportProgramPath
+    {
+        get => Model.PlanningArea.Settings.InterfaceServiceSettings.PreImportProgramPath;
+        set
+        {
+            Model.PlanningArea.Settings.InterfaceServiceSettings.PreImportProgramPath = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string PreImportProgramArgs
+    {
+        get => Model.PlanningArea.Settings.InterfaceServiceSettings.PreImportProgramArgs;
+        set
+        {
+            Model.PlanningArea.Settings.InterfaceServiceSettings.PreImportProgramArgs = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public bool RunPreImportSQL
+    {
+        get => Model.PlanningArea.Settings.InterfaceServiceSettings.RunPreImportSQL;
+        set
+        {
+            Model.PlanningArea.Settings.InterfaceServiceSettings.RunPreImportSQL = value; 
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string PreImportSQL
+    {
+        get => Model.PlanningArea.Settings.InterfaceServiceSettings.PreImportSQL;
+        set
+        {
+            Model.PlanningArea.Settings.InterfaceServiceSettings.PreImportSQL = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string PreImportURL
+    {
+        get => Model.PlanningArea.Settings.PreImportURL;
+        set
+        {
+            Model.PlanningArea.Settings.PreImportURL = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string PostImportURL
+    {
+        get => Model.PlanningArea.Settings.PostImportURL;
+        set
+        {
+            Model.PlanningArea.Settings.PostImportURL = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public bool DiagnosticsEnabled
+    {
+        get => Model.PlanningArea.Settings.DiagnosticsEnabled;
+        set
+        {
+            Model.PlanningArea.Settings.DiagnosticsEnabled = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+    [Parameter]
+    public bool ExternalIntegrationEnabled { get; set; }
+
+    private void ShowDatabaseSettings()
+    {
+        OnShowDatabaseSettings.InvokeAsync("import");
+    }
+}

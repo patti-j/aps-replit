@@ -1,0 +1,203 @@
+﻿@page "/components/permissionGroupGrid"
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.Helpers
+@inject NavMenuUpdateService NavMenuUpdateService
+@inject IUserService m_userService
+@inject ICompanyService m_companyService
+@inject IPlanningAreaDataService m_planningAreaService
+@inject IPlanningAreaLoginService m_paLoginService
+<h3>@GridCaption</h3>
+
+@if (PermissionGroups == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid ShowFilterRow="true" 
+            Data="@PermissionGroups" 
+            EditModelSaving="OnEditModelSaving" 
+            EditMode="GridEditMode.PopupEditForm"
+            @ref="MyGrid"
+            UnboundColumnData="Grid_CustomUnboundColumnData"
+            PopupEditFormCssClass="permission-tree-edit" EditStart="OnEditStart"
+            PageSize="10"
+            CssClass="ch-480"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+        <Columns>
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                <HeaderTemplate>
+                     <DxButton IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1" Text="Add" Click="() => MyGrid.StartEditNewRowAsync()" />
+                </HeaderTemplate>
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = (PAPermissionGroup)context.DataItem;
+                    }
+                    <ActionDropdown DataItem="dataItem" Actions="_actions" />
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+            <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" />
+            <DxGridDataColumn FieldName="Name" Caption="Group Name" MinWidth="200" />
+        </Columns>
+        <EditFormTemplate Context="EditFormContext">
+            @{
+                var permissionGroup = (PAPermissionGroup)EditFormContext.EditModel;
+                permissionGroup.Company = User.Company;
+            }
+            <DxFormLayout CssClass="w-100">
+                <DataAnnotationsValidator />
+                <DxFormLayoutItem Caption="Name:" ColSpanMd="12">
+                    <DxTextBox @bind-Text="@permissionGroup.Name"/>
+                </DxFormLayoutItem>
+                <PAPermissionGroupEditor OnChange="PermissionsChanged" Group="permissionGroup"></PAPermissionGroupEditor>
+            </DxFormLayout>
+            <DxPopup @bind-Visible="@displayPopup">
+                <div class="history-popup">
+                    <h4>Planning Areas</h4>
+                    @foreach (var item in planningAreas)
+                    {
+                        <div class="history-row">
+                            <div class="history-file">@item.PublicInfo.InstanceName</div>
+                            <div class="history-user">Version: @item.PublicInfo.SoftwareVersion</div>
+                            <div class="history-id">Users Online: @item.Status.UsersOnline</div>
+                            <span class="history-date">@item.Status.LastLogon</span>
+                        </div>
+                    }
+                    @if (planningAreas == null || planningAreas.Count == 0)
+                    {
+                        <span>Failed to Reach Server, or Server has no Planning Areas</span>
+                    }
+                </div>
+            </DxPopup>
+        </EditFormTemplate>
+        <CustomValidators>
+            <CustomValidator DataItemValidating="ValidateData"></CustomValidator>
+        </CustomValidators>
+    </DxGrid>
+}    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+
+
+@code {
+    IGrid? MyGrid { get; set; }
+
+    [Parameter]
+    public List<PAPermissionGroup> PermissionGroups { get; set; }
+    [Parameter]
+    public Company Company { get; set; }
+    [Parameter]
+    public Func<PAPermissionGroup, Task<PAPermissionGroup>> OnSave { get; set; }
+    [Parameter]
+    public Func<PAPermissionGroup, Task<PAPermissionGroup>>? OnAfterSave { get; set; }
+    [Parameter]
+    public Func<int, Task> OnDelete { get; set; }
+    [Parameter]
+    public string GridCaption { get; set; } = "Roles";
+
+    private List<PAUserPermission> SelectedPermissions { get; set; } = new();
+    private List<PlanningAreaLiteModel> planningAreas { get; set; }
+    private bool displayPopup { get; set; }
+    private IEnumerable<ActionItem<PAPermissionGroup>> _actions { get; set; }
+    private ConfirmationDialog Dialog;
+
+    private User User { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        _actions = new List<ActionItem<PAPermissionGroup>>
+        {
+            new ActionItem<PAPermissionGroup>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-pencil",
+                Action = async (item) => await MyGrid?.StartEditDataItemAsync(item)
+            },
+            new ActionItem<PAPermissionGroup>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fa fa-trash",
+                Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog),
+            }
+        };
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(MyGrid);
+        base.OnAfterRender(firstRender);
+    }
+
+    private void OnEditStart(GridEditStartEventArgs args)
+    {
+        var group = args.DataItem as PAPermissionGroup ?? new PAPermissionGroup();
+        SelectedPermissions = group.Permissions;
+    }
+    protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        var editModel = (e.EditModel as PAPermissionGroup);
+        if (editModel != null)
+        {
+            var dataItem = e.IsNew ? new PAPermissionGroup() : PermissionGroups.Find(category => category.Id == editModel.Id);
+            if (dataItem != null)
+            {
+                dataItem.Name = editModel.Name;
+                dataItem.CompanyId = Company.Id;
+                dataItem.Permissions = SelectedPermissions;
+
+                var savedPermissionGroup = await OnSave(dataItem);
+
+                if (e.IsNew)
+                {
+                    PermissionGroups.Add(savedPermissionGroup);
+                } 
+                else
+                {
+                    PermissionGroups.Replace(savedPermissionGroup); 
+                }
+
+                if (OnAfterSave != null)
+                {
+                    await OnAfterSave(dataItem);
+                }
+                
+                NavMenuUpdateService.TriggerUpdate();
+            }
+        }
+    }
+
+    private async Task PermissionsChanged(List<PAUserPermission> permissions)
+    {
+        SelectedPermissions = permissions;
+    }
+
+    protected async Task DeleteItem(object a_item)
+    {
+        var editModel = (a_item as PAPermissionGroup);
+        if (editModel != null)
+        {
+            await OnDelete(editModel.Id);
+            PermissionGroups.Remove(editModel);
+            StateHasChanged();
+        }
+    }
+
+    void ValidateData(ValidationMessageStoreEventArgs e)
+    {
+        var group = (PAPermissionGroup)e.EditModel;
+        if (group.Name.IsNullOrEmpty())
+        {
+            e.AddError(nameof(group.Name), "The Name field is required.");
+        }
+        
+    }
+
+    void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+
+    }
+}

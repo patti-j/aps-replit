@@ -1,0 +1,555 @@
+﻿@page "/components/groupgrid"
+@using Microsoft.EntityFrameworkCore
+@using ReportsWebApp.Helpers
+@using ReportsWebApp.Components.InfoDisplay
+@inject NavMenuUpdateService NavMenuUpdateService
+@inject NavigationManager Navigation
+@inject IRoleService RoleService
+@inject ICategoryService m_categoryService
+@inject IUserService m_userService
+@inject IToastNotificationService toastService
+
+<style>
+    .wide-editor {
+        min-width: 1200px;
+    }
+</style>
+
+<h3>Roles</h3>
+
+@if (Groups == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid ShowFilterRow="true" Data="@Groups"
+            EditModelSaving="OnEditModelSaving"
+            UnboundColumnData="Grid_CustomUnboundColumnData"
+            CustomizeEditModel="(e) => GridHelpers.CustomizeEditorTitle(e, m_grid)"
+            EditStart="OnEditStart"
+            EditMode="GridEditMode.PopupEditForm" @ref="m_grid" PopupEditFormCssClass="wide-editor"
+            PageSize="10"
+            CssClass="ch-480"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+        <Columns>
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                <HeaderTemplate>
+                    <DxButton IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1" Text="Add" Click="() => m_grid.StartEditNewRowAsync()" />
+                </HeaderTemplate>
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = (Role)context.DataItem;
+                    }
+                    <ActionDropdown DataItem="dataItem" Actions="_actions"/>
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+            <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false"/>
+            <DxGridDataColumn FieldName="Name" Caption="Role Name" MinWidth="100"/>
+            <DxGridDataColumn FieldName="Description" Caption="Description" MinWidth="100"/>
+            <DxGridDataColumn FieldName="Users" Caption="Active Users" MinWidth="100" UnboundType="GridUnboundColumnType.Integer"/>
+            <DxGridDataColumn FieldName="LastModified" Caption="Last Modified" MinWidth="100"/>
+
+        </Columns>
+        <EditFormTemplate Context="EditFormContext">
+            @{
+                var group = (Role)EditFormContext.EditModel;
+                group.Company = User.Company;
+            }
+            <DxTabs @bind-ActiveTabIndex="TabIndex">
+                <DxTab Text="Web Permissions"></DxTab>
+                <DxTab Text="Desktop Permissions"></DxTab>
+            </DxTabs>
+            <DxFormLayout CssClass="w-100">
+                <DxFormLayoutItem Caption="Row Version:" ColSpanMd="12" Visible="false">
+                    <DxTextBox @bind-Text="@RowVersion"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Role Name:" ColSpanMd="12">
+                    <DxTextBox @bind-Text="@group.Name"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Role Description:" ColSpanMd="12">
+                    <DxTextBox @bind-Text="@group.Description"/>
+                </DxFormLayoutItem>
+                @if (User.Roles.Any(x => x.Id == group.Id))
+                {
+                    <DxFormLayoutItem ColSpanMd="12">
+                        <span class="fa fa-exclamation-triangle color-yellow-main"></span>
+                        <span class="form-warning color-yellow-main">You are assigned to this group. Changes may affect your own permissions.</span>
+                    </DxFormLayoutItem>
+                }
+                
+                @if (TabIndex == 0)
+                {
+                    <DxFormLayoutItem Caption="User Management" ColSpanMd="12">
+                        <DxComboBox Data="NormalComboText" TextFieldName="Value" ValueFieldName="Key" @bind-Value="UserManageValue"/>
+                    </DxFormLayoutItem>
+                    <p>Allows a User to read or modify another User, and their Scopes, Roles, or Teams.</p>
+                    
+                    <DxFormLayoutItem Caption="Reports" ColSpanMd="12">
+                        <DxComboBox Data="NormalComboText" TextFieldName="Value" ValueFieldName="Key" @bind-Value="ReportsValue"/>
+                    </DxFormLayoutItem>
+                    <p>Determines whether a User can View, Edit, or Manage Reports.</p>
+                    
+                    <DxFormLayoutItem Caption="Server Management" ColSpanMd="12">
+                        <DxComboBox Data="ServerComboText" TextFieldName="Value" ValueFieldName="Key" @bind-Value="ServerManageValue"/>
+                    </DxFormLayoutItem>
+                    <p>Determines whether a User can View, or Manage On-Prem Servers.</p>
+                    
+                    <DxFormLayoutItem Caption="Integrations" ColSpanMd="12">
+                        <DxComboBox Data="NormalComboText" TextFieldName="Value" ValueFieldName="Key" @bind-Value="IntegrationsValue"/>
+                    </DxFormLayoutItem>
+                    <p>Determines whether a User can View, Edit, or Manage Integrations.</p>
+                    
+                    @if (User.CompanyId == 1) // change this later when we have a way to gate this
+                    {
+                        <DxFormLayoutItem Caption="Show Beta and Early Access Features" ColSpanMd="12">
+                            <DxCheckBox @bind-Checked="ShowBetaFeatures"/>
+                        </DxFormLayoutItem>
+                    }
+                    
+                    @if (ShowBetaFeatures)
+                    {
+                        <DxFormLayoutItem Caption="AI Factory builder" ColSpanMd="12">
+                            <DxCheckBox @bind-Checked="EnableFactoryBuilder"/>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Custom Fields" ColSpanMd="12">
+                            <DxCheckBox @bind-Checked="EnableUDF"/>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="CTP" ColSpanMd="12">
+                            <DxCheckBox @bind-Checked="EnableCTP"/>
+                        </DxFormLayoutItem>
+                    }
+                }
+                <PermissionGroupEditor OnChange="DesktopPermissionsChanged" Role="group" IsEditingDesktopPerms="true" Visible="TabIndex == 1"/>
+                <DxFormLayoutItem ColSpanMd="12">
+                    <ValidationSummary/>
+                </DxFormLayoutItem>
+                
+            </DxFormLayout>
+        </EditFormTemplate>
+        <CustomValidators>
+            <CustomValidator DataItemValidating="GroupNameValidate"/>
+        </CustomValidators>
+    </DxGrid>
+    <DxPopup @bind-Visible="@PopupVisible"
+             HeaderText="Concurrency Exception"
+             BodyText="This record was updated or deleted while you were editing. Please retry"
+             ShowFooter="true"
+             @ref="Popup">
+        <FooterContentTemplate>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Close" Click="CloseClick" />
+        </FooterContentTemplate>
+    </DxPopup>
+    <GeneralInfoDisplay @ref="InfoDisplay"></GeneralInfoDisplay>
+    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Danger"></ConfirmationDialog>
+}
+
+@code {
+    IGrid? m_grid { get; set; }
+    DxPopup Popup;
+    ConfirmationDialog Dialog;
+    bool PopupVisible { get; set; } = false;
+    GeneralInfoDisplay InfoDisplay;
+    [Parameter]
+    public Func<Task> RefreshComponent { get; set; }
+    [Parameter]
+    public List<Role> Groups { get; set; }
+
+    private User? User { get; set; }
+    private List<Permission> selectedWebPermissions { get; set; }
+    private List<PAUserPermission> selectedDesktopPermissions { get; set; }
+    private IEnumerable<Permission> allPermissions { get; set; }
+    private IEnumerable<Category> selectedCategories{ get; set; }
+    private IEnumerable<Category> allCategories { get; set; }
+    public string RowVersion { get; set; }
+    public int TabIndex { get; set; }
+    
+    public int UserManageValue { get; set; }
+    public int ReportsValue { get; set; }
+    public int ServerManageValue { get; set; }
+    public int IntegrationsValue { get; set; }
+    public RoleViewer RoleViewer { get; set; }
+    public bool ShowBetaFeatures { get; set; }
+    public bool EnableFactoryBuilder { get; set; }
+    public bool EnableUDF { get; set; }
+    public bool EnableCTP { get; set; }
+
+    private List<KeyValuePair<int, string>> NormalComboText = new List<KeyValuePair<int, string>>() {new(0, "None"), new(1, "View Only"), new(2, "Edit and Add Only"), new(3, "Administrate") };
+    private List<KeyValuePair<int, string>> ServerComboText = new List<KeyValuePair<int, string>>() {new(0, "None"), new(1, "View Only"), new(2, "Owned Only"), new(3, "Administer Company") };
+
+    private IEnumerable<ActionItem<Role>> _actions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        _actions = new List<ActionItem<Role>>
+        {
+            new ActionItem<Role>
+            {
+                ActionText = "View",
+                IconCssClass = "fa fa-eye",
+                Action = async (item) =>
+                {
+                    InfoDisplay.ShowNewItem(item);
+                    StateHasChanged();
+                },
+                ShouldActionButtonBeEnabled = (group) => true,
+            },
+            new ActionItem<Role>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-info-circle",
+                Action = async (group) => await m_grid?.StartEditDataItemAsync(group),
+                ShouldActionButtonBeEnabled = (group) => !group.Readonly && User.IsAuthorizedFor(Permission.EditUsers)
+            },
+            new ActionItem<Role>
+            {
+                ActionText = "Copy",
+                IconCssClass = "fa fa-copy",
+                Action = async (group) => await CopyDataItem(group),
+                ShouldActionButtonBeEnabled = (_) => true // Always enabled
+            },
+            new ActionItem<Role>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fa fa-trash",
+                Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog),
+                ShouldActionButtonBeEnabled = (group) => !group.Readonly
+            }
+        };
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(m_grid);
+        base.OnAfterRender(firstRender);
+    }
+
+    async Task CloseClick(MouseEventArgs args)
+    {
+        await RefreshComponent();
+        await Popup.CloseAsync();
+        //Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+
+    private async Task WebPermissionsChanged((List<Permission>, List<PAUserPermission>) permissions)
+    {
+        selectedWebPermissions.Synchronize(permissions.Item1);
+    }
+
+    private async Task DesktopPermissionsChanged((List<Permission>, List<PAUserPermission>) permissions)
+    {
+        selectedDesktopPermissions.Synchronize(permissions.Item2);
+    }
+    
+    protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        var editModel = (e.EditModel as Role);
+
+        selectedWebPermissions.Clear();
+        
+        switch (UserManageValue)
+        {
+            case 3:
+                selectedWebPermissions.Add(Permission.ManageUsers);
+                goto case 2;
+            case 2:
+                selectedWebPermissions.Add(Permission.EditUsers);
+                goto case 1;
+            case 1:
+                selectedWebPermissions.Add(Permission.ViewUsers);
+                break;
+        }
+        
+        switch (ReportsValue)
+        {
+            case 3:
+                selectedWebPermissions.Add(Permission.ManageReports);
+                goto case 2;
+            case 2:
+                selectedWebPermissions.Add(Permission.EditReports);
+                goto case 1;
+            case 1:
+                selectedWebPermissions.Add(Permission.ViewReports);
+                break;
+        }
+        
+        switch (ServerManageValue)
+        {
+            case 3:
+                selectedWebPermissions.Add(Permission.AdministrateServers);
+                goto case 2;
+            case 2:
+                selectedWebPermissions.Add(Permission.OwnedOnlyServers);
+                goto case 1;
+            case 1:
+                selectedWebPermissions.Add(Permission.ViewServers);
+                break;
+        }
+        
+        switch (IntegrationsValue)
+        {
+            case 3:
+                selectedWebPermissions.Add(Permission.ManageIntegration);
+                goto case 2;
+            case 2:
+                selectedWebPermissions.Add(Permission.EditIntegration);
+                goto case 1;
+            case 1:
+                selectedWebPermissions.Add(Permission.ViewIntegration);
+                break;
+        }
+
+        if (EnableFactoryBuilder)
+        {
+            selectedWebPermissions.Add(Permission.AccessAIBuilder);
+        }
+
+        if (EnableUDF)
+        {
+            selectedWebPermissions.Add(Permission.EditCustomFields);
+        }
+
+        if (EnableCTP)
+        {
+            selectedWebPermissions.Add(Permission.ManageCTPRequests);
+        }
+        
+        if (editModel != null)
+        {
+            var dataItem = e.IsNew ? new Role() { CreatedBy = User.Email} : Groups.Find(group => group.Id == editModel.Id);
+            if (dataItem != null)
+            {
+                dataItem.Name = editModel.Name;
+                dataItem.CompanyId = User.CompanyId;
+                dataItem.UpdatedBy = User.Email;
+                dataItem.Description = editModel.Description;
+                if (dataItem.Version != null) dataItem.Version = Convert.FromBase64String(RowVersion);
+
+                var keys = dataItem.Permissions;
+                // Remove any permissions not in the current selectedList, then add any new permssions in the list
+                dataItem.Permissions.RemoveAll(x => selectedWebPermissions.All(s => s.Key != x));
+                dataItem.Permissions.AddRange(selectedWebPermissions.Where(x => !keys.Contains(x.Key)).Select(sp => sp.Key));
+                
+                dataItem.DesktopPermissions.RemoveAll(x => selectedDesktopPermissions.All(s => s.PermissionKey != x));
+                dataItem.DesktopPermissions.AddRange(selectedDesktopPermissions.Where(x => !keys.Contains(x.PermissionKey)).Select(sp => sp.PermissionKey));
+
+                dataItem.Categories.RemoveAll(x => selectedCategories.All(s => s.Id != x.Id));
+                dataItem.Categories.AddRange(selectedCategories.Where(x => !dataItem.Categories.Any(y => y.Id == x.Id)));
+                try
+                {
+                    var savedGroup = await RoleService.SaveAsync(User, dataItem, User.IsPTAdmin());
+                    if (e.IsNew)
+                    {
+                        Groups.Add(savedGroup);
+                        MaybeNotifyNewGroup(savedGroup);
+                        Groups = Groups.OrderBy(x => x.Readonly).ToList();
+                    }
+                    else
+                    {
+                        Groups.Replace(savedGroup, (x1, x2) => x1.Id == x2.Id);
+                    }
+                    NavMenuUpdateService.TriggerUpdate();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    //dataItem = null;
+                    if (Popup.IsInitialized)
+                        await Popup.ShowAsync();
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+        }
+    }
+
+    private void OnEditStart(GridEditStartEventArgs args)
+    {
+        var group = (Role)args.DataItem ?? new Role();
+        var userIsAdmin = User?.IsPTAdmin() ?? throw new NullReferenceException("User is null");
+
+        // Only allow PTAdmin permissions to be assigned if the user is already authorized for PTAdmin.
+        // Include PTAdmin permissions that are already assigned as well, for display purposes.
+        allPermissions = AuthUtils.AllPermissions;
+
+        // Only allow PTAdmin to be assigned in the PlanetTogether Company
+        if (User.CompanyId == 1)
+        {
+            allPermissions = allPermissions.Concat(new List<Permission> { Permission.PTAdmin });
+        }
+
+        allCategories = m_categoryService.GetCategories(User?.CompanyId ?? throw new NullReferenceException("User is null"));
+
+        if (args.IsNew)
+        {
+            selectedWebPermissions = new List<Permission>();
+            selectedDesktopPermissions = new ();
+            selectedCategories = new List<Category>();
+        }
+        else
+        {
+            RowVersion = Convert.ToBase64String(group.Version);
+            
+            if (group.Permissions.Any(x => x == Permission.ManageUsers.Key))
+            {
+                UserManageValue = 3;
+            }
+            else if (group.Permissions.Any(x => x == Permission.EditUsers.Key))
+            {
+                UserManageValue = 2;
+            }
+            else if (group.Permissions.Any(x => x == Permission.ViewUsers.Key))
+            {
+                UserManageValue = 1;
+            }
+            else
+            {
+                UserManageValue = 0;
+            }
+            
+            if (group.Permissions.Any(x => x == Permission.ManageReports.Key))
+            {
+                ReportsValue = 3;
+            }
+            else if (group.Permissions.Any(x => x == Permission.EditReports.Key))
+            {
+                ReportsValue = 2;
+            }
+            else if (group.Permissions.Any(x => x == Permission.ViewReports.Key))
+            {
+                ReportsValue = 1;
+            }
+            else
+            {
+                ReportsValue = 0;
+            }
+            
+            if (group.Permissions.Any(x => x == Permission.AdministrateServers.Key))
+            {
+                ServerManageValue = 3;
+            }
+            else if (group.Permissions.Any(x => x == Permission.OwnedOnlyServers.Key))
+            {
+                ServerManageValue = 2;
+            }
+            else if (group.Permissions.Any(x => x == Permission.ViewServers.Key))
+            {
+                ServerManageValue = 1;
+            }
+            else
+            {
+                ServerManageValue = 0;
+            }
+            
+            if (group.Permissions.Any(x => x == Permission.ManageIntegration.Key))
+            {
+                IntegrationsValue = 3;
+            }
+            else if (group.Permissions.Any(x => x == Permission.EditIntegration.Key))
+            {
+                IntegrationsValue = 2;
+            }
+            else if (group.Permissions.Any(x => x == Permission.ViewIntegration.Key))
+            {
+                IntegrationsValue = 1;
+            }
+            else
+            {
+                IntegrationsValue = 0;
+            }
+
+            if (group.Permissions.Any(x => x == Permission.AccessAIBuilder.Key))
+            {
+                EnableFactoryBuilder = true;
+            }
+            
+            if (group.Permissions.Any(x => x == Permission.EditCustomFields.Key))
+            {
+                EnableUDF = true;
+            }
+            
+            if (group.Permissions.Any(x => x == Permission.ManageCTPRequests.Key))
+            {
+                EnableCTP = true;
+            }
+
+            selectedWebPermissions = new ();
+            selectedDesktopPermissions = new (PermissionsGroupConstants.DefaultPermissions.Where(p => group.DesktopPermissions.Any(x => x == p.PermissionKey)));
+            selectedCategories = new List<Category>(allCategories.Where(p => group.Categories.Any(x => p.Id == x.Id)));
+        }
+    }
+
+    protected async Task DeleteItem(object dataItem)
+    {
+        var editModel = (dataItem as Role);
+        if (editModel != null)
+        {
+            try {
+                await RoleService.DeleteAsync(editModel.Id);
+                Groups.Remove(editModel);
+            } catch (DataDependencyException ex)
+            {
+                toastService.ShowToast("Warning", ex.Message, ToastRenderStyle.Danger, 0);
+            }
+            StateHasChanged();
+        }
+    }
+
+    void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+        if (e.FieldName == "Users")
+        {
+            var id = Convert.ToDecimal(e.GetRowValue("Id"));
+
+            var dataItem = Groups.Find(delegate (Role g)
+            {
+                return g.Id == id;
+            });
+            //TODO
+        }
+    }
+
+    async Task CopyDataItem(Role? group)
+    {
+        if (group == null)
+        {
+            return;
+        }
+        var newGroup = await RoleService.DuplicateRoleAsync(group, User ?? throw new NullReferenceException("User is null"));
+        Groups.Add(newGroup);
+        Groups = Groups.OrderBy(x => x.Readonly).ToList();
+        MaybeNotifyNewGroup(newGroup);
+        StateHasChanged();
+    }
+
+    private void MaybeNotifyNewGroup(Role a_newRole)
+    {
+        if (!(User?.SubscribedNotifications?.Any(n => n == ENotificationType.NewRole) ?? false))
+        {
+            toastService.ShowToast("Group Created", $"Permission Group \"{a_newRole.Name}\" was created successfully", ToastRenderStyle.Success);
+        }
+    }
+
+    private void GroupNameValidate(ValidationMessageStoreEventArgs a_e)
+    {
+        Role role = (Role)a_e.EditModel;
+        if (Groups.Any(g => g.Name == role.Name && g.Id != role.Id))
+        {
+            a_e.AddError(nameof(role.Name), "A group with this name already exists.");
+        }
+    }
+
+    private void UserManageChanged(int newUserManageValue)
+    {
+        
+    }
+
+}

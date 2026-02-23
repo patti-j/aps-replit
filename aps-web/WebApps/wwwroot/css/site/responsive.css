@@ -1,0 +1,106 @@
+﻿
+/* Media query for devices with screen width of 768 pixels or smaller */
+@media (max-width: 768px) {
+    .dxbs-menu .dx-menu-title {
+        display: none;
+    }
+
+    .logo-name {
+        width: 105px;
+    }
+    /* Adjust grid cell padding and font size for smaller screens */
+    .dxbs-grid .dxbs-grid-table > tbody > tr > td {
+        padding: 6px; /* Smaller padding */
+        font-size: 12px; /* Smaller font size */
+    }
+
+    /* Reduce font size and padding for pagination links */
+    .dxbs-pager .pagination,
+    .dxbs-pager .pagination-sm .page-link {
+        font-size: 10px; /* Smaller font size */
+        padding: 5px; /* Smaller padding */
+    }
+
+    /* Reduce font size and padding for page size selector input */
+    .dxbs-grid-page-size-selector .dxbs-form-control {
+        font-size: 10px; /* Smaller font size */
+        padding: 5px; /* Smaller padding */
+    }
+
+    /* Reduce size of the page size selector dropdown button */
+    .dxbs-grid-page-size-selector .dxbs-editor-dropdown-button {
+        padding: 5px; /* Smaller padding */
+        font-size: 10px; /* Smaller font size */
+    }
+
+    /* Adjust padding and height for small button groups */
+    div.dxbs-btn-group.dxbs-input-group-append > .btn.dx-btn:not(.dxbs-editor-clear-btn).btn-sm,
+    div.dxbs-btn-group.dxbs-input-group-prepend > .btn.dx-btn.btn-sm {
+        padding: 0px;
+        height: 25px;
+    }
+
+    .pagination-sm .page-item:last-child .page-link {
+        font-size: 9px;
+    }
+
+    .dxbs-grid .dxbs-grid-pager-container .dxbs-grid-page-size-selector > label {
+        font-size: 11px;
+    }
+
+    .dxbs-grid .dxbs-grid-pager-container .dxbs-grid-page-size-selector {
+        padding: 3px;
+    }
+
+    .img-profile {
+        height: 30px;
+    }
+
+    .dxbs-input-group.input-group input.form-control-sm {
+        font-size: 12px;
+    }
+
+    dxbl-modal-dialog {
+        margin: 10px;
+    }
+
+    .header-container > div {
+        scale: .6;
+        height: 20px;
+        position: relative;
+    }
+
+    .header-container > .edit-mode-switch {
+        left: 15px;
+    }
+
+    .company-header {
+        position: absolute;
+        left: 58px;
+        top: 25px;
+        font-size: 10pt;
+        max-width: 105px;
+        overflow-x: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .logo-name {
+        margin-top: -18px;
+    }
+
+    .breadcrumb-margin {
+        margin-left: .5rem;
+        margin-right: .5rem;
+    }
+
+    .header-dropdown button {
+        padding-left: 5px;
+        padding-right: 5px;
+        margin-right: 5px;
+    }
+
+    .report-div {
+        height: 95%;
+    }
+}

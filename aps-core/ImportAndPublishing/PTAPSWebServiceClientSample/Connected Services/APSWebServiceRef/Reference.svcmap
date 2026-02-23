@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ID="f4a4b6e2-af2b-4f06-9da2-60ba7e338061" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="https://localhost:8788/APSWebService" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="APSWebService5.xsd" MetadataType="Schema" ID="8c0438cd-f994-446e-a7a9-98566b4bbbc2" SourceId="1" SourceUrl="https://ptdev2:8788/APSWebService?xsd=xsd0" />
+    <MetadataFile FileName="APSWebService1.disco" MetadataType="Disco" ID="5c138abb-d833-48fc-8c50-39e021f15ad6" SourceId="1" SourceUrl="https://ptdev2:8788/APSWebService?disco" />
+    <MetadataFile FileName="APSWebService51.xsd" MetadataType="Schema" ID="f3d941be-7744-4879-8ce7-de582281efc7" SourceId="1" SourceUrl="https://ptdev2:8788/APSWebService?xsd=xsd1" />
+    <MetadataFile FileName="APSWebService52.xsd" MetadataType="Schema" ID="64271946-0b78-49f4-8a12-16dc0eb9cfe1" SourceId="1" SourceUrl="https://ptdev2:8788/APSWebService?xsd=xsd2" />
+    <MetadataFile FileName="APSWebService1.wsdl" MetadataType="Wsdl" ID="876c3575-b59f-49ca-9567-e7fc61bf91e6" SourceId="1" SourceUrl="https://ptdev2:8788/APSWebService?wsdl" />
+    <MetadataFile FileName="APSWebService53.xsd" MetadataType="Schema" ID="a42671a1-ac4b-4483-9b63-b691f18748ee" SourceId="1" SourceUrl="https://ptdev2:8788/APSWebService?xsd=xsd4" />
+    <MetadataFile FileName="APSWebService54.xsd" MetadataType="Schema" ID="ca796445-31c3-48d6-8eeb-734bafd296ca" SourceId="1" SourceUrl="https://ptdev2:8788/APSWebService?xsd=xsd3" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

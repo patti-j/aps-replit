@@ -1,0 +1,10 @@
+[
+  {
+    "importDate": "2022-01-11T14:30:00",
+    "InventoryId": 123,
+    "ForecastShipmentId": 456,
+    "AdjustmentDate": "2022-02-20T09:15:00",
+    "AdjustmentQty": 25.75,
+    "AdjustmentReason": "Inventory adjustment due to shipment changes"
+  }
+]

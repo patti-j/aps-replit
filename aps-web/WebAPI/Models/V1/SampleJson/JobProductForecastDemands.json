@@ -1,0 +1,11 @@
+[
+  {
+    "importDate": "2024-02-05T08:30:00",
+    "JobProductId": 12345,
+    "JobOperationId": 67890,
+    "ForecastShipmentId": 54321,
+    "RequiredDate": "2024-03-15T10:00:00",
+    "RequiredQty": 100.5,
+    "Notes": "Sample notes for JobProductForecastDemand"
+  }
+]

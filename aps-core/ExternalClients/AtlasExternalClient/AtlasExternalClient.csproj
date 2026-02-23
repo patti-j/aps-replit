@@ -1,0 +1,85 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.csproj" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>APSWebClient</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.ServiceModel" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Connected Services\ApsWebServiceRef\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Connected Services\ApsWebServiceRef\APSWebService4.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Connected Services\ApsWebServiceRef\APSWebService41.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Connected Services\ApsWebServiceRef\APSWebService42.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Connected Services\ApsWebServiceRef\APSWebService43.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Connected Services\ApsWebServiceRef\APSWebService44.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Connected Services\ApsWebServiceRef\AtlasExternalClient.ApsWebServiceRef.ApsAddRemoveUserResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Connected Services\ApsWebServiceRef\AtlasExternalClient.ApsWebServiceRef.ApsWebServiceResponseBase.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Connected Services\ApsWebServiceRef\AtlasExternalClient.ApsWebServiceRef.CopyScenarioResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Connected Services\ApsWebServiceRef\AtlasExternalClient.ApsWebServiceRef.CtpResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Update="Connected Services\ApsWebServiceRef\AtlasExternalClient.ApsWebServiceRef.DeleteScenarioResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Connected Services\ApsWebServiceRef\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Connected Services\ApsWebServiceRef\AtlasExternalClient.ApsWebServiceRef.GetScenariosResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Connected Services\ApsWebServiceRef\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Services\ServerManager\ServerManagerProxy\ServerManagerProxyLib.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

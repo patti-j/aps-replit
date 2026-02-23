@@ -1,0 +1,142 @@
+﻿@page "/createReportViewer"
+@inject IJSRuntime JSRuntime
+@using Microsoft.PowerBI.Api;
+@using Microsoft.PowerBI.Api.Models;
+@using Microsoft.Rest;
+@using ReportsWebApp.DB.Services;
+@using ReportsWebApp.Data;
+@using Report = Microsoft.PowerBI.Api.Models.Report
+
+@if (viewPermission)
+{
+    <h3>Create Report</h3>
+    <RadzenProgressBar Visible="@ShowProgressBar"
+                       Value="100" ShowValue="false"
+                       Mode="ProgressBarMode.Indeterminate"
+                       Style="margin-bottom: 20px" />
+    <div class="row">
+        <div class="col-md-1">
+            <label class="control-label">Workspaces:</label>
+        </div>
+        <div class="col-md-11">
+            <DxComboBox Data="@AvailalbleWorkspaces"
+                        TextFieldName="@nameof(PBIWorkspace.Name)"
+                        ValueFieldName="@nameof(PBIWorkspace.PBIWorkspaceId)"
+                        @bind-Value="@SelectedWorkspaceId"
+                        SelectedItemChanged="@(async (PBIWorkspace pBIWorkspace) => await WorkspaceSelected(pBIWorkspace))" />
+        </div>
+    </div>
+    <div class="row pt-3">
+        <div class="col-md-1">
+            <label class="control-label">Datasets:</label>
+        </div>
+        <div class="col-md-11">
+            <DxComboBox Data="@powerBIDatasetOptions"
+                        TextFieldName="@nameof(PBIDataSetDropdownOption.OptionName)"
+                        ValueFieldName="@nameof(PBIDataSetDropdownOption.OptionValue)"
+                        @bind-Value="@SelectedDatasetId"
+                        SelectedItemChanged="@(async (PBIDataSetDropdownOption args) => await DisplayReportAsync(args))" />
+        </div>
+    </div>
+    <div @ref="@PowerBIElement" class="report-div" />
+}
+
+@code {
+    [Inject]
+    PowerBIService PowerBIService { get; set; }
+    [Inject]
+    IReportService reportService { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    public List<PBIWorkspace> AvailalbleWorkspaces { get; set; } = new List<PBIWorkspace>();
+    public List<PBIDataSetDropdownOption> powerBIDatasetOptions { get; } = new();
+    private DB.Models.User User { get; set; }
+    private ElementReference PowerBIElement;
+    bool ShowProgressBar = false;
+    List<DTODatasets> colDatasets = new List<DTODatasets>();
+    string SelectedWorkspaceId = "0";
+    string SelectedDatasetId = "0";
+    private bool viewPermission = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ShowProgressBar = true;
+        StateHasChanged();
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.ManageUsers, NavigationManager)) return;
+        viewPermission = true;
+
+        AvailalbleWorkspaces = reportService.GetWorkspaces(User.CompanyId);
+        var result = await PowerBIService.GetWorkspacesAsync();
+
+        SelectedWorkspaceId = "0";
+
+        ShowProgressBar = false;
+        StateHasChanged();
+    }
+
+    public async Task DisplayReportAsync(PBIDataSetDropdownOption args)
+    {
+        var accessToken = await PowerBIService.GetPowerBIAccessTokenAsync();
+        var tokenCredentials = new TokenCredentials(accessToken, "Bearer");
+
+        if (args!=null && args.OptionValue != "0")
+        {
+            using (var client = new PowerBIClient(
+                new Uri("https://api.powerbi.com/"), tokenCredentials))
+            {
+                var generateTokenRequestParameters =
+                    new GenerateTokenRequest(
+                        accessLevel: TokenAccessLevel.Create,
+                        datasetId: args.OptionValue,
+                        allowSaveAs: true);
+
+                  // For help see: https://bit.ly/2TbYjFl
+
+                var tokenResponse =
+                    await client.Reports.GenerateTokenForCreateAsync(
+                        new Guid(SelectedWorkspaceId),
+                        generateTokenRequestParameters);
+
+                string CreateReportEmbedURL = colDatasets.Where(x => x.Id == args.OptionValue).FirstOrDefault().CreateReportEmbedURL;
+
+                await Interop.CreateReport(
+                    JSRuntime,
+                    PowerBIElement,
+                    tokenResponse.Token,
+                    CreateReportEmbedURL,
+                    args.OptionValue);
+            }
+        }
+    }
+
+    public async Task WorkspaceSelected(PBIWorkspace pBIWorkspace)
+    {
+        if (pBIWorkspace == null || pBIWorkspace.PBIWorkspaceId == null)
+        {
+            // Handle the case where pBIWorkspace is null.
+            return;
+        }
+        SelectedDatasetId = "";
+        ShowProgressBar = true;
+        StateHasChanged();
+
+        GetDatasetsResults result = await @PowerBIService.GetDatasetsAsync(pBIWorkspace.PBIWorkspaceId);
+
+        colDatasets = result.datasetsList;
+
+        powerBIDatasetOptions.Clear();
+        powerBIDatasetOptions.Add(new PBIDataSetDropdownOption() { OptionName = "Select...", OptionValue = "0" });
+
+        foreach (var dataset in colDatasets)
+        {
+            powerBIDatasetOptions.Add(new PBIDataSetDropdownOption() { OptionName = dataset.Datasetname, OptionValue = dataset.Id });
+        }
+
+        SelectedDatasetId = "0";
+
+        ShowProgressBar = false;
+        StateHasChanged();
+    }
+
+}

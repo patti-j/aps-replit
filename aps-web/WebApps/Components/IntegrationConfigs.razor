@@ -1,0 +1,189 @@
+﻿@page "/servermanager/integrationconfigs"
+@using ReportsWebApp.DB.Models
+@using DevExpress.Blazor
+@using ReportsWebApp.Helpers
+@using ReportsWebApp.Pages
+@using Utils = ReportsWebApp.Shared.Utils
+@inject DB.Services.ServiceContainer _serviceContainer
+@inject IIntegrationConfigService IntegrationConfigService
+@inject IUserService m_userService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAppInsightsLogger Logger
+
+@if (configs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="no-borders">
+        <DxFormLayout>
+            <DxFormLayoutGroup>
+                <HeaderTemplate>
+                    <ServerContextHeader Title="Integration Configurations" BigTitle=true ShowServerPill=false ShowCloseButton="false" ShowSaveButton="false" />
+                </HeaderTemplate>
+                <Items>
+                    <DxScrollViewer CssClass="vh-90">
+                        <div class="pt-3 pb-5">
+                            <DxGrid Data="@configs"
+                                    @ref="MyGrid"
+                                    EditMode="GridEditMode.PopupEditForm"
+                                    EditModelSaving="OnEditModelSaving"
+                                    ShowFilterRow="true"
+                                    PageSize="10"
+                                    CssClass="ch-480"
+                                    PagerPosition="GridPagerPosition.TopAndBottom"
+                                    PageSizeSelectorVisible="true"
+                                    PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+                                    PageSizeSelectorAllRowsItemVisible="false"
+                                    PagerSwitchToInputBoxButtonCount="10"
+                                    PagerVisibleNumericButtonCount="10"
+                                    ColumnResizeMode="GridColumnResizeMode.ColumnsContainer"
+                                    UnboundColumnData="Grid_CustomUnboundColumnData">
+
+                                <Columns>
+                                    <!-- Actions -->
+                                    <DxGridCommandColumn Caption="Actions" Width=@CommonUtils.DxGridCommandToolbarStyleColumnWidth>
+                                        <HeaderTemplate>
+                                        </HeaderTemplate>
+                                        <CellDisplayTemplate >
+                                            @{
+                                                var dataItem = (IntegrationConfig)context.DataItem;
+                                            }
+                                            <ActionDropdown DataItem="dataItem" Actions="_actions" />
+                                        </CellDisplayTemplate>
+                                    </DxGridCommandColumn>
+
+                                    <!-- Basic Details -->
+                                    <DxGridDataColumn FieldName="Name" Caption="Name" Width="330px" />
+                                    <DxGridDataColumn FieldName="VersionNumber" Caption="Version" />
+
+                                    <!-- Formatted Date -->
+                                    <DxGridDataColumn FieldName="LastEditedDate" Width="330px"
+                                                      Caption="Last Edited">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var dataItem = (IntegrationConfig)context.DataItem;
+                                            }
+                                            @Utils.FormatUtcDate(dataItem.LastEditedDate, currentUser)
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <!-- Lookup for User -->
+                                    <DxGridDataColumn FieldName="LastEditingUserEmail" Width="230px"
+                                                        Caption="Edited By"
+                                                        UnboundType="GridUnboundColumnType.String" />
+                                </Columns>
+                                <EditFormTemplate Context="EditFormContext">
+                                    @{
+                                        var config = (IntegrationConfig)EditFormContext.EditModel;
+                                    }
+                                    <DxFormLayout CssClass="w-100">
+                                        <DxFormLayoutItem Caption="Name:" ColSpanMd="12">
+                                            <DxTextBox @bind-Text="@config.Name" />
+                                        </DxFormLayoutItem>
+                                    </DxFormLayout>
+                                </EditFormTemplate>
+                            </DxGrid>
+                        </div>
+                    </DxScrollViewer>
+                </Items>
+            </DxFormLayoutGroup>
+        </DxFormLayout>
+    </div>
+}    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+
+
+@code {
+    IGrid? MyGrid { get; set; }
+
+    private IntegrationConfig IntegrationConfigValues { get; set; }
+    private List<IntegrationConfig> configs = new();
+    private bool IntegrationConfigVisible { get; set; }
+    private User currentUser;
+    private IEnumerable<ActionItem<IntegrationConfig>> _actions;
+    private ConfirmationDialog Dialog;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            currentUser = await _serviceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+            if (Shared.Utils.BlockUsersByAuthStatus(currentUser, Permission.ManageIntegration, NavigationManager, true)) return;
+            
+            configs = await IntegrationConfigService.GetByCompanyIdAsync(currentUser.CompanyId);
+            _actions = new List<ActionItem<IntegrationConfig>>
+        {
+            new ActionItem<IntegrationConfig>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-pencil",
+                Action = async (integrationConfig) => await MyGrid?.StartEditDataItemAsync(integrationConfig)
+            },
+            new ActionItem<IntegrationConfig>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fa fa-trash",
+                Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog),
+            }
+        };
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing Integration Config page.");
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(MyGrid);
+        base.OnAfterRender(firstRender);
+    }
+
+    private async Task DeleteItem(object a_item)
+    {
+        if (a_item is IntegrationConfig item)
+        {
+            try
+            {
+                await IntegrationConfigService.DeleteAsync(item);
+                configs.RemoveAll(i => i.Id == item.Id);
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error deleting Integration Config: {item.Name}");
+            }
+            StateHasChanged();
+        }
+    }
+
+    void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+        //this literally does not work and i do not know why
+        int id = Convert.ToInt32(e.GetRowValue("Id"));
+        var item = configs.Find(c => c.Id == id);
+
+        if (item == null) return;
+
+        e.Value = e.FieldName switch
+        {
+            "LastEditedDate" =>
+                Utils.FormatUtcDate(item.LastEditedDate, currentUser),
+
+            _ => null
+        };
+    }
+
+    private async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        var config = (IntegrationConfig)e.EditModel;
+        config.LastEditedDate = DateTime.UtcNow; 
+        config.LastEditingUserId = currentUser.Id;
+        var newConfig = await IntegrationConfigService.UpdateAsync(config);
+        configs.Replace(newConfig, (cfg, newCfg) => cfg.Id == newCfg.Id);
+        StateHasChanged();
+    }
+
+}

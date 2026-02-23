@@ -1,0 +1,67 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Import shared properties and targets. Including framework version -->
+	<Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+	<PropertyGroup>
+		<AssemblyName>PT.Scheduler</AssemblyName>
+		<RootNamespace>PT.Scheduler</RootNamespace>
+		<DefaultNameSpace>PT.Scheduler</DefaultNameSpace>
+		<RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DefineConstants>TRACE;DEBUG </DefineConstants>
+	</PropertyGroup>
+	<ItemGroup>
+		<Reference Update="System">
+			<Name>System</Name>
+		</Reference>
+		<Reference Update="System.Core">
+			<Name>System.Core</Name>
+		</Reference>
+		<Reference Update="System.Data">
+			<Name>System.Data</Name>
+		</Reference>
+		<Reference Update="System.Drawing">
+			<Name>System.Drawing</Name>
+		</Reference>
+		<Reference Update="System.Xml">
+			<Name>System.XML</Name>
+		</Reference>
+		<ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+		<ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+		<ProjectReference Include="..\..\CommonProjects\PackageDefinitions\PackageDefinitions.csproj" />
+		<ProjectReference Include="..\..\Forecasting\ForecastServiceClient\ForecastServiceClient.csproj" />
+		<ProjectReference Include="..\..\ImportAndPublishing\CustomInterface\CustomInterface.csproj" />
+		<ProjectReference Include="..\..\ImportAndPublishing\ERPLibrary\ERPLibrary.csproj" />
+		<ProjectReference Include="..\..\Services\Definitions\APIDefintion\APIDefinitions.csproj" />
+		<ProjectReference Include="..\..\Services\Definitions\InterfaceServiceDefinitions\ImportDefinitions.csproj" />
+		<ProjectReference Include="..\..\Services\Definitions\SystemDefinitions\SystemDefinitions.csproj" />
+		<ProjectReference Include="..\..\Services\ServerManager\ServerManagerAPIProxy\ServerManagerAPIProxy.csproj" />
+		<ProjectReference Include="..\..\Services\SystemService\SystemServiceProxy\SystemServiceProxy\SystemServiceProxy.csproj" />
+		<ProjectReference Include="..\..\TransmissionsAndBroadcasting\ERPTransmissions\ERPTransmissions.csproj" />
+		<ProjectReference Include="..\..\TransmissionsAndBroadcasting\Transmissions2\Transmissions2.csproj" />
+		<ProjectReference Include="..\..\TransmissionsAndBroadcasting\Transmissions\Transmissions.csproj" />
+		<ProjectReference Include="..\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+			<Link>Properties\AssemblyInfoShared.cs</Link>
+		</Compile>
+		<Compile Update="ScheduleDataSet.cs">
+			<SubType>Component</SubType>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="PT.LicenseService.Client" Version="12.3.0.1" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt">
+			<Version>8.12.0</Version>
+		</PackageReference>
+		<PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Simulation\Scheduler\InventoryManagement\Lot\Usability\UsabilityRequirement\" />
+	</ItemGroup>
+	<!--Dotfuscate-->
+	<PropertyGroup>
+		<DotfuscatorIncludeAsInput>true</DotfuscatorIncludeAsInput>
+	</PropertyGroup>
+</Project>

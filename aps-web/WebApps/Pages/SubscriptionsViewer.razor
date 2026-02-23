@@ -1,0 +1,311 @@
+@page "/subscriptions/{CompanyId:int}"
+@using ReportsWebApp.DB.Models
+@using ReportsWebApp.DB.Models.DTOs
+@using ReportsWebApp.DB.Services.Interfaces
+@using Microsoft.AspNetCore.Components.Web
+@inject ICompanyService CompanyService
+@inject IToastNotificationService ToastService
+@inject NavigationManager Navigation
+
+<div class="no-borders visible">
+    <DxFormLayout CssClass="no-borders">
+        <DxFormLayoutGroup>
+            <HeaderTemplate>
+                <ServerContextHeader Title="@($"Subscriptions for {company?.Name}")" BigTitle=true
+                                     ShowReturnButton="true"
+                                     ShowSaveButton="false" 
+                                     ShowCloseButton=false
+                                     OnReturn="@(() => Navigation.NavigateTo("/companiesViewer"))" />
+            </HeaderTemplate>
+            <Items>
+                <div class="toolbar bg-body pb-3" style="box-shadow: none;">
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="input-group flex-grow-1">
+                            <input type="text" class="form-control" placeholder="Serial Code"
+                                   @bind="serialCode" />
+                            <button type="button"
+                                    class="input-group-text"
+                                    @onclick="RefreshSubscriptions"
+                                    title="Serial Code">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                        @if (subscriptions?.Any() == true && hasValidSubscriptionConfig)
+                        {
+                            <div class="flex-shrink-0">
+                                <DxButton Text="Remove Configuration" 
+                                          CssClass="btn btn-outline-danger btn-wider"
+                                          IconCssClass="fa-solid fa-trash"
+                                          Click="RemoveSubscriptionConfiguration"
+                                          Enabled="!isLoading" />
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @if (isLoading)
+                {
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+                else if (subscriptions?.Any() == true)
+                {
+                        <div class="card-body">
+                            <DxGrid Data="@subscriptions"
+                                    ShowFilterRow="true"
+                                    PageSize="10"
+                                    CssClass="ch-480"
+                                    PagerPosition="GridPagerPosition.TopAndBottom"
+                                    PageSizeSelectorVisible="true"
+                                    PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+                                    PageSizeSelectorAllRowsItemVisible="false"
+                                    PagerSwitchToInputBoxButtonCount="10"
+                                    PagerVisibleNumericButtonCount="10">
+                                <Columns>
+                                    <DxGridDataColumn FieldName="Name" Caption="Subscription Name" />
+                                    <DxGridDataColumn FieldName="SerialCode" Caption="Serial Code" />
+                                    <DxGridDataColumn FieldName="Edition" Caption="Edition" />
+                                    <DxGridDataColumn FieldName="Expiration" Caption="Expiration Date" DisplayFormat="MM/dd/yyyy" />
+                                    <DxGridDataColumn FieldName="Description" Caption="Description" />
+                                    <DxGridCommandColumn Width="150">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var subscription = (SubscriptionInfo)context.DataItem;
+                                                var hasLicenseUrl = !string.IsNullOrEmpty(subscription.LicenseServiceUrl);
+                                            }
+                                            @if (hasLicenseUrl)
+                                            {
+                                                <DxButton Text="Manage License" 
+                                                          CssClass="btn btn-sm btn-outline-primary"
+                                                          IconCssClass="fa-solid fa-external-link"
+                                                          Click="() => NavigateToLicenseService(subscription.LicenseServiceUrl)" />
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">No URL configured</span>
+                                            }
+                                        </CellDisplayTemplate>
+                                    </DxGridCommandColumn>
+                                </Columns>
+                            </DxGrid>
+                        </div>
+                }
+                else if (!isLoading && !string.IsNullOrEmpty(serialCode))
+                {
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fa-solid fa-info-circle"></i>
+                        No subscriptions found for serial code "@serialCode". Please verify the serial code and try again.
+                    </div>
+                }
+                else if (!isLoading && string.IsNullOrEmpty(serialCode))
+                {
+                    @if (hasValidSubscriptionConfig && subscriptionConfig != null)
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <i class="fa-solid fa-info-circle"></i>
+                            Subscription configuration exists. Click the search button to load live subscription data.
+                            <br />
+                            <strong>Serial Code:</strong> @subscriptionConfig.SerialCode
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <i class="fa-solid fa-info-circle"></i>
+                            No subscription configuration found. Please enter a serial code to set up subscription access.
+                        </div>
+                    }
+                }
+            </Items>
+        </DxFormLayoutGroup>
+    </DxFormLayout>
+</div>
+
+@code {
+    [Parameter] public int CompanyId { get; set; }
+
+    private Company? company;
+    private List<SubscriptionInfo>? subscriptions;
+    private CompanySubscriptionInfo? subscriptionConfig;
+    private string serialCode = "";
+    private bool isLoading = false;
+    private bool hasValidSubscriptionConfig = false;
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCompanyData();
+        await LoadSubscriptionConfiguration();
+    }
+
+    private async Task LoadCompanyData()
+    {
+        try
+        {
+            var companies = await CompanyService.GetCompaniesAsync();
+            company = companies.FirstOrDefault(c => c.Id == CompanyId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load company data: {ex.Message}";
+        }
+    }
+
+    private async Task LoadSubscriptionConfiguration()
+    {
+        try
+        {
+            subscriptionConfig = await CompanyService.GetCompanySubscriptionInfoAsync(CompanyId);
+            hasValidSubscriptionConfig = subscriptionConfig != null;
+            
+            if (subscriptionConfig != null)
+            {
+                serialCode = subscriptionConfig.SerialCode ?? "";
+                
+                // Auto-load subscriptions if we have a valid configuration
+                if (!string.IsNullOrEmpty(serialCode))
+                {
+                    await LoadLiveSubscriptions();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load subscription configuration: {ex.Message}";
+        }
+    }
+
+    private async Task RefreshSubscriptions()
+    {
+        if (string.IsNullOrWhiteSpace(serialCode))
+        {
+            errorMessage = "Please enter a valid serial code.";
+            successMessage = null;
+            ShowToast("Error", errorMessage, ToastRenderStyle.Danger);
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        successMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            // Update subscription configuration and get live data
+            subscriptions = await CompanyService.RefreshCompanySubscriptionsAsync(CompanyId, serialCode);
+            hasValidSubscriptionConfig = true;
+
+            var count = subscriptions?.Count ?? 0;
+            
+            if (count > 0)
+            {
+                successMessage = $"Successfully retrieved {count} subscription{(count == 1 ? "" : "s")}.";
+                ShowToast("Success", successMessage, ToastRenderStyle.Success);
+            }
+            else
+            {
+                errorMessage = $"No subscriptions found for serial code '{serialCode}'. Please verify the serial code is correct.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to refresh subscriptions: {ex.Message}";
+            ShowToast("Error", errorMessage, ToastRenderStyle.Danger);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadLiveSubscriptions()
+    {
+        if (!hasValidSubscriptionConfig)
+        {
+            return;
+        }
+
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            subscriptions = await CompanyService.GetCompanySubscriptionsAsync(CompanyId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load live subscriptions: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveSubscriptionConfiguration()
+    {
+        isLoading = true;
+        errorMessage = null;
+        successMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var success = await CompanyService.RemoveCompanySubscriptionConfigurationAsync(CompanyId);
+            
+            if (success)
+            {
+                successMessage = "Subscription configuration removed successfully.";
+                ShowToast("Success", successMessage, ToastRenderStyle.Success);
+                
+                // Clear local state
+                subscriptions = null;
+                subscriptionConfig = null;
+                serialCode = "";
+                hasValidSubscriptionConfig = false;
+            }
+            else
+            {
+                errorMessage = "No subscription configuration found to remove.";
+                ShowToast("Warning", errorMessage, ToastRenderStyle.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to remove subscription configuration: {ex.Message}";
+            ShowToast("Error", errorMessage, ToastRenderStyle.Danger);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void NavigateToLicenseService(string licenseServiceUrl)
+    {
+        if (!string.IsNullOrEmpty(licenseServiceUrl))
+        {
+            Navigation.NavigateTo(licenseServiceUrl, true);
+        }
+    }
+
+    private void ShowToast(string title, string message, ToastRenderStyle style)
+    {
+        ToastService.ShowToast(new ToastOptions
+        {
+            ProviderName = "MainLayout",
+            Title = title,
+            Text = message,
+            ThemeMode = ToastThemeMode.Saturated,
+            RenderStyle = style,
+        });
+    }
+}

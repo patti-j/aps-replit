@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Import shared properties and targets. Including framework version -->
+	<Import Project="..\..\SolutionMiscFiles\ProjectSharedTargetsWindows.props" />
+	<PropertyGroup>
+		<AssemblyName>PT.APSCommon.Windows</AssemblyName>
+		<RootNamespace>PT.APSCommon.Windows</RootNamespace>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DefineConstants>TRACE;LoginAdmin;[Localization]</DefineConstants>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs" Link="Properties\AssemblyInfoShared.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="DevExpress.Win" Version="25.2.3" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\APSCommon\APSCommon.csproj" />
+		<ProjectReference Include="..\Common.Windows\Common.Windows.csproj" />
+		<ProjectReference Include="..\Common\Common.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Update="CommandWindow\CommandPrompt.cs">
+			<SubType>Component</SubType>
+		</Compile>
+		<Compile Update="Properties\Resources.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+	<PropertyGroup>
+		<DotfuscatorIncludeAsInput>true</DotfuscatorIncludeAsInput>
+	</PropertyGroup>
+</Project>

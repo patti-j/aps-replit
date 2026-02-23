@@ -1,0 +1,162 @@
+﻿@* @using DevExpress.AIIntegration.OpenAI.Services
+@using DevExpress.AIIntegration.Blazor.Chat
+@using ReportsWebApp.DB
+@using ReportsWebApp.DB.Models
+@using DevExpress.Blazor
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.Pages
+@using Markdig;
+@using System.IO;
+@using System.Reflection;
+
+<div class="ai-chat-container">
+    <div class="fab-container">
+        <!-- Primary Floating Action Button -->
+        <div class="fab shadow" @onclick="ToggleChatVisibility">
+            <div class="fab-content">
+                <svg class="dxbl-image dxbl-chatui-empty-icon" focusable="false" aria-hidden="true" style="height: 30px; width: 30px;">
+                    <use class="dxbl-icon-set-default" href="_content/DevExpress.Blazor/dx-blazor.svg?v=24.2.3.0#dx-ai-chat"></use>
+                    <use class="dxbl-icon-set-fluent" href="_content/DevExpress.Blazor/dx-blazor.svg?v=24.2.3.0#dx-ai-chat-fluent"></use>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Sub-buttons with dynamic questions -->
+        @if (ShowChatOptions)
+        {
+            <div class="sub-button shadow" @onclick="() => AskAI(Question1)">
+                <i class="fa-solid fa-lightbulb"></i>
+                <div class="sub-button-title">@Question1</div>
+            </div>
+            <div class="sub-button shadow" @onclick="() => AskAI(Question2)">
+                <i class="fa-solid fa-circle-question"></i>
+                <div class="sub-button-title">@Question2</div>
+            </div>
+            <div class="sub-button shadow" @onclick="() => AskAI(Question3)">
+                <i class="fa-solid fa-comment-dots"></i>
+                <div class="sub-button-title">@Question3</div>
+            </div>
+        }
+    </div>
+
+    <!-- Chat Panel -->
+    @if (ShowChat)
+    {
+        <div class="main-pt-chat-wrapper">
+            <div class="chat-header">
+                <span>Planning Areas Assistant</span>
+                <DxButton IconCssClass="fa fa-times" CssClass="btn-icon text-bg-danger" Click="CloseChat" />
+            </div>
+            <DxAIChat Initialized="ChatInitialized" CssClass="main-pt-chat" ResponseContentFormat="ResponseContentFormat.Markdown" UseStreaming="true">
+                <MessageTemplate>
+                    <div class="@GetMessageClasses(context)">
+                        @if (context.Typing)
+                        {
+                            <span>
+                                <div class="fa-2x">
+                                    <i class="fas fa-cog fa-spin"></i>
+                                </div>
+                            </span>
+                        }
+                        else
+                        {
+                            <div class="main-pt-chat-content">
+                                @ToHtml(context.Content)
+                            </div>
+                        }
+                    </div>
+                </MessageTemplate>
+            </DxAIChat>
+        </div>
+    }
+</div>
+
+@code {
+    private bool ShowChatOptions = false; // Toggles visibility of sub-buttons
+    private bool ShowChat = false; // Toggles visibility of the chat panel
+
+    // Questions and their associated labels/icons
+    private string Question = "";
+    private string Question1 = "What is the current production schedule status?";
+    private string Question2 = "Which areas can we optimize for higher efficiency?";
+    private string Question3 = "Can you provide a summary of recent performance metrics?";
+
+    private void ToggleChatVisibility()
+    {
+        ShowChatOptions = !ShowChatOptions;
+        if (!ShowChatOptions)
+        {
+            ShowChat = false; // Close chat if options are hidden
+        }
+    }
+
+    private void CloseChat()
+    {
+        ShowChat = false;
+    }
+
+    private const string DocumentResourceName = "ReportsWebApp.Data.PAS.txt";
+    private const string Prompt = "Help the user manage production schedules, resource planning, inventory levels, and overall efficiency.";
+
+    private async Task ChatInitialized(IAIChat chat)
+    {
+        try
+        {
+            //When we first tested this, the Devexpress AI controls required passing training data as a file in addition to the prompt. This had problems because (1) we didn't seem to have the ability to use an openAI assistant this way with our OpenAI credentials, and (2) the requirement to send data as a file was restrictive to what we needed to do. TODO: in future devexpress releases, we can review AI changes and see if it's more usable
+            using (Stream data = Assembly.GetExecutingAssembly().GetManifestResourceStream(DocumentResourceName))
+            {
+                OpenAIAssistantOptions openAIAssistantOptions = new OpenAIAssistantOptions(
+                    $"{Guid.NewGuid():N}.txt",
+                    data,
+                    Prompt
+                );
+                await chat.SetupAssistantAsync("PlanningAssistant", openAIAssistantOptions);
+            }
+            
+            // Send the selected question to the AI
+            if (chat != null)
+            {
+                chat.LoadMessages(new[]
+                    {
+                        new BlazorChatMessage(Microsoft.Extensions.AI.ChatRole.Assistant, "Welcome! How can I assist with planning today?"),
+                        new BlazorChatMessage(Microsoft.Extensions.AI.ChatRole.User, Question)
+                    });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing chat assistant: {ex.Message}");
+        }
+
+    }
+
+
+    MarkupString ToHtml(string text)
+    {
+        return (MarkupString)Markdown.ToHtml(text);
+    }
+
+    private void AskAI(string question)
+    {
+        // Ensure the chat panel is visible
+        Question = question;
+        ShowChat = true;
+        ShowChatOptions = false;
+    }
+
+    string GetMessageClasses(BlazorChatMessage message)
+    {
+        if (ChatMessageRole.Error == message.Role)
+        {
+            Console.WriteLine($"Error initializing chat assistant: {message.Content}");
+        }
+        return message.Role switch
+        {
+            ChatMessageRole.Assistant => "main-pt-chat-message main-pt-assistant-message",
+            ChatMessageRole.User => "main-pt-chat-message main-pt-user-message",
+            ChatMessageRole.Error => "main-pt-chat-message main-pt-error-message",
+            _ => "main-pt-chat-message"
+        };
+    }
+}
+ *@

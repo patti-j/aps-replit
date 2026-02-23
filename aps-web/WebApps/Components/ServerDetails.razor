@@ -1,0 +1,449 @@
+﻿@page "/servermanager/serverdetails"
+@using Microsoft.EntityFrameworkCore
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.Helpers
+@using Utils = ReportsWebApp.Shared.Utils
+@inject ServiceContainer ServiceContainer
+@inject IToastNotificationService toastService
+@inject IServerActionsService actionService
+@inject ICompanyService companyService
+@inject IJSRuntime jsRuntime
+@inject INavigationStateService NavigationStateService
+@implements IDisposable
+
+<h3>
+    Server Management
+    <div class="install-server-manager">
+        <DxButton Text="Install New Server Agent" Click="ShowServerInstall" IconCssClass="fa fa-plus"></DxButton>
+    </div>
+</h3>
+
+@if (m_latestVersion == null)
+{
+    <h5><em>Fetching latest version...</em></h5>
+}
+else
+{
+    <h5>Latest version available: <strong>@m_latestVersion </strong></h5>
+}
+
+
+@if (servers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid Data="@servers" ShowFilterRow="true"
+            CustomizeElement="CustomizeElement"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            @ref="m_grid"
+            PageSize="10"
+            CssClass="ch-480"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer"
+            UnboundColumnData="Grid_CustomUnboundColumnData">
+        <Columns>
+            <DxGridCommandColumn Width="100px" NewButtonVisible="false">
+                <CellDisplayTemplate Context="context">
+                    @{
+                        var server = (DB.Models.CompanyServer)context.DataItem;
+                    }
+                    <ActionDropdown DataItem="server" Actions="_actions" />
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+            <DxGridDataColumn FieldName="Id" Visible="false" ReadOnly="true" />
+            <DxGridDataColumn FieldName="Name" Caption="Name" MinWidth="160" />
+            <DxGridDataColumn FieldName="Version" Caption="Version" MinWidth="75" />
+            <DxGridDataColumn FieldName="ManagingCompany" Caption="Company" MinWidth="120" />
+            <DxGridDataColumn FieldName="Owner" Caption="Owner" UnboundType="GridUnboundColumnType.String" />
+            <DxGridDataColumn FieldName="ComputerNameOrIP" Caption="Instance Host Name" MinWidth="150" />
+            <DxGridDataColumn FieldName="Status" Caption="Status" MinWidth="150">
+                <CellDisplayTemplate Context="ctx">
+                    @{
+                        var context = ((CompanyServer)ctx.DataItem);
+                    }
+                    <div class="badge-container d-flex w-100">
+                        <span class="badge-style m-auto @GetBadgeTone(context.IsOnline)">
+                            <i class="@GetIconClass(context.IsOnline) badge-icon"></i>
+                            <strong>
+                                @context.Status
+                            </strong>
+                        </span>
+                    </div>
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+            <DxGridDataColumn FieldName="Location" Caption="Location" MinWidth="150" />
+            <DxGridDataColumn FieldName="FormattedCreationDate" Caption="Created" MinWidth="300" UnboundType="GridUnboundColumnType.String" />
+            <DxGridDataColumn FieldName="PossiblyShortNotes" Caption="Notes" MinWidth="300" UnboundType="GridUnboundColumnType.String" />
+        </Columns>
+    </DxGrid>
+    <DxPopup @bind-Visible="@PopupVisible"
+             HeaderText="Install Instructions"
+             ShowFooter="true"
+             @ref="Popup">
+        <BodyContentTemplate>
+            <div>
+                @*TODO: Add link to Server Manager Installer once we have a stable link*@
+                @($"Please download and run the Server Agent Installer now. When prompted, enter this code to continue:")
+            </div>
+            <div class="code-display">
+                @($"{code}")
+            </div>
+        </BodyContentTemplate>
+        <FooterContentTemplate>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="@(codeCopied ? "Copied!" : "Copy Code")" Click="CopyCode" />
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Download Installer" Click="StartDownload" />
+        </FooterContentTemplate>
+    </DxPopup>
+    <ConfirmationDialog @ref="dialog" />
+}
+
+@code {
+    private IGrid? m_grid { get; set; }
+    private DxPopup Popup { get; set; }
+
+    private Version? m_latestVersion { get; set; }
+
+    private User currentUser { get; set; }
+    private List<User> Users { get; set; }
+    private List<DB.Models.CompanyServer> servers { get; set; } = new();
+    private List<Company> companies { get; set; } = new(); // For managing companies dropdown and tagbox
+    private IEnumerable<ActionItem<DB.Models.CompanyServer>> _actions { get; set; }
+
+    private bool PopupVisible = false;
+    private string code = "";
+    private bool codeCopied = false;
+    private bool viewPermission = false;
+    private ConfirmationDialog dialog;
+
+    [Inject] AzureTableService _tableService { get; set; }
+    [Inject] IJSRuntime js { get; set; }
+
+    private string GetIconClass(bool status)
+    {
+        return status switch
+        {
+            true => "fa-solid fa-circle-play",         // Play icon for active/ongoing state
+            false => "fa-solid fa-circle-xmark",       // Circle with slash for disconnected
+        };
+    }
+
+    private string GetBadgeTone(bool status)
+    {
+        return status switch
+        {
+            true => "pill-tone-1",
+            false => "pill-tone-2",
+        };
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            //toastService.ShowToast("Info", "Initializing server details...", ToastRenderStyle.Info, 4);
+            m_latestVersion = Version.Parse((await _tableService.GetLatestServerAgentVersion()).VersionNumber);
+            currentUser = await ServiceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+            Users = await ServiceContainer.UserService.GetUsersAsync(null, currentUser.CompanyId);
+            if (Shared.Utils.BlockUsersByAuthStatus(currentUser, Permission.ViewServers, NavigationManager, true)) return;
+
+
+            _actions = new List<ActionItem<DB.Models.CompanyServer>>
+            {
+                new ActionItem<DB.Models.CompanyServer>
+                {
+                    ActionText = "Manage Planning Areas",
+                    IconCssClass = "fa fa-tachometer",
+                    Action = async (server) => NavigateToPlanningAreas(server),
+                    ShouldActionButtonBeEnabled = (x => (currentUser.IsAuthorizedFor(Permission.OwnedOnlyServers) && x.OwningUserId == currentUser.Id) || currentUser.IsAuthorizedFor(Permission.AdministrateServers))
+                },
+                new ActionItem<DB.Models.CompanyServer>
+                {
+                    ActionText = "Settings",
+                    IconCssClass = "fa fa-cog",
+                    Action = async (server) => NavigateToSettings(server),
+                    ShouldActionButtonBeEnabled = (x => (currentUser.IsAuthorizedFor(Permission.OwnedOnlyServers) && x.OwningUserId == currentUser.Id) || currentUser.IsAuthorizedFor(Permission.AdministrateServers))
+                },
+                new ActionItem<DB.Models.CompanyServer>
+                {
+                    ActionText = "Upgrade to the Latest Version",
+                    IconCssClass = "fa-solid fa-upload",
+                    Action = async (server) => await UpgradeServerAsync(server),
+                    ShouldActionButtonBeEnabled = (server) =>
+                    {
+                        if (!(currentUser.IsAuthorizedFor(Permission.OwnedOnlyServers) && server.OwningUserId == currentUser.Id) || currentUser.IsAuthorizedFor(Permission.AdministrateServers))
+                        {
+                            return false;
+                        }
+                        if (Version.TryParse(server.Version, out var version))
+                        {
+                            // V12 is older than v0, so allow update
+                            if (version.Major == 12)
+                            {
+                                return true;
+                            }
+                            return m_latestVersion != null && version < m_latestVersion;
+                        }
+                        return false;
+                    }
+                },
+                new ActionItem<CompanyServer>
+                {
+                    ActionText = "Delete",
+                    IconCssClass = "fa-solid fa-trash",
+                    Action = async (server) => await GridHelpers.ConfirmBeforeCalling(server, (o) => DeleteServerAsync((CompanyServer)o), dialog),
+                    ShouldActionButtonBeEnabled = (x => (currentUser.IsAuthorizedFor(Permission.OwnedOnlyServers) && x.OwningUserId == currentUser.Id) || currentUser.IsAuthorizedFor(Permission.AdministrateServers))
+                }
+            };
+
+            await LoadServersAsync();
+
+
+            // TODO: These options populate what companies can be set as Using Companies for a server - we should limit them to a subset so that not all servers can be assigned to any company.
+            // TODO: What we need is a mechanism to identify a Managing Company (e.g. PT is the Managing Company for many others, but maybe some partner is the managing company for a few companies.)
+            // TODO: This will likely tie in with changes to make the PlanetTogetherCompany less all-powerful (ARC-115)
+            companies = await ServiceContainer.CompanyService.GetCompaniesAsync();
+            //toastService.ShowToast("Success", "Server details loaded successfully", ToastRenderStyle.Success, 4);
+
+            lock (serverStatusCache)
+            {
+                foreach (CompanyServer server in servers)
+                {
+                    serverStatusCache[server.Id] = server.LastActivity;
+                }
+            }
+            statusListener = new EventBusListener((a_event) =>
+            {
+                if (a_event is PAStatusUpdateEvent ev)
+                {
+                    lock (serverStatusCache)
+                    {
+                        serverStatusCache[ev.PlanningAreaStatusList.ServerId] = DateTime.UtcNow;
+                    }
+                }
+            }, typeof(PAStatusUpdateEvent));
+
+            shutdownListener = new EventBusListener((a_event) =>
+            {
+                if (a_event is PlanningAreaShutdownEvent ev)
+                {
+                    var server = servers.FirstOrDefault(x => x.AuthToken == ev.Token);
+
+                    if (server != null)
+                    {
+                        lock (serverStatusCache)
+                        {
+                            serverStatusCache[server.Id] = default;
+                        }
+                    }
+                }
+            }, typeof(PlanningAreaShutdownEvent));
+
+            shouldKeepPolling = true;
+            PollServerFunc(); //not awaited, runs in background
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowToast("Error", $"Failed to check latest server version: {ex.Message}", ToastRenderStyle.Danger, 5);
+        }
+    }
+
+    private async Task DeleteServerAsync(CompanyServer server)
+    {
+        await ServiceContainer.ServerManagerService.DeleteServerAsync(server.Id);
+        servers.Remove(server);
+        StateHasChanged();
+    }
+
+    private EventBusListener statusListener;
+    private EventBusListener shutdownListener;
+
+
+
+    private object /*<bool>*/ isPolling = new object();
+    private bool shouldKeepPolling;
+    Dictionary<int, DateTime> serverStatusCache = new();
+    private async Task PollServerFunc()
+    {
+        lock (isPolling)
+        {
+            if (isPolling is not bool)
+            {
+                isPolling = true;
+            }
+            else
+            {
+                if (((bool)isPolling))
+                {
+                    return;
+                }
+                else
+                {
+                    isPolling = true;
+                }
+            }
+        }
+
+        Dictionary<int, bool> serverOnlineCache = new(); //because IsOnline is a calculated field, we can't test for going offline
+        while (shouldKeepPolling)
+        {
+            //setting the entire list that backs the grid could cause the page to update in ways the user doesnt want
+            //i.e. deselecting things that have been selected
+            bool somethingChanged = false;
+            lock (serverStatusCache)
+            {
+                foreach (var server in serverStatusCache)
+                {
+                    CompanyServer? companyServer;
+                    if ((companyServer = servers.FirstOrDefault(s => s.Id == server.Key)) != null)
+                    {
+                        bool hasKey = serverOnlineCache.TryGetValue(companyServer.Id, out bool wasOnline);
+                        if (companyServer.LastActivity != server.Value || (hasKey && companyServer.IsOnline != wasOnline))
+                        {
+                            companyServer.LastActivity = server.Value;
+                            serverOnlineCache[companyServer.Id] = companyServer.IsOnline;
+                            somethingChanged = true;
+                        }
+                    }
+                }
+            }
+
+            if (somethingChanged)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+
+            await Task.Delay(3000);
+        }
+    }
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(m_grid);
+        base.OnAfterRender(firstRender);
+    }
+
+    protected async Task ShowServerInstall()
+    {
+        code = await companyService.GetCurrentInstallCode(currentUser);
+        codeCopied = false;
+        PopupVisible = true;
+    }
+
+    protected async Task CopyCode()
+    {
+        await jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", code);
+        codeCopied = true;
+    }
+
+    private async Task StartDownload(MouseEventArgs a_arg)
+    {
+        NavigationManager.NavigateTo("https://deployment.planettogether.com/$web/software/AgentInstaller/PlanetTogetherServerAgent.exe");
+    }
+
+    private async Task LoadServersAsync()
+    {
+        servers = await ServiceContainer.ServerManagerService.GetServersByManagingCompanyAsync(currentUser.CompanyId, true);
+    }
+
+    private async Task UpgradeServerAsync(DB.Models.CompanyServer server)
+    {
+        try
+        {
+            if (m_latestVersion != null)
+            {
+                if (await actionService.RequestServerUpgrade(server.Id, currentUser))
+                {
+                    toastService.ShowToast("Success", $"Version {m_latestVersion} upgrade request successfully sent to {server.Name}!", ToastRenderStyle.Success, 5);
+                }
+                else
+                {
+                    toastService.ShowToast("Already Updating", $"This server is already in the process of updating.", ToastRenderStyle.Info, 5);
+                }
+            }
+            else
+            {
+                toastService.ShowToast("Warning", "No new updates available.", ToastRenderStyle.Warning, 3);
+            }
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowToast("Error", $"Error requesting upgrade for {server.Name}: {ex.Message}", ToastRenderStyle.Danger, 5);
+        }
+    }
+
+    private void NavigateToSettings(DB.Models.CompanyServer server) => NavigateTo("servermanager/settings", server);
+
+    private void NavigateToHome(DB.Models.CompanyServer server) => NavigateTo("servermanager/home", server);
+
+    private void NavigateToPlanningAreas(CompanyServer server) => NavigateTo("servermanager/planningareas", server);
+
+    private void NavigateTo(string url, DB.Models.CompanyServer server)
+    {
+        ServiceContainer.ScopedAppStateService.Server = server;
+        ServiceContainer.ScopedAppStateService.BackPath = "serverdetails";
+        var current = new Uri(NavigationManager.Uri);
+        var next = new Uri(NavigationManager.BaseUri + url);
+
+        NavigationManager.NavigateTo(url, forceLoad: current.LocalPath == next.LocalPath);
+    }
+
+    void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+        int id = Convert.ToInt32(e.GetRowValue("Id"));
+        var item = servers.Find(c => c.Id == id);
+        var tz = ServiceContainer.UserTimeZone ?? "UTC";
+
+        if (item == null) return;
+
+        string notes = item.Notes ?? "";
+
+
+        e.Value = e.FieldName switch
+        {
+            "FormattedCreationDate" =>
+                Utils.FormatUtcDate(item.CreationDate, currentUser),
+
+            "PossiblyShortNotes" => notes.Length > 70 ? e.Value = notes[0..70] + "..." : notes,
+
+            "Owner" => item.OwningUser?.FullName ?? "None",
+
+            _ => null
+        };
+    }
+
+    private void CustomizeElement(GridCustomizeElementEventArgs e)
+    {
+        if (e.ElementType == GridElementType.DataCell)
+        {
+            if (e.Column.Caption == "Notes")
+            {
+                string notes = servers.FirstOrDefault(s => s.Id == Convert.ToInt32(e.Grid.GetRowValue(e.VisibleIndex, "Id")))?.Notes ?? "";
+                if (notes.Length > 70)
+                {
+                    e.Attributes["title"] = notes;
+                }
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        shouldKeepPolling = false;
+        lock (isPolling)
+        {
+            isPolling = false;
+        }
+        statusListener.Dispose();
+        if (Popup is IDisposable popupDisposable)
+            popupDisposable.Dispose();
+        else
+            _ = Popup.DisposeAsync().AsTask();
+    }
+
+}

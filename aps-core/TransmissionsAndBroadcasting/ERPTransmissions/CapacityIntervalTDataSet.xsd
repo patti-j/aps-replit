@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="CapacityIntervalTDataSet" targetNamespace="http://tempuri.org/CapacityIntervalTDataSet.xsd" xmlns:mstns="http://tempuri.org/CapacityIntervalTDataSet.xsd" xmlns="http://tempuri.org/CapacityIntervalTDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="CapacityIntervalTDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="CapacityIntervalTDataSet" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="CapacityIntervalTDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="CapacityInterval" msprop:Generator_RowEvHandlerName="CapacityIntervalRowChangeEventHandler" msprop:Generator_RowDeletedName="CapacityIntervalRowDeleted" msprop:Generator_RowDeletingName="CapacityIntervalRowDeleting" msprop:Generator_RowEvArgName="CapacityIntervalRowChangeEvent" msprop:Generator_TablePropName="CapacityInterval" msprop:Generator_RowChangedName="CapacityIntervalRowChanged" msprop:Generator_UserTableName="CapacityInterval" msprop:Generator_RowChangingName="CapacityIntervalRowChanging" msprop:Generator_RowClassName="CapacityIntervalRow" msprop:Generator_TableClassName="CapacityIntervalDataTable" msprop:Generator_TableVarName="tableCapacityInterval">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="ExternalId" msprop:Generator_ColumnPropNameInTable="ExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ExternalId" msprop:Generator_UserColumnName="ExternalId" msprop:Generator_ColumnVarNameInTable="columnExternalId" type="xs:string" />
+              <xs:element name="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_UserColumnName="Name" msprop:Generator_ColumnVarNameInTable="columnName" type="xs:string" />
+              <xs:element name="Description" msprop:Generator_ColumnPropNameInTable="DescriptionColumn" msprop:Generator_ColumnPropNameInRow="Description" msprop:Generator_UserColumnName="Description" msprop:Generator_ColumnVarNameInTable="columnDescription" type="xs:string" minOccurs="0" />
+              <xs:element name="Notes" msprop:Generator_ColumnPropNameInTable="NotesColumn" msprop:Generator_ColumnPropNameInRow="Notes" msprop:Generator_UserColumnName="Notes" msprop:Generator_ColumnVarNameInTable="columnNotes" type="xs:string" minOccurs="0" />
+              <xs:element name="StartDateTime" msprop:Generator_ColumnPropNameInTable="StartDateTimeColumn" msprop:Generator_ColumnPropNameInRow="StartDateTime" msprop:Generator_UserColumnName="StartDateTime" msprop:Generator_ColumnVarNameInTable="columnStartDateTime" type="xs:dateTime" />
+              <xs:element name="EndDateTime" msprop:Generator_ColumnPropNameInTable="EndDateTimeColumn" msprop:Generator_ColumnPropNameInRow="EndDateTime" msprop:Generator_UserColumnName="EndDateTime" msprop:Generator_ColumnVarNameInTable="columnEndDateTime" type="xs:dateTime" />
+              <xs:element name="NbrOfPeople" msprop:Generator_ColumnPropNameInTable="NbrOfPeopleColumn" msprop:Generator_ColumnPropNameInRow="NbrOfPeople" msprop:Generator_UserColumnName="NbrOfPeople" msprop:Generator_ColumnVarNameInTable="columnNbrOfPeople" type="xs:double" minOccurs="0" />
+              <xs:element name="IntervalType" msprop:Generator_ColumnPropNameInTable="IntervalTypeColumn" msprop:Generator_ColumnPropNameInRow="IntervalType" msprop:Generator_UserColumnName="IntervalType" msprop:Generator_ColumnVarNameInTable="columnIntervalType" type="xs:string" minOccurs="0" />
+              <xs:element name="Color" msprop:Generator_ColumnPropNameInTable="ColorColumn" msprop:Generator_ColumnPropNameInRow="Color" msprop:Generator_UserColumnName="Color" msprop:Generator_ColumnVarNameInTable="columnColor" type="xs:string" minOccurs="0" />
+              <xs:element name="ResetAttributeChangeovers" msprop:Generator_ColumnPropNameInTable="ResetAttributeChangeoversColumn" msprop:Generator_ColumnPropNameInRow="ResetAttributeChangeovers" msprop:Generator_UserColumnName="ResetAttributeChangeovers" msprop:Generator_ColumnVarNameInTable="columnResetAttributeChangeovers" type="xs:boolean" minOccurs="0" />
+              <xs:element name="PreventOperationsFromSpanning" msprop:Generator_ColumnPropNameInTable="PreventOperationsFromSpanningColumn" msprop:Generator_ColumnPropNameInRow="PreventOperationsFromSpanning" msprop:Generator_UserColumnName="PreventOperationsFromSpanning" msprop:Generator_ColumnVarNameInTable="columnPreventOperationsFromSpanning" type="xs:boolean" minOccurs="0" />
+              <xs:element name="CanStartActivity" msprop:Generator_ColumnPropNameInTable="CanStartActivityColumn" msprop:Generator_ColumnPropNameInRow="CanStartActivity" msprop:Generator_UserColumnName="CanStartActivity" msprop:Generator_ColumnVarNameInTable="columnCanStartActivity" type="xs:boolean" minOccurs="0" />
+              <xs:element name="UsedForSetup" msprop:Generator_ColumnPropNameInTable="UsedForSetupColumn" msprop:Generator_ColumnPropNameInRow="UsedForSetup" msprop:Generator_UserColumnName="UsedForSetup" msprop:Generator_ColumnVarNameInTable="columnUsedForSetup" type="xs:boolean" minOccurs="0" />
+              <xs:element name="UsedForRun" msprop:Generator_ColumnPropNameInTable="UsedForRunColumn" msprop:Generator_ColumnPropNameInRow="UsedForRun" msprop:Generator_UserColumnName="UsedForRun" msprop:Generator_ColumnVarNameInTable="columnUsedForRun" type="xs:boolean" minOccurs="0" />
+              <xs:element name="UsedForPostProcessing" msprop:Generator_ColumnPropNameInTable="UsedForPostProcessingColumn" msprop:Generator_ColumnPropNameInRow="UsedForPostProcessing" msprop:Generator_UserColumnName="UsedForPostProcessing" msprop:Generator_ColumnVarNameInTable="columnUsedForPostProcessing" type="xs:boolean" minOccurs="0" />
+              <xs:element name="UsedForClean" msprop:Generator_ColumnPropNameInTable="UsedForCleanColumn" msprop:Generator_ColumnPropNameInRow="UsedForClean" msprop:Generator_UserColumnName="UsedForClean" msprop:Generator_ColumnVarNameInTable="columnUsedForClean" type="xs:boolean" minOccurs="0" />
+              <xs:element name="UsedForStoragePostProcessing" msprop:Generator_ColumnPropNameInTable="UsedForStoragePostProcessingColumn" msprop:Generator_ColumnPropNameInRow="UsedForStoragePostProcessing" msprop:Generator_UserColumnName="UsedForStoragePostProcessing" msprop:Generator_ColumnVarNameInTable="columnUsedForStoragePostProcessing" type="xs:boolean" minOccurs="0" />
+              <xs:element name="Overtime" msprop:Generator_ColumnPropNameInTable="OvertimeColumn" msprop:Generator_ColumnPropNameInRow="Overtime" msprop:Generator_UserColumnName="Overtime" msprop:Generator_ColumnVarNameInTable="columnOvertime" type="xs:boolean" minOccurs="0" />
+              <xs:element name="UseOnlyWhenLate" msprop:Generator_ColumnPropNameInTable="UseOnlyWhenLateColumn" msprop:Generator_ColumnPropNameInRow="UseOnlyWhenLate" msprop:Generator_UserColumnName="UseOnlyWhenLate" msprop:Generator_ColumnVarNameInTable="columnUseOnlyWhenLate" type="xs:boolean" minOccurs="0" />
+              <xs:element name="CapacityCode" msprop:Generator_ColumnPropNameInTable="CapacityCodeColumn" msprop:Generator_ColumnPropNameInRow="CapacityCode" msprop:Generator_UserColumnName="CapacityCode" msprop:Generator_ColumnVarNameInTable="columnCapacityCode" type="xs:string" minOccurs="0" />
+              <xs:element name="UserFields" msprop:Generator_ColumnPropNameInTable="UserFieldsColumn" msprop:Generator_ColumnPropNameInRow="UserFields" msprop:Generator_UserColumnName="UserFields" msprop:Generator_ColumnVarNameInTable="columnUserFields" type="xs:string" minOccurs="0" />
+              <xs:element name="IntervalPreset" msprop:Generator_UserColumnName="IntervalPreset" msprop:Generator_ColumnPropNameInTable="IntervalPresetColumn" msprop:Generator_ColumnPropNameInRow="IntervalPreset" msprop:Generator_ColumnVarNameInTable="columnIntervalPreset" type="xs:string" minOccurs="0" />
+              <xs:element name="CanBeDraggedOrResized" msprop:Generator_ColumnPropNameInRow="CanBeDraggedOrResized" msprop:Generator_ColumnPropNameInTable="CanBeDraggedOrResizedColumn" msprop:Generator_ColumnVarNameInTable="columnCanBeDraggedOrResized" msprop:Generator_UserColumnName="CanBeDraggedOrResized" type="xs:boolean" minOccurs="0" />
+              <xs:element name="CanBeDeleted" msprop:Generator_ColumnPropNameInRow="CanBeDeleted" msprop:Generator_ColumnPropNameInTable="CanBeDeletedColumn" msprop:Generator_ColumnVarNameInTable="columnCanBeDeleted" msprop:Generator_UserColumnName="CanBeDeleted" type="xs:boolean" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Resources" msprop:Generator_RowEvHandlerName="ResourcesRowChangeEventHandler" msprop:Generator_RowDeletedName="ResourcesRowDeleted" msprop:Generator_RowDeletingName="ResourcesRowDeleting" msprop:Generator_RowEvArgName="ResourcesRowChangeEvent" msprop:Generator_TablePropName="Resources" msprop:Generator_RowChangedName="ResourcesRowChanged" msprop:Generator_UserTableName="Resources" msprop:Generator_RowChangingName="ResourcesRowChanging" msprop:Generator_RowClassName="ResourcesRow" msprop:Generator_TableClassName="ResourcesDataTable" msprop:Generator_TableVarName="tableResources">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="PlantExternalId" msprop:Generator_ColumnPropNameInTable="PlantExternalIdColumn" msprop:Generator_ColumnPropNameInRow="PlantExternalId" msprop:Generator_UserColumnName="PlantExternalId" msprop:Generator_ColumnVarNameInTable="columnPlantExternalId" type="xs:string" />
+              <xs:element name="DepartmentExternalId" msprop:Generator_ColumnPropNameInTable="DepartmentExternalIdColumn" msprop:Generator_ColumnPropNameInRow="DepartmentExternalId" msprop:Generator_UserColumnName="DepartmentExternalId" msprop:Generator_ColumnVarNameInTable="columnDepartmentExternalId" type="xs:string" />
+              <xs:element name="ResourceExternalId" msprop:Generator_ColumnPropNameInTable="ResourceExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ResourceExternalId" msprop:Generator_UserColumnName="ResourceExternalId" msprop:Generator_ColumnVarNameInTable="columnResourceExternalId" type="xs:string" />
+              <xs:element name="CapacityIntervalExternalId" msprop:Generator_ColumnPropNameInTable="CapacityIntervalExternalIdColumn" msprop:Generator_ColumnPropNameInRow="CapacityIntervalExternalId" msprop:Generator_UserColumnName="CapacityIntervalExternalId" msprop:Generator_ColumnVarNameInTable="columnCapacityIntervalExternalId" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:CapacityInterval" />
+      <xs:field xpath="mstns:ExternalId" />
+    </xs:unique>
+  </xs:element>
+  <xs:annotation>
+    <xs:appinfo>
+      <msdata:Relationship name="CapacityInterval_Resources" msdata:parent="CapacityInterval" msdata:child="Resources" msdata:parentkey="ExternalId" msdata:childkey="CapacityIntervalExternalId" msprop:Generator_UserParentTable="CapacityInterval" msprop:Generator_UserChildTable="Resources" msprop:Generator_RelationVarName="relationCapacityInterval_Resources" msprop:Generator_ChildPropName="GetResourcesRows" msprop:Generator_ParentPropName="CapacityIntervalRow" msprop:Generator_UserRelationName="CapacityInterval_Resources" />
+    </xs:appinfo>
+  </xs:annotation>
+</xs:schema>

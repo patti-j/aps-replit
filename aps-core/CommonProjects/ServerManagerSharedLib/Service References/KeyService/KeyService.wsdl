@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:tns="http://tempuri.org/" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="KeyService" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://tempuri.org/Imports">
+      <xsd:import schemaLocation="https://localhost:45456/app/KeyService.svc?xsd=xsd0" namespace="http://tempuri.org/" />
+      <xsd:import schemaLocation="https://localhost:45456/app/KeyService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import schemaLocation="https://localhost:45456/app/KeyService.svc?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/LicenseServices" />
+      <xsd:import schemaLocation="https://localhost:45456/app/KeyService.svc?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" />
+      <xsd:import schemaLocation="https://localhost:45456/app/KeyService.svc?xsd=xsd4" namespace="http://schemas.datacontract.org/2004/07/System" />
+      <xsd:import schemaLocation="https://localhost:45456/app/KeyService.svc?xsd=xsd5" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="IKeyService_GetLastKeyUpdateDateTime_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetLastKeyUpdateDateTime" />
+  </wsdl:message>
+  <wsdl:message name="IKeyService_GetLastKeyUpdateDateTime_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetLastKeyUpdateDateTimeResponse" />
+  </wsdl:message>
+  <wsdl:message name="IKeyService_GetLatestKey_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetLatestKey" />
+  </wsdl:message>
+  <wsdl:message name="IKeyService_GetLatestKey_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetLatestKeyResponse" />
+  </wsdl:message>
+  <wsdl:message name="IKeyService_ConvertToSystemIdKey_InputMessage">
+    <wsdl:part name="parameters" element="tns:ConvertToSystemIdKey" />
+  </wsdl:message>
+  <wsdl:message name="IKeyService_ConvertToSystemIdKey_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ConvertToSystemIdKeyResponse" />
+  </wsdl:message>
+  <wsdl:message name="IKeyService_UpdateLicenseId_InputMessage">
+    <wsdl:part name="parameters" element="tns:UpdateLicenseId" />
+  </wsdl:message>
+  <wsdl:message name="IKeyService_UpdateLicenseId_OutputMessage">
+    <wsdl:part name="parameters" element="tns:UpdateLicenseIdResponse" />
+  </wsdl:message>
+  <wsdl:message name="IKeyService_GetCompanyLicenseData_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetCompanyLicenseData" />
+  </wsdl:message>
+  <wsdl:message name="IKeyService_GetCompanyLicenseData_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetCompanyLicenseDataResponse" />
+  </wsdl:message>
+  <wsdl:portType name="IKeyService">
+    <wsdl:operation name="GetLastKeyUpdateDateTime">
+      <wsdl:input wsaw:Action="http://tempuri.org/IKeyService/GetLastKeyUpdateDateTime" message="tns:IKeyService_GetLastKeyUpdateDateTime_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IKeyService/GetLastKeyUpdateDateTimeResponse" message="tns:IKeyService_GetLastKeyUpdateDateTime_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetLatestKey">
+      <wsdl:input wsaw:Action="http://tempuri.org/IKeyService/GetLatestKey" message="tns:IKeyService_GetLatestKey_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IKeyService/GetLatestKeyResponse" message="tns:IKeyService_GetLatestKey_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="ConvertToSystemIdKey">
+      <wsdl:input wsaw:Action="http://tempuri.org/IKeyService/ConvertToSystemIdKey" message="tns:IKeyService_ConvertToSystemIdKey_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IKeyService/ConvertToSystemIdKeyResponse" message="tns:IKeyService_ConvertToSystemIdKey_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateLicenseId">
+      <wsdl:input wsaw:Action="http://tempuri.org/IKeyService/UpdateLicenseId" message="tns:IKeyService_UpdateLicenseId_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IKeyService/UpdateLicenseIdResponse" message="tns:IKeyService_UpdateLicenseId_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCompanyLicenseData">
+      <wsdl:input wsaw:Action="http://tempuri.org/IKeyService/GetCompanyLicenseData" message="tns:IKeyService_GetCompanyLicenseData_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IKeyService/GetCompanyLicenseDataResponse" message="tns:IKeyService_GetCompanyLicenseData_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_IKeyService" type="tns:IKeyService">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetLastKeyUpdateDateTime">
+      <soap:operation soapAction="http://tempuri.org/IKeyService/GetLastKeyUpdateDateTime" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetLatestKey">
+      <soap:operation soapAction="http://tempuri.org/IKeyService/GetLatestKey" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ConvertToSystemIdKey">
+      <soap:operation soapAction="http://tempuri.org/IKeyService/ConvertToSystemIdKey" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateLicenseId">
+      <soap:operation soapAction="http://tempuri.org/IKeyService/UpdateLicenseId" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCompanyLicenseData">
+      <soap:operation soapAction="http://tempuri.org/IKeyService/GetCompanyLicenseData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="KeyService">
+    <wsdl:port name="BasicHttpBinding_IKeyService" binding="tns:BasicHttpBinding_IKeyService">
+      <soap:address location="http://amin.planettogether.int:45455/app/KeyService.svc" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

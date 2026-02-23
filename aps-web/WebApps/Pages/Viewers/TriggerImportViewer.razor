@@ -1,0 +1,27 @@
+﻿@page "/triggerImportViewer"
+
+<TriggerImportGrid Instances="Instances" EditInstances="false" />
+
+@code {
+    private User User { get; set; }
+
+    public List<CompanyDb> Instances { get; set; } = new List<CompanyDb>();
+    public List<Role> Groups { get; set; } = new List<Role>();
+    public List<User> Users { get; set; } = new List<User>();
+
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    ICompanyDbService instanceService { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+
+        if (User.Exists())
+        {
+            Instances = instanceService.GetTriggerImportEntities(User.CompanyId);
+        }
+    }
+}

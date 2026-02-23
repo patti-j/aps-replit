@@ -1,0 +1,454 @@
+﻿@page "/scheduler/{FavoriteId:guid?}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Components.Web
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.DB.Services.SchedulerHelpers
+@using Microsoft.JSInterop
+@inject ServiceContainer _serviceContainer
+@inject SchedulerInitializer SchedulerInitializer
+@inject IPlanningAreaDataService PlanningAreaDataService
+@inject INavigationStateService NavigationStateService
+@implements IDisposable
+
+@if (isLoading)
+{
+    <h5><br><br><br><br>Loading...</h5>
+}
+else if (Scenarios != null && Scenarios.Any())
+{
+    <ScenariosGrid Scenarios="Scenarios"
+    OnShow="ShowScenario"/>
+}
+else
+{
+    <h5><br><br><br><br>"There is no data in your analytics database. Please try publishing to analytics from PlanetTogether software."</h5>
+}
+
+<div class="sliding-panel @(ShowGanttPanel ? "visible" : "")">
+    <ActivityDisplayOptions @bind-ShowPopup="@_serviceContainer.PopupManager.ShowActivityPopup" Scenario="@CurrentScenario"
+                            SegmentTypesChanged="TriggerSegmentTypesUpdatesInBackground" @ref="DisplayOptions"/>
+    <SchedulerFavoritesOptions @bind-ShowPopup="@_serviceContainer.PopupManager.ShowFavoritesPopup"
+                               SchedulerInterop="schedulerInterop"
+                               Scenario="CurrentScenario"/>
+    <HierarchyFilter @bind-ShowPopup="@_serviceContainer.PopupManager.ShowHierarchyFilterPopup" HierarchyFilterChanged="HandleHierarchyFilterUpdates"/>
+    <KeyboardShortcutsPopup @bind-ShowPopup="@_serviceContainer.PopupManager.ShowKeyboardShortcutsPopup"></KeyboardShortcutsPopup>
+    <ResourceManagement @bind-ShowPopup="@_serviceContainer.PopupManager.ShowResourcesPopup"
+                        Resources="@_serviceContainer.GanttService?.ActiveProject?.Resources" OnUpdate="HandleResourceUpdates"/>
+    <DxFormLayout>
+        <DxFormLayoutGroup>
+            <HeaderTemplate>
+                <ServerContextHeader Title="@pageTitle"
+                                     Subtitle1="@PAName"
+                                     Subtitle2="@ScenarioName"
+                                     Subtitle3="@EnvName"
+                                     ShowSaveButton="@(_serviceContainer.GanttService.GanttConfigModified)"
+                                     ShowCloseButton="true"
+                                     ShowEnvironmentPills="true"
+                                     OnClose="ClosePanel"
+                                     OnSave="@OnSaveClicked"
+                                     @ref="ServerHeader"/>
+            </HeaderTemplate>
+            <Items>
+                <div class="container-panel">
+                    <div class="mx-lg-3 p-3">
+                        <ErrorMessagesDisplay ErrorMessages="@errorMessages"/>
+                        <div id="form-gantt-container">
+                            <LoadingOverlay IsLoading="@isLoading" Message="@loadingMessage">
+                                <Content>
+                                    <div id="gantt-container"
+                                         style="height: @(_serviceContainer.PopupManager.ShowZoomPanel ? 63 : 83)vh; background: transparent; width: 100%"
+                                         class="@((errorMessages.Count > 0) ? "d-none" : "card")">
+
+                                        <SchedulerToolbar SchedulerInterop="schedulerInterop"
+                                                          @bind-PredefinedAction="@predefinedAction"/>
+
+                                        <div id="gantt" style="height: 100%;"></div>
+                                    </div>
+
+                                    @if (_serviceContainer.PopupManager.ShowZoomPanel)
+                                    {
+                                        <div style="height: 20vh">
+                                            <GanttZoomControl @ref="_zoomControl" Scenario="CurrentScenario" SchedulerInterop="schedulerInterop"/>
+                                        </div>
+                                    }
+                                </Content>
+                            </LoadingOverlay>
+                        </div>
+                    </div>
+                </div>
+            </Items>
+        </DxFormLayoutGroup>
+    </DxFormLayout>
+</div>
+
+@code {
+    [Inject]
+    IAppInsightsLogger logger { get; set; }
+    // Component parameters
+    [Parameter]
+    public Guid? FavoriteId { get; set; }
+
+    private GanttZoomControl? _zoomControl { get; set; }
+    private bool isLoading = true;
+    private string loadingMessage = "Loading...";
+    private string PAName = "";
+    private string ScenarioId = "";
+    private string ScenarioName = "";
+    private string EnvName = "";
+    private bool ShowGanttPanel = false;
+    private string pageTitle = "Schedule Gantt";
+    private ToolbarAction predefinedAction;
+    private List<string> errorMessages = new();
+    private List<Scenario> Scenarios = new();
+    private Scenario __scenario = new();
+
+    private Scenario CurrentScenario
+    {
+        get
+        {
+            return __scenario;
+        }
+        set
+        {
+            __scenario = value;
+            DisplayOptions.Scenario = value;
+        }
+    }
+
+    private Dictionary<string, string> scenarioStatuses = new();
+    private HashSet<string> loadedScenarioIds = new();
+    private SchedulerInterop schedulerInterop;
+    private List<ShortcutSection> ShortcutSections;
+    private bool IsDevModeOn { get; set; } = false;
+    public ActivityDisplayOptions DisplayOptions { get; set; }
+    public ServerContextHeader ServerHeader { get; set; }
+
+    private bool _deferredFavoriteErrorPending;
+    private string _deferredFavoriteErrorMessage;
+
+    // Data models
+    private User user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        SubscribeToEvents();
+        if (await CheckUserAuthorizationAsync())
+        {
+            Scenarios = await SchedulerInitializer.LoadScenariosAsync(user);
+        }
+        StateHasChanged();
+        if (!FavoriteId.HasValue)
+        {
+            isLoading = false;
+        }
+    }
+
+    bool hasTriedToLoadFav = false;
+    SemaphoreSlim sem = new SemaphoreSlim(1, 1);
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await RenderScheduler();
+        }
+        
+        sem.Wait();
+        if (!hasTriedToLoadFav)
+        {
+            _serviceContainer.GanttService.OnGanttConfigChanged += GanttServiceOnOnGanttConfigChanged;
+            hasTriedToLoadFav = true;
+            sem.Release();
+            await LoadFavoriteIfNeeded(); //blocks for a really long time
+        }
+        else
+        {
+            sem.Release();
+        }
+
+        if (_deferredFavoriteErrorPending)
+        {
+            AddErrorMessage(_deferredFavoriteErrorMessage);
+            _deferredFavoriteErrorPending = false;
+            _deferredFavoriteErrorMessage = string.Empty;
+            ShowLoadingState(false, "");
+            StateHasChanged();
+        }
+    }
+
+    private void GanttServiceOnOnGanttConfigChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadFavoriteIfNeeded()
+    {
+        if (!FavoriteId.HasValue)
+            return;
+
+        var favorite = await _serviceContainer.FavoritesService.GetFavoriteByIdAsync(FavoriteId.Value);
+        if (favorite == null)
+        {
+            errorMessages.Add("Favorite schedule not found.");
+            return;
+        }
+
+        pageTitle = favorite.Name;
+        GanttFavoriteData favData = await _serviceContainer.CosmosDbService.GetItemAsync(favorite.CosmosDbRecordId.ToString());
+        Scenarios = await SchedulerInitializer.LoadScenariosAsync(user);
+        CurrentScenario = Scenarios.FirstOrDefault(s => s.Id == favData.ScenarioId);
+
+        if (CurrentScenario == null)
+        {
+            _deferredFavoriteErrorPending = true;
+            _deferredFavoriteErrorMessage =
+                $"Could not load scenario data for saved gantt '{favorite.Name}'. " +
+                $"Please try again, or create a new favorite with the same scenario.";
+            return;
+        }
+
+        _serviceContainer.GanttService.SetFavorite(favData);
+
+        PrepareScenarioContext(CurrentScenario);
+        ClearState();
+
+        ShowLoadingState(true, $"Loading scenario {CurrentScenario.Name}...");
+
+        var loadResult = await SchedulerInitializer.LoadScenarioStructureAsync(
+            CurrentScenario,
+            ShowLoadingState);
+
+        if (!loadResult.Success)
+        {
+            AddErrorMessage(loadResult.ErrorMessage);
+            ShowLoadingState(false, "");
+            return;
+        }
+
+        ShowLoadingState(false, "");
+        await InitializeScheduler();
+    }
+
+    private async Task<bool> CheckUserAuthorizationAsync()
+    {
+        user = await _serviceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(user, null, NavigationManager)) return false;
+        return true;
+    }
+
+    private async Task ShowScenario(Scenario scenario)
+    {
+        Scenarios = await SchedulerInitializer.LoadScenariosAsync(user);
+        scenario = Scenarios.First(s => s.Id == scenario.Id);
+        PrepareScenarioContext(scenario);
+        ClearState();
+
+        ShowLoadingState(true, $"Loading scenario {scenario.Name}...");
+        
+        var loadResult = await SchedulerInitializer.LoadScenarioDataAsync(
+            scenario,
+            ShowLoadingState,
+            scenarioStatuses);
+
+        if (!loadResult.Success)
+        {
+            AddErrorMessage(loadResult.ErrorMessage);
+            ShowLoadingState(false, "");
+            return;
+        }
+        
+        ShowLoadingState(false, "");
+        await InitializeScheduler();
+    }
+
+    private async void PrepareScenarioContext(Scenario scenario)
+    {
+        (CurrentScenario, PAName, ScenarioName, ScenarioId, EnvName, ShowGanttPanel) =
+            (scenario, scenario.PlanningAreaName, scenario.Name, scenario.Id, scenario.Environment, true);
+        
+        if (!FavoriteId.HasValue)
+        {
+            pageTitle = CurrentScenario.Name;
+        }
+        StateHasChanged();
+    }
+
+    private void ClearState()
+    {
+        errorMessages.Clear();
+    }
+
+    CancellationTokenSource? BackgroundSettingsTask;
+
+    BryntumGridSettings? m_gridSettings
+    {
+        get
+        {
+            return _serviceContainer.GanttService.ActiveGridSettings;
+        }
+        set
+        {
+            _serviceContainer.GanttService.ActiveGridSettings = value;
+        }
+    }
+    
+    private async Task InitializeScheduler()
+    {
+        m_gridSettings = _serviceContainer.GanttService.ActiveFavorite?.GridSettings;
+        var initResult = await SchedulerInitializer.InitializeSchedulerAsync(user.CompanyId, _serviceContainer.GanttService.ActiveProject, _serviceContainer.GanttService.ActiveFavorite?.GridSettings);
+        _zoomControl?.InitializeZoomControl();
+        if (!initResult.Success)
+        {
+            AddErrorMessage(initResult.ErrorMessage);
+        }
+
+        
+        if (BackgroundSettingsTask != null)
+        {
+            await BackgroundSettingsTask.CancelAsync();
+        }
+        
+        Task.Run(async () =>
+        {
+            var tokenSource = new CancellationTokenSource();
+            BackgroundSettingsTask = tokenSource;
+            while (true)
+            {
+                if (tokenSource.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                var settings = await SchedulerInitializer.CollectBryntumGridSettings();
+                bool changed = (!(m_gridSettings?.Equals(settings) ?? false));
+                
+                if (changed)
+                {
+                    _serviceContainer.GanttService.GanttConfigModified = true;
+                    m_gridSettings = settings;
+                    await InvokeAsync(StateHasChanged);
+                }
+
+                await Task.Delay(500);
+            }
+        });
+    }
+
+    private void ClosePanel()
+    {
+        FavoriteId = null;
+        _serviceContainer.GanttService.ClearFavorite();
+        NavigationStateService.NavigateTo("/scheduler");
+        ShowGanttPanel = false;
+        StateHasChanged();
+    }
+
+    private void ShowLoadingState(bool state, string message)
+    {
+        isLoading = state;
+        loadingMessage = message;
+        StateHasChanged();
+    }
+
+    private void AddErrorMessage(string message)
+    {
+        errorMessages.Add(message);
+        StateHasChanged();
+    }
+
+    private async Task RenderScheduler()
+    {
+        try
+        {
+            schedulerInterop = new SchedulerInterop(_serviceContainer.JSRuntime, "gantt", logger);
+            await SchedulerInitializer.PrepareScheduler(schedulerInterop);
+
+            var dotNetObjectReference = DotNetObjectReference.Create(this);
+            ShortcutSections = _serviceContainer.ShortcutService.GetShortcutSections();
+            var initError = await schedulerInterop.InitializeAsync(dotNetObjectReference, ShortcutSections);
+
+            if (!string.IsNullOrEmpty(initError)) AddErrorMessage(initError);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex);
+            AddErrorMessage($"An error occurred during initialization: {ex.Message}");
+        }
+    }
+
+    private void TriggerSegmentTypesUpdatesInBackground()
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await InvokeAsync(() => ShowLoadingState(true, $"Recoloring scenario {CurrentScenario.Name}..."));
+                _serviceContainer.GanttService.ActiveProject.Settings = _serviceContainer.GanttService.ActiveSettings;
+                var loadResult = await SchedulerInitializer.RecolorScenarioDataAsync(
+                    CurrentScenario,
+                    (loading, msg) => InvokeAsync(() => ShowLoadingState(loading, msg)),  // UI-safe callback
+                    scenarioStatuses);
+
+                if (!loadResult.Success)
+                {
+                    await InvokeAsync(() => AddErrorMessage(loadResult.ErrorMessage));
+                }
+                else
+                {
+                    await InvokeAsync(() => InitializeScheduler());
+                }
+            }
+            catch (Exception ex)
+            {
+                await InvokeAsync(() => AddErrorMessage($"Unexpected error: {ex.Message}"));
+            }
+            finally
+            {
+                await InvokeAsync(() => ShowLoadingState(false, ""));
+            }
+        });
+    }
+
+    private async Task HandleResourceUpdates(HashSet<string> visibleIds)
+    {
+        await _serviceContainer.GanttService.UpdateResourceVisibilityAsync(_serviceContainer.GanttService.ActiveProject, visibleIds);
+        await InitializeScheduler();
+    }
+
+    private async Task HandleHierarchyFilterUpdates(HashSet<string> enabledNodeIds)
+    {
+        _serviceContainer.GanttService.ResourceFiltering = enabledNodeIds;
+
+        _serviceContainer.GanttService.GanttConfigModified = true;
+        await SchedulerInitializer.UpdateHierarchyFilterAsync(user.CompanyId, _serviceContainer.GanttService.ActiveProject, enabledNodeIds, _serviceContainer.GanttService.ActiveFavorite?.GridSettings);
+        await InitializeScheduler();
+    }
+
+    private void SubscribeToEvents()
+    {
+        _serviceContainer.PopupManager.OnChange += StateHasChanged;
+        _serviceContainer.ShortcutService.DevModeTurnedOn += delegate { IsDevModeOn = true; TriggerSegmentTypesUpdatesInBackground(); };
+    }
+
+    public void Dispose()
+    {
+        BackgroundSettingsTask?.Cancel();
+        BackgroundSettingsTask?.Dispose();
+        _serviceContainer.GanttService.OnGanttConfigChanged -= GanttServiceOnOnGanttConfigChanged;
+    }
+
+    private void OnSaveClicked()
+    {
+        _serviceContainer.GanttService.ActiveGridSettings = m_gridSettings;
+        if (_serviceContainer.GanttService.ActiveFavorite != null)
+        {
+            _serviceContainer.GanttService.ActiveFavorite.GridSettings = m_gridSettings;
+            _serviceContainer.GanttService.ActiveFavorite.ResourceFiltering = _serviceContainer.GanttService.ResourceFiltering;
+            _serviceContainer.GanttService.ActiveFavorite.ResourceVisibilityAndOrder = _serviceContainer.GanttService.ResourceVisibilityAndOrder;
+        }
+        _serviceContainer.GanttService.SaveCurrentGanttConfig();
+        InvokeAsync(StateHasChanged);
+        
+    }
+
+}

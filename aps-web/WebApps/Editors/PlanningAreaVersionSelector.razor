@@ -1,0 +1,45 @@
+﻿@using ReportsWebApp.DB
+@using ReportsWebApp.Pages
+@inject ServiceContainer ServiceContainer
+
+<DxPopup Visible="Visible" MaxWidth="800px" HeaderText="Select Version" ShowFooter="true" Closed="OnCancel">
+    <BodyContentTemplate Context="popupBodyContext">
+        <DxFormLayout>
+            @if (FilteredVersions.Any())
+            {
+                <DxFormLayoutItem Caption="Version" ColSpanLg="12">
+                    <DxComboBox Data="@FilteredVersions" @bind-Value="SelectedVersion" NullText="Select a version"></DxComboBox>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Start Service After Upgrade" ColSpanLg="12">
+                    <DxCheckBox @bind-Checked="StartAfterUpgrade"></DxCheckBox>
+                </DxFormLayoutItem>
+            }
+            else
+            {
+                <span class="pa-no-updates-span">This planning area is up to date.</span>
+            }
+        </DxFormLayout>
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooterContext">
+        @if (FilteredVersions.Any())
+        {
+            <DxButton Click="() => OnConfirm(PlanningArea, SelectedVersion, StartAfterUpgrade)" Enabled="SelectedVersion != null">Upgrade</DxButton>
+        }
+        else
+        {
+            <DxButton Click="OnCancel">Ok</DxButton>
+        }
+    </FooterContentTemplate>
+</DxPopup>
+
+@code {
+    [Parameter] public PADetails PlanningArea { get; set; } = new();
+    [Parameter] public Action OnCancel { get; set; }
+    [Parameter] public Func<PADetails, string, bool, Task> OnConfirm { get; set; }
+    [Parameter] public List<string> Versions { get; set; }
+    public IEnumerable<string> FilteredVersions => Versions.Where(x => Version.Parse(x) > Version.Parse(PlanningArea.Version));
+    [Parameter] public bool Visible { get; set; }
+
+    private string? SelectedVersion = null;
+    private bool StartAfterUpgrade = false;
+}

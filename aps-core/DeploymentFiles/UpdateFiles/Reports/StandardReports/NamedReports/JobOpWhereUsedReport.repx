@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XtraReportsLayoutSerializer SerializerVersion="20.1.3.0" Ref="0" ControlType="DevExpress.XtraReports.UI.XtraReport, DevExpress.XtraReports.v20.1, Version=20.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Name="JobOpWhereUsedReport" DataSourceSchema="&lt;?xml version=&quot;1.0&quot;?&gt;&#xD;&#xA;&lt;xs:schema id=&quot;WhereUsedDataSet&quot; targetNamespace=&quot;http://tempuri.org/WhereUsedDataSet.xsd&quot; xmlns:mstns=&quot;http://tempuri.org/WhereUsedDataSet.xsd&quot; xmlns=&quot;http://tempuri.org/WhereUsedDataSet.xsd&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:msdata=&quot;urn:schemas-microsoft-com:xml-msdata&quot; xmlns:msprop=&quot;urn:schemas-microsoft-com:xml-msprop&quot; attributeFormDefault=&quot;qualified&quot; elementFormDefault=&quot;qualified&quot;&gt;&#xD;&#xA;  &lt;xs:element name=&quot;WhereUsedDataSet&quot; msdata:IsDataSet=&quot;true&quot; msdata:UseCurrentLocale=&quot;true&quot; msprop:EnableTableAdapterManager=&quot;true&quot; msprop:Generator_DataSetName=&quot;WhereUsedDataSet&quot; msprop:Generator_UserDSName=&quot;WhereUsedDataSet&quot;&gt;&#xD;&#xA;    &lt;xs:complexType&gt;&#xD;&#xA;      &lt;xs:choice minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;&gt;&#xD;&#xA;        &lt;xs:element name=&quot;Usages&quot; msprop:Generator_UserTableName=&quot;Usages&quot; msprop:Generator_RowEvArgName=&quot;UsagesRowChangeEvent&quot; msprop:Generator_TableVarName=&quot;tableUsages&quot; msprop:Generator_TablePropName=&quot;Usages&quot; msprop:Generator_RowDeletingName=&quot;UsagesRowDeleting&quot; msprop:Generator_RowChangingName=&quot;UsagesRowChanging&quot; msprop:Generator_RowDeletedName=&quot;UsagesRowDeleted&quot; msprop:Generator_RowEvHandlerName=&quot;UsagesRowChangeEventHandler&quot; msprop:Generator_TableClassName=&quot;UsagesDataTable&quot; msprop:Generator_RowChangedName=&quot;UsagesRowChanged&quot; msprop:Generator_RowClassName=&quot;UsagesRow&quot;&gt;&#xD;&#xA;          &lt;xs:complexType&gt;&#xD;&#xA;            &lt;xs:sequence&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Supplying_x0020_Job&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnSupplying_Job&quot; msprop:Generator_ColumnPropNameInRow=&quot;Supplying_Job&quot; msprop:Generator_ColumnPropNameInTable=&quot;Supplying_JobColumn&quot; msprop:Generator_UserColumnName=&quot;Supplying Job&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Supplying_x0020_Op&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnSupplying_Op&quot; msprop:Generator_ColumnPropNameInRow=&quot;Supplying_Op&quot; msprop:Generator_ColumnPropNameInTable=&quot;Supplying_OpColumn&quot; msprop:Generator_UserColumnName=&quot;Supplying Op&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Supplying_x0020_Op_x0020_Desc&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnSupplying_Op_Desc&quot; msprop:Generator_ColumnPropNameInRow=&quot;Supplying_Op_Desc&quot; msprop:Generator_ColumnPropNameInTable=&quot;Supplying_Op_DescColumn&quot; msprop:Generator_UserColumnName=&quot;Supplying Op Desc&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Supplying_x0020_Product_x0020_Qty&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnSupplying_Product_Qty&quot; msprop:Generator_ColumnPropNameInRow=&quot;Supplying_Product_Qty&quot; msprop:Generator_ColumnPropNameInTable=&quot;Supplying_Product_QtyColumn&quot; msprop:Generator_UserColumnName=&quot;Supplying Product Qty&quot; type=&quot;xs:decimal&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Supplying_x0020_Product_x0020_Desc&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnSupplying_Product_Desc&quot; msprop:Generator_ColumnPropNameInRow=&quot;Supplying_Product_Desc&quot; msprop:Generator_ColumnPropNameInTable=&quot;Supplying_Product_DescColumn&quot; msprop:Generator_UserColumnName=&quot;Supplying Product Desc&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Supplying_x0020_Need_x0020_Date&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnSupplying_Need_Date&quot; msprop:Generator_ColumnPropNameInRow=&quot;Supplying_Need_Date&quot; msprop:Generator_ColumnPropNameInTable=&quot;Supplying_Need_DateColumn&quot; msprop:Generator_UserColumnName=&quot;Supplying Need Date&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Supplying_x0020_Op_x0020_UOM&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnSupplying_Op_UOM&quot; msprop:Generator_ColumnPropNameInRow=&quot;Supplying_Op_UOM&quot; msprop:Generator_ColumnPropNameInTable=&quot;Supplying_Op_UOMColumn&quot; msprop:Generator_UserColumnName=&quot;Supplying Op UOM&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Product&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnProduct&quot; msprop:Generator_ColumnPropNameInRow=&quot;Product&quot; msprop:Generator_ColumnPropNameInTable=&quot;ProductColumn&quot; msprop:Generator_UserColumnName=&quot;Product&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Product_x0020_Desc&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnProduct_Desc&quot; msprop:Generator_ColumnPropNameInRow=&quot;Product_Desc&quot; msprop:Generator_ColumnPropNameInTable=&quot;Product_DescColumn&quot; msprop:Generator_UserColumnName=&quot;Product Desc&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Qty_x0020_Used&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnQty_Used&quot; msprop:Generator_ColumnPropNameInRow=&quot;Qty_Used&quot; msprop:Generator_ColumnPropNameInTable=&quot;Qty_UsedColumn&quot; msprop:Generator_UserColumnName=&quot;Qty Used&quot; type=&quot;xs:decimal&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;When_x0020_Used&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnWhen_Used&quot; msprop:Generator_ColumnPropNameInRow=&quot;When_Used&quot; msprop:Generator_ColumnPropNameInTable=&quot;When_UsedColumn&quot; msprop:Generator_UserColumnName=&quot;When Used&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Job&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnJob&quot; msprop:Generator_ColumnPropNameInRow=&quot;Job&quot; msprop:Generator_ColumnPropNameInTable=&quot;JobColumn&quot; msprop:Generator_UserColumnName=&quot;Job&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;MO&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnMO&quot; msprop:Generator_ColumnPropNameInRow=&quot;MO&quot; msprop:Generator_ColumnPropNameInTable=&quot;MOColumn&quot; msprop:Generator_UserColumnName=&quot;MO&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Op&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnOp&quot; msprop:Generator_ColumnPropNameInRow=&quot;Op&quot; msprop:Generator_ColumnPropNameInTable=&quot;OpColumn&quot; msprop:Generator_UserColumnName=&quot;Op&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Job_x0020_Need_x0020_Date&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnJob_Need_Date&quot; msprop:Generator_ColumnPropNameInRow=&quot;Job_Need_Date&quot; msprop:Generator_ColumnPropNameInTable=&quot;Job_Need_DateColumn&quot; msprop:Generator_UserColumnName=&quot;Job Need Date&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Customer&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnCustomer&quot; msprop:Generator_ColumnPropNameInRow=&quot;Customer&quot; msprop:Generator_ColumnPropNameInTable=&quot;CustomerColumn&quot; msprop:Generator_UserColumnName=&quot;Customer&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;MO_x0020_Product&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnMO_Product&quot; msprop:Generator_ColumnPropNameInRow=&quot;MO_Product&quot; msprop:Generator_ColumnPropNameInTable=&quot;MO_ProductColumn&quot; msprop:Generator_UserColumnName=&quot;MO Product&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;MO_x0020_Product_x0020_Desc&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnMO_Product_Desc&quot; msprop:Generator_ColumnPropNameInRow=&quot;MO_Product_Desc&quot; msprop:Generator_ColumnPropNameInTable=&quot;MO_Product_DescColumn&quot; msprop:Generator_UserColumnName=&quot;MO Product Desc&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;MO_x0020_Reqd_x0020_Qty&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnMO_Reqd_Qty&quot; msprop:Generator_ColumnPropNameInRow=&quot;MO_Reqd_Qty&quot; msprop:Generator_ColumnPropNameInTable=&quot;MO_Reqd_QtyColumn&quot; msprop:Generator_UserColumnName=&quot;MO Reqd Qty&quot; type=&quot;xs:decimal&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Op_x0020_Desc&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnOp_Desc&quot; msprop:Generator_ColumnPropNameInRow=&quot;Op_Desc&quot; msprop:Generator_ColumnPropNameInTable=&quot;Op_DescColumn&quot; msprop:Generator_UserColumnName=&quot;Op Desc&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Job_x0020_Desc&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnJob_Desc&quot; msprop:Generator_ColumnPropNameInRow=&quot;Job_Desc&quot; msprop:Generator_ColumnPropNameInTable=&quot;Job_DescColumn&quot; msprop:Generator_UserColumnName=&quot;Job Desc&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Op_x0020_JIT_x0020_Start&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnOp_JIT_Start&quot; msprop:Generator_ColumnPropNameInRow=&quot;Op_JIT_Start&quot; msprop:Generator_ColumnPropNameInTable=&quot;Op_JIT_StartColumn&quot; msprop:Generator_UserColumnName=&quot;Op JIT Start&quot; type=&quot;xs:dateTime&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Total_x0020_Reqd_x0020_Qty&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnTotal_Reqd_Qty&quot; msprop:Generator_ColumnPropNameInRow=&quot;Total_Reqd_Qty&quot; msprop:Generator_ColumnPropNameInTable=&quot;Total_Reqd_QtyColumn&quot; msprop:Generator_UserColumnName=&quot;Total Reqd Qty&quot; type=&quot;xs:decimal&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;              &lt;xs:element name=&quot;Resources&quot; msprop:Generator_ColumnVarNameInTable=&quot;columnResources&quot; msprop:Generator_ColumnPropNameInRow=&quot;Resources&quot; msprop:Generator_ColumnPropNameInTable=&quot;ResourcesColumn&quot; msprop:Generator_UserColumnName=&quot;Resources&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;&#xD;&#xA;            &lt;/xs:sequence&gt;&#xD;&#xA;          &lt;/xs:complexType&gt;&#xD;&#xA;        &lt;/xs:element&gt;&#xD;&#xA;      &lt;/xs:choice&gt;&#xD;&#xA;    &lt;/xs:complexType&gt;&#xD;&#xA;  &lt;/xs:element&gt;&#xD;&#xA;&lt;/xs:schema&gt;" Landscape="true" Margins="17, 20, 11, 11" PageWidth="1100" PageHeight="850" Version="20.1" Font="Arial, 9.75pt">
+  <Bands>
+    <Item1 Ref="1" ControlType="TopMarginBand" Name="TopMargin" HeightF="11" />
+    <Item2 Ref="2" ControlType="BottomMarginBand" Name="BottomMargin" HeightF="11" />
+    <Item3 Ref="3" ControlType="DetailBand" Name="Detail" HeightF="0.249989823" />
+    <Item4 Ref="4" ControlType="ReportFooterBand" Name="ReportFooter" HeightF="3.125" />
+    <Item5 Ref="5" ControlType="PageHeaderBand" Name="PageHeader" HeightF="93.04167">
+      <Controls>
+        <Item1 Ref="6" ControlType="XRLabel" Name="label2" CanGrow="false" Text="Job Op Where-Used Report" TextAlignment="TopCenter" SizeF="855.0689,33.33333" LocationFloat="110,10.0000067" Font="Arial, 20pt, style=Bold" ForeColor="White" BackColor="255,16,110,190" Padding="2,2,0,0,100" BorderColor="Black" Borders="None" BorderWidth="1">
+          <StylePriority Ref="7" UseForeColor="false" UseBackColor="false" UseTextAlignment="false" />
+        </Item1>
+        <Item2 Ref="8" ControlType="XRPageInfo" Name="xrPageInfo1" PageInfo="DateTime" TextAlignment="MiddleRight" SizeF="152.77771,23.0000038" LocationFloat="900.222351,60.0416679" Padding="2,2,0,0,100">
+          <StylePriority Ref="9" UseTextAlignment="false" />
+        </Item2>
+      </Controls>
+    </Item5>
+    <Item6 Ref="10" ControlType="PageFooterBand" Name="PageFooter" HeightF="3.125" />
+    <Item7 Ref="11" ControlType="DetailReportBand" Name="DetailReport" Level="0" DataMember="Usages">
+      <Bands>
+        <Item1 Ref="12" ControlType="DetailBand" Name="Detail1" HeightF="90.43465" KeepTogether="true">
+          <Controls>
+            <Item1 Ref="13" ControlType="XRLabel" Name="label8" Multiline="true" Text="xrLabel10" SizeF="130.375092,54.9583168" LocationFloat="401.125122,10.0000114" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="14" EventName="BeforePrint" PropertyName="Text" Expression="[Op]" />
+              </ExpressionBindings>
+            </Item1>
+            <Item2 Ref="15" ControlType="XRLabel" Name="xrLabel22" Multiline="true" Text="xrLabel10" SizeF="130.375,54.9583168" LocationFloat="792.25,9.999997" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="16" EventName="BeforePrint" PropertyName="Text" Expression="[Total Reqd Qty]" />
+              </ExpressionBindings>
+            </Item2>
+            <Item3 Ref="17" ControlType="XRLabel" Name="xrLabel21" Multiline="true" Text="xrLabel10" SizeF="130.375,54.9583168" LocationFloat="661.875,9.999997" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="18" EventName="BeforePrint" PropertyName="Text" Expression="[Job Need Date]" />
+              </ExpressionBindings>
+            </Item3>
+            <Item4 Ref="19" ControlType="XRLabel" Name="xrLabel20" Multiline="true" Text="xrLabel10" SizeF="130.375015,54.958313" LocationFloat="140.375015,9.999986" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="20" EventName="BeforePrint" PropertyName="Text" Expression="[MO Product Desc]" />
+              </ExpressionBindings>
+            </Item4>
+            <Item5 Ref="21" ControlType="XRLabel" Name="xrLabel19" Multiline="true" Text="xrLabel10" SizeF="130.375031,54.958313" LocationFloat="9.999979,9.999986" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="22" EventName="BeforePrint" PropertyName="Text" Expression="[MO Product]" />
+              </ExpressionBindings>
+            </Item5>
+            <Item6 Ref="23" ControlType="XRLabel" Name="xrLabel16" Multiline="true" Text="xrLabel10" SizeF="130.374939,54.95831" LocationFloat="531.500061,9.999997" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="24" EventName="BeforePrint" PropertyName="Text" Expression="[Job]" />
+              </ExpressionBindings>
+            </Item6>
+            <Item7 Ref="25" ControlType="XRLabel" Name="xrLabel15" Multiline="true" Text="xrLabel10" SizeF="130.375092,54.9583168" LocationFloat="270.750031,10.0000114" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="26" EventName="BeforePrint" PropertyName="Text" Expression="[Resources]" />
+              </ExpressionBindings>
+            </Item7>
+            <Item8 Ref="27" ControlType="XRLabel" Name="xrLabel14" Multiline="true" Text="xrLabel10" SizeF="130.375,54.9583168" LocationFloat="922.625,9.999997" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="28" EventName="BeforePrint" PropertyName="Text" Expression="[When Used]" />
+              </ExpressionBindings>
+            </Item8>
+          </Controls>
+        </Item1>
+        <Item2 Ref="29" ControlType="GroupHeaderBand" Name="GroupHeader1" Level="1" HeightF="242.852463">
+          <Controls>
+            <Item1 Ref="30" ControlType="XRLabel" Name="xrLabel6" Multiline="true" Text="Product(s) from the Operation above are used by the Operation(s) below:" SizeF="514.5832,22.9999924" LocationFloat="10.0000143,196.10704" Font="Arial, 9.75pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="31" UseFont="false" />
+            </Item1>
+            <Item2 Ref="32" ControlType="XRLabel" Name="label7" Multiline="true" Text="Operation Description:" SizeF="158.333176,23" LocationFloat="10.0000114,84.25201" Font="Arial, 10pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="33" UseFont="false" />
+            </Item2>
+            <Item3 Ref="34" ControlType="XRLabel" Name="xrLabel18" Multiline="true" Text="xrLabel10" SizeF="169.7917,23" LocationFloat="625.2082,10.0000372" Font="Arial, 10pt" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="35" EventName="BeforePrint" PropertyName="Text" Expression="[Supplying Need Date]" />
+              </ExpressionBindings>
+              <StylePriority Ref="36" UseFont="false" />
+            </Item3>
+            <Item4 Ref="37" ControlType="XRLabel" Name="xrLabel13" Multiline="true" Text="xrLabel10" SizeF="164.583344,23" LocationFloat="625.2082,44.4583321" Font="Arial, 10pt" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="38" EventName="BeforePrint" PropertyName="Text" Expression="[Supplying Product Qty]" />
+              </ExpressionBindings>
+              <StylePriority Ref="39" UseFont="false" />
+            </Item4>
+            <Item5 Ref="40" ControlType="XRLabel" Name="xrLabel12" Multiline="true" Text="xrLabel10" SizeF="226.0417,23" LocationFloat="168.333145,44.4583244" Font="Arial, 10pt" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="41" EventName="BeforePrint" PropertyName="Text" Expression="[Supplying Op]" />
+              </ExpressionBindings>
+              <StylePriority Ref="42" UseFont="false" />
+            </Item5>
+            <Item6 Ref="43" ControlType="XRLabel" Name="xrLabel10" Multiline="true" Text="xrLabel10" SizeF="287.4756,23.0000076" LocationFloat="168.3332,84.25203" Font="Arial, 10pt" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="44" EventName="BeforePrint" PropertyName="Text" Expression="[Supplying Op Desc]" />
+              </ExpressionBindings>
+              <StylePriority Ref="45" UseFont="false" />
+            </Item6>
+            <Item7 Ref="46" ControlType="XRLabel" Name="xrLabel8" Multiline="true" Text="Need Date:" SizeF="99.99994,23" LocationFloat="525.208252,10.0000372" Font="Arial, 10pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="47" UseFont="false" />
+            </Item7>
+            <Item8 Ref="48" ControlType="XRLabel" Name="xrLabel3" Multiline="true" Text="Qty Produced:" SizeF="100,23" LocationFloat="525.208252,44.4583321" Font="Arial, 10pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="49" UseFont="false" />
+            </Item8>
+            <Item9 Ref="50" ControlType="XRLabel" Name="xrLabel2" Multiline="true" Text="Operation:" SizeF="158.333176,23.0000038" LocationFloat="9.99996,44.4583244" Font="Arial, 10pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="51" UseFont="false" />
+            </Item9>
+            <Item10 Ref="52" ControlType="XRLabel" Name="xrLabel1" Multiline="true" Text="Job:" SizeF="158.333176,22.9999962" LocationFloat="9.999967,10.0000067" Font="Arial, 10pt, style=Bold" Padding="2,2,0,0,100">
+              <StylePriority Ref="53" UseFont="false" />
+            </Item10>
+            <Item11 Ref="54" ControlType="XRLabel" Name="xrLabel4" Multiline="true" Text="xrLabel10" SizeF="148.128418,22.9999962" LocationFloat="789.7915,44.4583321" Font="Arial, 10pt" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="55" EventName="BeforePrint" PropertyName="Text" Expression="[Supplying Op UOM]" />
+              </ExpressionBindings>
+              <StylePriority Ref="56" UseFont="false" />
+            </Item11>
+            <Item12 Ref="57" ControlType="XRLabel" Name="label1" Multiline="true" SizeF="226.041733,23" LocationFloat="168.333145,10.0000067" Font="Arial, 10pt" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="58" EventName="BeforePrint" PropertyName="Text" Expression="[Supplying Job]" />
+              </ExpressionBindings>
+              <StylePriority Ref="59" UseFont="false" />
+            </Item12>
+            <Item13 Ref="60" ControlType="XRLabel" Name="label6" Multiline="true" Text="Product Description:" SizeF="143.936081,17.43385" LocationFloat="10.0000143,150.679626" Font="Arial, 10pt, style=Bold" ForeColor="White" BackColor="255,0,115,196" Padding="2,2,0,0,100">
+              <StylePriority Ref="61" UseFont="false" UseForeColor="false" UseBackColor="false" />
+            </Item13>
+            <Item14 Ref="62" ControlType="XRLabel" Name="label5" Multiline="true" Text="label2" SizeF="447.9168,17.4338417" LocationFloat="168.333145,150.679626" Font="Arial, 10pt, style=Bold" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="63" EventName="BeforePrint" PropertyName="Text" Expression="IsNull([Product Desc],'No description')" />
+              </ExpressionBindings>
+              <StylePriority Ref="64" UseFont="false" />
+            </Item14>
+            <Item15 Ref="65" ControlType="XRLabel" Name="label4" Multiline="true" Text="label2" SizeF="134.987259,17.43385" LocationFloat="168.333145,122.500008" Font="Arial, 10pt, style=Bold" Padding="2,2,0,0,100">
+              <ExpressionBindings>
+                <Item1 Ref="66" EventName="BeforePrint" PropertyName="Text" Expression="[Product]" />
+              </ExpressionBindings>
+              <StylePriority Ref="67" UseFont="false" />
+            </Item15>
+            <Item16 Ref="68" ControlType="XRLabel" Name="label3" Multiline="true" Text="Product:" SizeF="63.0269775,17.4338455" LocationFloat="9.999998,122.500008" Font="Arial, 10pt, style=Bold" ForeColor="White" BackColor="255,0,115,196" Padding="2,2,0,0,100">
+              <StylePriority Ref="69" UseFont="false" UseForeColor="false" UseBackColor="false" />
+            </Item16>
+          </Controls>
+        </Item2>
+        <Item3 Ref="70" ControlType="GroupHeaderBand" Name="GroupHeader2" HeightF="75.96286">
+          <Controls>
+            <Item1 Ref="71" ControlType="XRTable" Name="xrTable1" SizeF="1043,37.58335" LocationFloat="10.0000134,28.3795166">
+              <Rows>
+                <Item1 Ref="72" ControlType="XRTableRow" Name="xrTableRow1" Weight="1.5771409319219929">
+                  <Cells>
+                    <Item1 Ref="73" ControlType="XRTableCell" Name="xrTableCell3" Weight="339.11319189744387" Multiline="true" Text="Used-in Product" Font="Arial, 9.75pt, style=Bold" Padding="2,2,0,0,100">
+                      <StylePriority Ref="74" UseFont="false" />
+                    </Item1>
+                    <Item2 Ref="75" ControlType="XRTableCell" Name="xrTableCell4" Weight="339.11319189744387" Multiline="true" Text="Used-in Product Desc" Font="Arial, 9.75pt, style=Bold" Padding="2,2,0,0,100">
+                      <StylePriority Ref="76" UseFont="false" />
+                    </Item2>
+                    <Item3 Ref="77" ControlType="XRTableCell" Name="xrTableCell5" Weight="339.11319189744387" Multiline="true" Text="Destination Resources" Font="Arial, 9.75pt, style=Bold" Padding="2,2,0,0,100">
+                      <StylePriority Ref="78" UseFont="false" />
+                    </Item3>
+                    <Item4 Ref="79" ControlType="XRTableCell" Name="tableCell1" Weight="339.11319189744387" Multiline="true" Text="Operation" Font="Arial, 9.75pt, style=Bold" Padding="2,2,0,0,100">
+                      <StylePriority Ref="80" UseFont="false" />
+                    </Item4>
+                    <Item5 Ref="81" ControlType="XRTableCell" Name="xrTableCell6" Weight="339.11319189744387" Multiline="true" Text="Job" Font="Arial, 9.75pt, style=Bold" Padding="2,2,0,0,100">
+                      <StylePriority Ref="82" UseFont="false" />
+                    </Item5>
+                    <Item6 Ref="83" ControlType="XRTableCell" Name="xrTableCell7" Weight="339.11319189744387" Multiline="true" Text="Job Need Date" Font="Arial, 9.75pt, style=Bold" Padding="2,2,0,0,100">
+                      <StylePriority Ref="84" UseFont="false" />
+                    </Item6>
+                    <Item7 Ref="85" ControlType="XRTableCell" Name="xrTableCell8" Weight="339.11319189744387" Multiline="true" Text="Op Finish Qty" Font="Arial, 9.75pt, style=Bold" Padding="2,2,0,0,100">
+                      <StylePriority Ref="86" UseFont="false" />
+                    </Item7>
+                    <Item8 Ref="87" ControlType="XRTableCell" Name="xrTableCell9" Weight="339.11319189744387" Multiline="true" Text="When Used" Font="Arial, 9.75pt, style=Bold" Padding="2,2,0,0,100">
+                      <StylePriority Ref="88" UseFont="false" />
+                    </Item8>
+                  </Cells>
+                </Item1>
+              </Rows>
+            </Item1>
+          </Controls>
+        </Item3>
+      </Bands>
+    </Item7>
+  </Bands>
+</XtraReportsLayoutSerializer>

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd4" namespace="http://schemas.datacontract.org/2004/07/PT.SchedulerDefinitions" />
+  <xs:import schemaLocation="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions.cs" />
+  <xs:complexType name="ApsWebServiceResponseBase">
+    <xs:sequence>
+      <xs:element name="Exception" type="xs:boolean" />
+      <xs:element minOccurs="0" name="FullExceptionText" nillable="true" type="xs:string" />
+      <xs:element name="ResponseCode" type="tns:EApsWebServicesResponseCodes" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ApsWebServiceResponseBase" nillable="true" type="tns:ApsWebServiceResponseBase" />
+  <xs:simpleType name="EApsWebServicesResponseCodes">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Success" />
+      <xs:enumeration value="SuccessWithoutValidation" />
+      <xs:enumeration value="InvalidDateFormat" />
+      <xs:enumeration value="InvalidDatePast" />
+      <xs:enumeration value="InvalidDateFuture" />
+      <xs:enumeration value="InvalidUserCredentials" />
+      <xs:enumeration value="InvalidUserPermissions" />
+      <xs:enumeration value="NoServiceListening" />
+      <xs:enumeration value="NoInstanceWithThatName" />
+      <xs:enumeration value="ValidationTimeout" />
+      <xs:enumeration value="NoServerManager" />
+      <xs:enumeration value="InvalidScenarioName" />
+      <xs:enumeration value="FailedToBroadcast" />
+      <xs:enumeration value="ProcessingTimeout" />
+      <xs:enumeration value="Failure" />
+      <xs:enumeration value="InvalidScenarioId" />
+      <xs:enumeration value="InvalidScenarioIdAndName" />
+      <xs:enumeration value="InvalidLiveScenario" />
+      <xs:enumeration value="NoIdObjects" />
+      <xs:enumeration value="FailedInvalidResource" />
+      <xs:enumeration value="FailedInvalidJob" />
+      <xs:enumeration value="FailedInvalidMO" />
+      <xs:enumeration value="FailedInvalidOp" />
+      <xs:enumeration value="FailedInvalidActivity" />
+      <xs:enumeration value="FailedUndoNoUserFound" />
+      <xs:enumeration value="FailedUndoInvalidPermissions" />
+      <xs:enumeration value="FailedUndoNoActions" />
+      <xs:enumeration value="FailedUndoInvalidTransmissionNbr" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="EApsWebServicesResponseCodes" nillable="true" type="tns:EApsWebServicesResponseCodes" />
+  <xs:complexType name="CtpRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q1="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions.cs" base="q1:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element name="CtpRequestLines" nillable="true" type="tns:ArrayOfCtpRequestLine" />
+          <xs:element minOccurs="0" name="Priority" type="xs:int" />
+          <xs:element minOccurs="0" name="ReserveMaterialsAndCapacity" type="xs:boolean" />
+          <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/PT.SchedulerDefinitions" minOccurs="0" name="SchedulingType" type="q2:CtpDefs.ESchedulingType" />
+          <xs:element name="TimeoutMinutes" type="xs:double" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="CtpRequest" nillable="true" type="tns:CtpRequest" />
+  <xs:complexType name="ArrayOfCtpRequestLine">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="CtpRequestLine" nillable="true" type="tns:CtpRequestLine" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfCtpRequestLine" nillable="true" type="tns:ArrayOfCtpRequestLine" />
+  <xs:complexType name="CtpRequestLine">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q3="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions.cs" base="q3:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element name="ItemExternalId" nillable="true" type="xs:string" />
+          <xs:element name="LineId" type="xs:int" />
+          <xs:element name="NeedDate" type="xs:dateTime" />
+          <xs:element name="RequiredQty" type="xs:decimal" />
+          <xs:element name="WarehouseExternalId" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="CtpRequestLine" nillable="true" type="tns:CtpRequestLine" />
+  <xs:complexType name="CtpResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="CtpResponseLines" nillable="true" type="tns:ArrayOfCtpResponseLine" />
+      <xs:element minOccurs="0" name="ErrorMessage" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ReturnCode" type="tns:EApsWebServicesResponseCodes" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="CtpResponse" nillable="true" type="tns:CtpResponse" />
+  <xs:complexType name="ArrayOfCtpResponseLine">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="CtpResponseLine" nillable="true" type="tns:CtpResponseLine" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfCtpResponseLine" nillable="true" type="tns:ArrayOfCtpResponseLine" />
+  <xs:complexType name="CtpResponseLine">
+    <xs:sequence>
+      <xs:element name="LineId" type="xs:int" />
+      <xs:element minOccurs="0" name="ScheduledEndDate" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="ScheduledStartDate" type="xs:dateTime" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="CtpResponseLine" nillable="true" type="tns:CtpResponseLine" />
+  <xs:complexType name="CopyScenarioRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q4="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions.cs" base="q4:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="CreateScenarioIfNew" type="xs:boolean" />
+          <xs:element minOccurs="0" name="IsBlackBoxScenario" type="xs:boolean" />
+          <xs:element minOccurs="0" name="ScenarioName" nillable="true" type="xs:string" />
+          <xs:element name="TimeoutMinutes" type="xs:double" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="CopyScenarioRequest" nillable="true" type="tns:CopyScenarioRequest" />
+  <xs:complexType name="CopyScenarioResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceResponseBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Confirmation" nillable="true" type="tns:ScenarioConfirmation" />
+          <xs:element minOccurs="0" name="ErrorMessage" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="CopyScenarioResponse" nillable="true" type="tns:CopyScenarioResponse" />
+  <xs:complexType name="ScenarioConfirmation">
+    <xs:sequence>
+      <xs:element name="ScenarioId" type="xs:long" />
+      <xs:element name="ScenarioName" nillable="true" type="xs:string" />
+      <xs:element name="ScenarioType" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ScenarioConfirmation" nillable="true" type="tns:ScenarioConfirmation" />
+  <xs:complexType name="GetScenariosRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q5="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions.cs" base="q5:ApsWebServiceRequestBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ScenarioType" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="TimeoutMinutes" type="xs:double" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="GetScenariosRequest" nillable="true" type="tns:GetScenariosRequest" />
+  <xs:complexType name="GetScenariosResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceResponseBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Confirmations" nillable="true" type="tns:ArrayOfScenarioConfirmation" />
+          <xs:element minOccurs="0" name="ErrorMessage" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="GetScenariosResponse" nillable="true" type="tns:GetScenariosResponse" />
+  <xs:complexType name="ArrayOfScenarioConfirmation">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ScenarioConfirmation" nillable="true" type="tns:ScenarioConfirmation" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfScenarioConfirmation" nillable="true" type="tns:ArrayOfScenarioConfirmation" />
+  <xs:complexType name="DeleteScenarioRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q6="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions.cs" base="q6:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ScenarioName" nillable="true" type="xs:string" />
+          <xs:element name="TimeoutMinutes" type="xs:double" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="DeleteScenarioRequest" nillable="true" type="tns:DeleteScenarioRequest" />
+  <xs:complexType name="DeleteScenarioResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceResponseBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Confirmation" nillable="true" type="tns:ScenarioConfirmation" />
+          <xs:element minOccurs="0" name="ErrorMessage" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="DeleteScenarioResponse" nillable="true" type="tns:DeleteScenarioResponse" />
+  <xs:complexType name="ApsAddRemoveUserResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceResponseBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ModifiedUsers" type="xs:int" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ApsAddRemoveUserResponse" nillable="true" type="tns:ApsAddRemoveUserResponse" />
+</xs:schema>

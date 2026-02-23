@@ -1,0 +1,63 @@
+﻿.badge-container {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.combobox-container {
+    position: relative;
+    left: 40px;
+}
+
+.badge-style {
+    background-color: #007bff;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 12px; /* Slightly larger for readability */
+    display: inline-flex;
+    align-items: center;
+    margin-top: 1px;
+    transition: background-color 0.3s ease; /* Smooth transition for hover effects */
+}
+
+    .badge-style strong {
+        margin: 0px 6px;
+    }
+
+.badge-icon {
+    margin-right: 6px;
+    font-size: 1rem; /* Icon size for better text alignment */
+}
+
+
+.badge-style:active {
+    background-color: #004085; /* Even darker blue for active state */
+}
+
+/* Pill tone customizations for each badge */
+.pill-tone-1 {
+    background-color: #001f3f38; /* Transparent navy */
+    color: var(--bs-primary); /* Primary color text */
+    border: 1px solid var(--bs-primary); /* Primary color border */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.pill-tone-2 {
+    background-color: #001f3f80; /* Slightly more opaque navy */
+    color: #f0f0f0; /* Light gray text */
+    border: 1px solid #003366; /* Darker navy border */
+}
+
+.pill-tone-3 {
+    background-color: #d1e7ff; /* Light blue background */
+    color: #001f3f; /* Dark navy text for contrast */
+    border: 1px solid #80bfff; /* Light blue border */
+}
+
+/* New red-ish tone for error states like NotFound, Unknown, and Server Offline */
+.pill-tone-red {
+    background-color: #ffe5e5; /* Light red background */
+    color: #b30000; /* Darker red text */
+    border: 1px solid #ff6666; /* Soft red border */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}

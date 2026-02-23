@@ -1,0 +1,28 @@
+﻿@using System.Net.Http
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using WebApps
+@using ReportsWebApp.Shared
+@using ReportsWebApp.DB.Models
+@using ReportsWebApp.DB.Models.Unmapped
+@using ReportsWebApp.Common
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Http
+@using System.Security.Claims;
+@using ReportsWebApp.Components;
+@using System;
+@using System.ComponentModel;
+@using ReportsWebApp.Editors;
+@using System.Reflection;
+@using DevExpress.Blazor.Internal;
+@using ReportsWebApp.DB.Services;
+@using ReportsWebApp.Data;
+@using ReportsWebApp.Resources.Shared;
+@using Microsoft.ApplicationInsights;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager

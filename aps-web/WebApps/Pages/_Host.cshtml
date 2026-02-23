@@ -1,0 +1,27 @@
+﻿@page "/"
+@namespace ReportsWebApp.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "_Layout";
+}
+
+<script>
+    const Empty = '';
+
+    window.Cookie = {
+        Read: function () {
+            return (document.cookie == Empty) ? '[name]=[value]' : decodeURIComponent(document.cookie);
+        },
+        Write: function (name, value, days) {
+            document.cookie = name + '=' + value + this.ExpireOn(days) + ';path=/';
+        },
+        ExpireOn: function (days) {
+            return Number.isFinite(days) ? ';expires=' + new Date().AddDay(days).toGMTString() : Empty;
+        }
+    }
+    Date.prototype.AddDay = function(days) {
+        this.setDate(this.getDate() + days);
+        return this;
+    }
+</script>
+<component type="typeof(App)" render-mode="ServerPrerendered" />

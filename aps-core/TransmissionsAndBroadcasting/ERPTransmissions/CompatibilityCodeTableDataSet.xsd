@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="CompatibilityCodeTableDataSet" targetNamespace="http://tempuri.org/CompatibilityCodeDataSet.xsd" xmlns:mstns="http://tempuri.org/CompatibilityCodeDataSet.xsd" xmlns="http://tempuri.org/CompatibilityCodeDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="CompatibilityCodeTableDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="CompatibilityCodeTableDataSet" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="CompatibilityCodeTableDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="CompatibilityCodeTableAssignedResources" msprop:Generator_RowEvHandlerName="CompatibilityCodeTableAssignedResourcesRowChangeEventHandler" msprop:Generator_RowDeletedName="CompatibilityCodeTableAssignedResourcesRowDeleted" msprop:Generator_RowDeletingName="CompatibilityCodeTableAssignedResourcesRowDeleting" msprop:Generator_RowEvArgName="CompatibilityCodeTableAssignedResourcesRowChangeEvent" msprop:Generator_TablePropName="CompatibilityCodeTableAssignedResources" msprop:Generator_RowChangedName="CompatibilityCodeTableAssignedResourcesRowChanged" msprop:Generator_UserTableName="CompatibilityCodeTableAssignedResources" msprop:Generator_RowChangingName="CompatibilityCodeTableAssignedResourcesRowChanging" msprop:Generator_RowClassName="CompatibilityCodeTableAssignedResourcesRow" msprop:Generator_TableClassName="CompatibilityCodeTableAssignedResourcesDataTable" msprop:Generator_TableVarName="tableCompatibilityCodeTableAssignedResources">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="PlantExternalId" msprop:Generator_ColumnPropNameInTable="PlantExternalIdColumn" msprop:Generator_ColumnPropNameInRow="PlantExternalId" msprop:Generator_UserColumnName="PlantExternalId" msprop:Generator_ColumnVarNameInTable="columnPlantExternalId" type="xs:string" />
+              <xs:element name="DepartmentExternalId" msprop:Generator_ColumnPropNameInTable="DepartmentExternalIdColumn" msprop:Generator_ColumnPropNameInRow="DepartmentExternalId" msprop:Generator_UserColumnName="DepartmentExternalId" msprop:Generator_ColumnVarNameInTable="columnDepartmentExternalId" type="xs:string" />
+              <xs:element name="ResourceExternalId" msprop:Generator_ColumnPropNameInTable="ResourceExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ResourceExternalId" msprop:Generator_UserColumnName="ResourceExternalId" msprop:Generator_ColumnVarNameInTable="columnResourceExternalId" type="xs:string" />
+              <xs:element name="TableName" msprop:Generator_ColumnPropNameInTable="TableNameColumn" msprop:Generator_ColumnPropNameInRow="TableName" msprop:Generator_UserColumnName="TableName" msprop:Generator_ColumnVarNameInTable="columnTableName" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="CompatibilityCodeTableList" msprop:Generator_RowEvHandlerName="CompatibilityCodeTableListRowChangeEventHandler" msprop:Generator_RowDeletedName="CompatibilityCodeTableListRowDeleted" msprop:Generator_RowDeletingName="CompatibilityCodeTableListRowDeleting" msprop:Generator_RowEvArgName="CompatibilityCodeTableListRowChangeEvent" msprop:Generator_TablePropName="CompatibilityCodeTableList" msprop:Generator_RowChangedName="CompatibilityCodeTableListRowChanged" msprop:Generator_UserTableName="CompatibilityCodeTableList" msprop:Generator_RowChangingName="CompatibilityCodeTableListRowChanging" msprop:Generator_RowClassName="CompatibilityCodeTableListRow" msprop:Generator_TableClassName="CompatibilityCodeTableListDataTable" msprop:Generator_TableVarName="tableCompatibilityCodeTableList">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="TableName" msprop:Generator_ColumnPropNameInTable="TableNameColumn" msprop:Generator_ColumnPropNameInRow="TableName" msprop:Generator_UserColumnName="TableName" msprop:Generator_ColumnVarNameInTable="columnTableName" type="xs:string" />
+              <xs:element name="AllowedList" msprop:Generator_ColumnPropNameInTable="AllowedListColumn" msprop:Generator_ColumnPropNameInRow="AllowedList" msprop:Generator_UserColumnName="AllowedList" msprop:Generator_ColumnVarNameInTable="columnAllowedList" type="xs:boolean" />
+              <xs:element name="Description" msprop:Generator_ColumnPropNameInTable="DescriptionColumn" msprop:Generator_ColumnPropNameInRow="Description" msprop:Generator_UserColumnName="Description" msprop:Generator_ColumnVarNameInTable="columnDescription" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="CompatibilityCodes" msprop:Generator_RowEvHandlerName="CompatibilityCodesRowChangeEventHandler" msprop:Generator_RowDeletedName="CompatibilityCodesRowDeleted" msprop:Generator_RowDeletingName="CompatibilityCodesRowDeleting" msprop:Generator_RowEvArgName="CompatibilityCodesRowChangeEvent" msprop:Generator_TablePropName="CompatibilityCodes" msprop:Generator_RowChangedName="CompatibilityCodesRowChanged" msprop:Generator_UserTableName="CompatibilityCodes" msprop:Generator_RowChangingName="CompatibilityCodesRowChanging" msprop:Generator_RowClassName="CompatibilityCodesRow" msprop:Generator_TableClassName="CompatibilityCodesDataTable" msprop:Generator_TableVarName="tableCompatibilityCodes">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="TableName" msprop:Generator_ColumnPropNameInTable="TableNameColumn" msprop:Generator_ColumnPropNameInRow="TableName" msprop:Generator_UserColumnName="TableName" msprop:Generator_ColumnVarNameInTable="columnTableName" type="xs:string" />
+              <xs:element name="CompatibilityCode" msprop:Generator_ColumnPropNameInTable="CompatibilityCodeColumn" msprop:Generator_ColumnPropNameInRow="CompatibilityCode" msprop:Generator_UserColumnName="CompatibilityCode" msprop:Generator_ColumnVarNameInTable="columnCompatibilityCode" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:CompatibilityCodeTableAssignedResources" />
+      <xs:field xpath="mstns:PlantExternalId" />
+      <xs:field xpath="mstns:DepartmentExternalId" />
+      <xs:field xpath="mstns:ResourceExternalId" />
+    </xs:unique>
+    <xs:unique name="TableListKey1">
+      <xs:selector xpath=".//mstns:CompatibilityCodeTableList" />
+      <xs:field xpath="mstns:TableName" />
+      <xs:field xpath="mstns:AllowedList" />
+    </xs:unique>
+    <xs:unique name="CompatibilityCodes_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:CompatibilityCodes" />
+      <xs:field xpath="mstns:TableName" />
+      <xs:field xpath="mstns:CompatibilityCode" />
+    </xs:unique>
+  </xs:element>
+  <xs:annotation>
+    <xs:appinfo>
+      <msdata:Relationship name="TableList_AssignedResources" msdata:parent="CompatibilityCodeTableList" msdata:child="CompatibilityCodeTableAssignedResources" msdata:parentkey="TableName" msdata:childkey="TableName" msprop:Generator_UserParentTable="CompatibilityCodeTableList" msprop:Generator_UserChildTable="CompatibilityCodeTableAssignedResources" msprop:Generator_RelationVarName="relationTableList_AssignedResources" msprop:Generator_ChildPropName="GetAssignedResourcesRows" msprop:Generator_UserRelationName="TableList_AssignedResources" msprop:Generator_ParentPropName="CompatibilityCodeTableListRow" />
+      <msdata:Relationship name="CompatibilityCodeTableList_CompatibilityCodes" msdata:parent="CompatibilityCodeTableList" msdata:child="CompatibilityCodes" msdata:parentkey="TableName" msdata:childkey="TableName" msprop:Generator_UserParentTable="CompatibilityCodeTableList" msprop:Generator_UserChildTable="CompatibilityCodes" msprop:Generator_RelationVarName="relationCompatibilityCodeTableList_CompatibilityCodes" msprop:Generator_ChildPropName="GetCompatibilityCodesRows" msprop:Generator_ParentPropName="CompatibilityCodeTableListRow" msprop:Generator_UserRelationName="CompatibilityCodeTableList_CompatibilityCodes" />
+    </xs:appinfo>
+  </xs:annotation>
+</xs:schema>

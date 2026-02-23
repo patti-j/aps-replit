@@ -1,0 +1,11 @@
+[
+  {
+    "importDate": "2024-02-05T12:00:00",
+    "JobId": 12345,
+    "ManufacturingOrderId": 67890,
+    "OperationId": 54321,
+    "ResourceRequirementId": 9876,
+    "CapabilityId": 543,
+    "CapabilityExternalId": "CAP-001"
+  }
+]

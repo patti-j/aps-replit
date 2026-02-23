@@ -1,0 +1,77 @@
+﻿@code {
+    [Parameter] public SegmentType Segment { get; set; }
+    [Parameter] public EventCallback<bool> OnToggleVisibility { get; set; }
+    [Parameter] public EventCallback<SegmentType> OnConfigPopup { get; set; }
+    [Parameter] public EventCallback<(SegmentType, ColorMeaning, string)> OnColorChange { get; set; }
+
+    private void UpdateColor(ColorMeaning colorMeaning, string newColor)
+    {
+        OnColorChange.InvokeAsync((Segment, colorMeaning, newColor));
+    }
+}
+
+<DxGridLayoutItem Row="@Row" Column="0">
+    <Template>
+        <GenericToggle ToggleText="" IsToggled="@Segment.Show"
+                       OnToggle="@((value) => OnToggleVisibility.InvokeAsync(value))" />
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@Row" Column="1">
+    <Template>
+        @if (Segment.HasLabelTemplate)
+        {
+            <a @onclick="() => OnConfigPopup.InvokeAsync(Segment)" class="segment-name-box" style="cursor: pointer">@Segment.Name</a>
+        }
+        else
+        {
+            <strong class="segment-name-box">@Segment.Name</strong>
+        }
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@Row" Column="2">
+    <Template>
+        @if (Segment.SegmentTypeId == SegmentTypeEnum.Attributes)
+        {
+            <div style="width: 100%; display: flex; justify-content: wrap;">
+                <DxCheckBox CssClass="custom-attr-chbx" @bind-Checked="Segment.ShowJobColor">Show Job Color</DxCheckBox>
+                <DxCheckBox CssClass="custom-attr-chbx" @bind-Checked="Segment.ShowProductColor">Show Product Color</DxCheckBox>
+                <DxCheckBox CssClass="custom-attr-chbx" @bind-Checked="Segment.ShowSetupColor">Show Setup Color</DxCheckBox>
+                <DxCheckBox CssClass="custom-attr-chbx" @bind-Checked="Segment.ShowCustomAttributeColor">Custom Attribute Color</DxCheckBox>
+            </div>
+        }
+        else
+        {
+            <div class="color-meanings">
+                @foreach (var colorMeaning in Segment.ColorMeanings)
+                {
+                    <CustomColorPicker Color="@colorMeaning.Color" Label="@colorMeaning.Name"
+                                       ColorChanged="@(color => UpdateColor(colorMeaning, color))" />
+                }
+                @if (Segment.SegmentTypeId == SegmentTypeEnum.Buffer)
+                {
+                    <div style="height: 20px">
+                        <label for="penetrationTypeCombo" style="font-size: 10px; display: block;">DBR Penetration Type:</label>
+                        <DxComboBox Data="@PenetrationTypes"
+                                    @bind-Value="@PenetrationType"
+                                    NullText="Select Penetration Type"
+                                    DropDownDirection="DropDownDirection.Down"
+                                    style="height: 20px"
+                                    SizeMode="SizeMode.Small">
+                            <ItemTemplate Context="item">
+                                @FormatPenetrationType(item)
+                            </ItemTemplate>
+                        </DxComboBox>
+                    </div>
+                }
+            </div>
+        }
+    </Template>
+</DxGridLayoutItem>
+
+@code {
+    [Parameter] public int Row { get; set; }
+
+    [Parameter] public IEnumerable<PenetrationType> PenetrationTypes { get; set; }
+    [Parameter] public PenetrationType PenetrationType { get; set; }
+    [Parameter] public Func<PenetrationType, string> FormatPenetrationType { get; set; }
+}

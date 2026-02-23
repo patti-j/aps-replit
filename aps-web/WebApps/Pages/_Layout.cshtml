@@ -1,0 +1,114 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace WebApps.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <link href="css/switcher-resources/themes/cerulean/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="_content/DevExpress.Blazor.Themes/bootstrap-external.bs5.min.css" />
+    <title>PlanetTogether</title>
+
+    <link rel="stylesheet" href="~/css/fontawesome/all.min.css">
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/profile.css" rel="stylesheet" />
+    <link href="~/css/draggable.css" rel="stylesheet" />
+    <link href="~/css/schedulerpro-styles.css" rel="stylesheet" />
+    <!-- Owl Carousel CSS -->
+    <link href="~/css/icon-carousel.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" />
+
+    <link rel="icon" href="images/favicon.ico" />
+    <link rel="stylesheet" href="css/schedulerpro.classic-light.css" id="bryntum-theme">
+    <script>
+        console.log("Error handler register")
+        window.addEventListener('error', event => {
+            console.log("Error Caught:");
+            console.log(event);
+            event.preventDefault();
+        });
+        window.onunhandledrejection = function (event) {
+            console.log("Error Caught:");
+            console.log(event);
+            event.preventDefault();
+        };
+    </script>
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+    @{
+        var isIEOrEdgeLegacy = Context.Request.Headers["User-Agent"]
+        .Any(userAgent => userAgent.Contains("MSIE") || userAgent.Contains("Trident") || userAgent.Contains("Edge/"));
+    }
+    @if (isIEOrEdgeLegacy)
+    {
+        <component type="typeof(ReportsWebApp.Shared.BrowserNotSupported)" render-mode="Static" />
+    }
+    else
+    {
+        @RenderBody()
+}
+<script src="_framework/blazor.server.js"></script>
+<script>
+    window.getUserTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    window.copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text).then(function () {
+            console.log('Text copied to clipboard');
+        }).catch(function (error) {
+            console.error('Could not copy text: ', error);
+        });
+    }
+
+    window.changeBryntumTheme = (theme) => {
+        setTimeout(() => {
+            var link = document.getElementById('bryntum-theme');
+            if (theme === 'dark') {
+                link.href = 'css/schedulerpro.classic-dark.css';
+            } else {
+                link.href = 'css/schedulerpro.classic-light.css';
+            }
+        }, 500); // Delay is specified in milliseconds, so 5000ms equals 5 seconds 
+    };
+
+    window.initializeOwlCarousel = () => {
+        $(document).ready(function () {
+            var owl = $('#icon-carousel');
+            owl.owlCarousel({
+                loop: true,
+                margin: 5,
+                nav: true,
+                dots: false,
+                autoplay: true,
+                autoplayTimeout: 5000, // 1 sec
+                autoplayHoverPause: true,
+                smartSpeed: 250,
+                responsive: {
+                    0: { items: 3 },
+                    600: { items: 10 },
+                    1000: { items: 15 }
+                },
+                navText: ["‹", "›"]
+            });
+
+            owl.on('mousewheel', '.owl-stage', function (e) {
+                if (e.deltaY > 0) {
+                    owl.trigger('next.owl');
+                } else {
+                    owl.trigger('prev.owl');
+                }
+                e.preventDefault();
+            });
+        });
+    };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+
+<!-- Owl Carousel JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+
+</html>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ShopViewDS" targetNamespace="http://tempuri.org/ShopViewDS.xsd" xmlns:mstns="http://tempuri.org/ShopViewDS.xsd" xmlns="http://tempuri.org/ShopViewDS.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="ShopViewDS" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_DataSetName="ShopViewDS" msprop:Generator_UserDSName="ShopViewDS">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Resources" msprop:Generator_TableClassName="ResourcesDataTable" msprop:Generator_TableVarName="tableResources" msprop:Generator_TablePropName="Resources" msprop:Generator_RowDeletingName="ResourcesRowDeleting" msprop:Generator_RowChangingName="ResourcesRowChanging" msprop:Generator_RowEvHandlerName="ResourcesRowChangeEventHandler" msprop:Generator_RowDeletedName="ResourcesRowDeleted" msprop:Generator_UserTableName="Resources" msprop:Generator_RowChangedName="ResourcesRowChanged" msprop:Generator_RowEvArgName="ResourcesRowChangeEvent" msprop:Generator_RowClassName="ResourcesRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="PlantId" msprop:Generator_ColumnVarNameInTable="columnPlantId" msprop:Generator_ColumnPropNameInRow="PlantId" msprop:Generator_ColumnPropNameInTable="PlantIdColumn" msprop:Generator_UserColumnName="PlantId" type="xs:long" minOccurs="0" />
+              <xs:element name="DepartmentId" msprop:Generator_ColumnVarNameInTable="columnDepartmentId" msprop:Generator_ColumnPropNameInRow="DepartmentId" msprop:Generator_ColumnPropNameInTable="DepartmentIdColumn" msprop:Generator_UserColumnName="DepartmentId" type="xs:long" minOccurs="0" />
+              <xs:element name="ResourceId" msprop:Generator_ColumnVarNameInTable="columnResourceId" msprop:Generator_ColumnPropNameInRow="ResourceId" msprop:Generator_ColumnPropNameInTable="ResourceIdColumn" msprop:Generator_UserColumnName="ResourceId" type="xs:long" minOccurs="0" />
+              <xs:element name="PlantName" msprop:Generator_ColumnVarNameInTable="columnPlantName" msprop:Generator_ColumnPropNameInRow="PlantName" msprop:Generator_ColumnPropNameInTable="PlantNameColumn" msprop:Generator_UserColumnName="PlantName" type="xs:string" minOccurs="0" />
+              <xs:element name="DepartmentName" msprop:Generator_ColumnVarNameInTable="columnDepartmentName" msprop:Generator_ColumnPropNameInRow="DepartmentName" msprop:Generator_ColumnPropNameInTable="DepartmentNameColumn" msprop:Generator_UserColumnName="DepartmentName" type="xs:string" minOccurs="0" />
+              <xs:element name="ResourceName" msprop:Generator_ColumnVarNameInTable="columnResourceName" msprop:Generator_ColumnPropNameInRow="ResourceName" msprop:Generator_ColumnPropNameInTable="ResourceNameColumn" msprop:Generator_UserColumnName="ResourceName" type="xs:string" minOccurs="0" />
+              <xs:element name="ShopViewUsersCount" msprop:Generator_ColumnVarNameInTable="columnShopViewUsersCount" msprop:Generator_ColumnPropNameInRow="ShopViewUsersCount" msprop:Generator_ColumnPropNameInTable="ShopViewUsersCountColumn" msprop:Generator_UserColumnName="ShopViewUsersCount" type="xs:int" minOccurs="0" />
+              <xs:element name="ShopViewResourceOptionsId" msprop:Generator_ColumnVarNameInTable="columnShopViewResourceOptionsId" msprop:Generator_ColumnPropNameInRow="ShopViewResourceOptionsId" msprop:Generator_ColumnPropNameInTable="ShopViewResourceOptionsIdColumn" msprop:Generator_UserColumnName="ShopViewResourceOptionsId" type="xs:long" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="OptionSets" msprop:Generator_TableClassName="OptionSetsDataTable" msprop:Generator_TableVarName="tableOptionSets" msprop:Generator_TablePropName="OptionSets" msprop:Generator_RowDeletingName="OptionSetsRowDeleting" msprop:Generator_RowChangingName="OptionSetsRowChanging" msprop:Generator_RowEvHandlerName="OptionSetsRowChangeEventHandler" msprop:Generator_RowDeletedName="OptionSetsRowDeleted" msprop:Generator_UserTableName="OptionSets" msprop:Generator_RowChangedName="OptionSetsRowChanged" msprop:Generator_RowEvArgName="OptionSetsRowChangeEvent" msprop:Generator_RowClassName="OptionSetsRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Id" msprop:Generator_ColumnVarNameInTable="columnId" msprop:Generator_ColumnPropNameInRow="Id" msprop:Generator_ColumnPropNameInTable="IdColumn" msprop:Generator_UserColumnName="Id" type="xs:long" minOccurs="0" />
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="FieldInfos" msprop:Generator_TableClassName="FieldInfosDataTable" msprop:Generator_TableVarName="tableFieldInfos" msprop:Generator_TablePropName="FieldInfos" msprop:Generator_RowDeletingName="FieldInfosRowDeleting" msprop:Generator_RowChangingName="FieldInfosRowChanging" msprop:Generator_RowEvHandlerName="FieldInfosRowChangeEventHandler" msprop:Generator_RowDeletedName="FieldInfosRowDeleted" msprop:Generator_UserTableName="FieldInfos" msprop:Generator_RowChangedName="FieldInfosRowChanged" msprop:Generator_RowEvArgName="FieldInfosRowChangeEvent" msprop:Generator_RowClassName="FieldInfosRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" />
+              <xs:element name="DisplayText" msprop:Generator_ColumnVarNameInTable="columnDisplayText" msprop:Generator_ColumnPropNameInRow="DisplayText" msprop:Generator_ColumnPropNameInTable="DisplayTextColumn" msprop:Generator_UserColumnName="DisplayText" type="xs:string" minOccurs="0" />
+              <xs:element name="ShowInGrid" msprop:Generator_ColumnVarNameInTable="columnShowInGrid" msprop:Generator_ColumnPropNameInRow="ShowInGrid" msprop:Generator_ColumnPropNameInTable="ShowInGridColumn" msprop:Generator_UserColumnName="ShowInGrid" type="xs:boolean" minOccurs="0" />
+              <xs:element name="ShowInDialog" msprop:Generator_ColumnVarNameInTable="columnShowInDialog" msprop:Generator_ColumnPropNameInRow="ShowInDialog" msprop:Generator_ColumnPropNameInTable="ShowInDialogColumn" msprop:Generator_UserColumnName="ShowInDialog" type="xs:boolean" minOccurs="0" />
+              <xs:element name="SortIndex" msprop:Generator_ColumnVarNameInTable="columnSortIndex" msprop:Generator_ColumnPropNameInRow="SortIndex" msprop:Generator_ColumnPropNameInTable="SortIndexColumn" msprop:Generator_UserColumnName="SortIndex" type="xs:int" minOccurs="0" />
+              <xs:element name="ReadOnly" msprop:Generator_ColumnVarNameInTable="columnReadOnly" msprop:Generator_ColumnPropNameInRow="ReadOnly" msprop:Generator_ColumnPropNameInTable="ReadOnlyColumn" msprop:Generator_UserColumnName="ReadOnly" type="xs:boolean" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="TabInfos" msprop:Generator_TableClassName="TabInfosDataTable" msprop:Generator_TableVarName="tableTabInfos" msprop:Generator_TablePropName="TabInfos" msprop:Generator_RowDeletingName="TabInfosRowDeleting" msprop:Generator_RowChangingName="TabInfosRowChanging" msprop:Generator_RowEvHandlerName="TabInfosRowChangeEventHandler" msprop:Generator_RowDeletedName="TabInfosRowDeleted" msprop:Generator_UserTableName="TabInfos" msprop:Generator_RowChangedName="TabInfosRowChanged" msprop:Generator_RowEvArgName="TabInfosRowChangeEvent" msprop:Generator_RowClassName="TabInfosRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" />
+              <xs:element name="DisplayText" msprop:Generator_ColumnVarNameInTable="columnDisplayText" msprop:Generator_ColumnPropNameInRow="DisplayText" msprop:Generator_ColumnPropNameInTable="DisplayTextColumn" msprop:Generator_UserColumnName="DisplayText" type="xs:string" minOccurs="0" />
+              <xs:element name="Visible" msprop:Generator_ColumnVarNameInTable="columnVisible" msprop:Generator_ColumnPropNameInRow="Visible" msprop:Generator_ColumnPropNameInTable="VisibleColumn" msprop:Generator_UserColumnName="Visible" type="xs:boolean" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="ButtonInfos" msprop:Generator_TableClassName="ButtonInfosDataTable" msprop:Generator_TableVarName="tableButtonInfos" msprop:Generator_TablePropName="ButtonInfos" msprop:Generator_RowDeletingName="ButtonInfosRowDeleting" msprop:Generator_RowChangingName="ButtonInfosRowChanging" msprop:Generator_RowEvHandlerName="ButtonInfosRowChangeEventHandler" msprop:Generator_RowDeletedName="ButtonInfosRowDeleted" msprop:Generator_UserTableName="ButtonInfos" msprop:Generator_RowChangedName="ButtonInfosRowChanged" msprop:Generator_RowEvArgName="ButtonInfosRowChangeEvent" msprop:Generator_RowClassName="ButtonInfosRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" />
+              <xs:element name="DisplayText" msprop:Generator_ColumnVarNameInTable="columnDisplayText" msprop:Generator_ColumnPropNameInRow="DisplayText" msprop:Generator_ColumnPropNameInTable="DisplayTextColumn" msprop:Generator_UserColumnName="DisplayText" type="xs:string" minOccurs="0" />
+              <xs:element name="Visible" msprop:Generator_ColumnVarNameInTable="columnVisible" msprop:Generator_ColumnPropNameInRow="Visible" msprop:Generator_ColumnPropNameInTable="VisibleColumn" msprop:Generator_UserColumnName="Visible" type="xs:boolean" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="GroupBoxInfos" msprop:Generator_TableClassName="GroupBoxInfosDataTable" msprop:Generator_TableVarName="tableGroupBoxInfos" msprop:Generator_TablePropName="GroupBoxInfos" msprop:Generator_RowDeletingName="GroupBoxInfosRowDeleting" msprop:Generator_RowChangingName="GroupBoxInfosRowChanging" msprop:Generator_RowEvHandlerName="GroupBoxInfosRowChangeEventHandler" msprop:Generator_RowDeletedName="GroupBoxInfosRowDeleted" msprop:Generator_UserTableName="GroupBoxInfos" msprop:Generator_RowChangedName="GroupBoxInfosRowChanged" msprop:Generator_RowEvArgName="GroupBoxInfosRowChangeEvent" msprop:Generator_RowClassName="GroupBoxInfosRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" />
+              <xs:element name="DisplayText" msprop:Generator_ColumnVarNameInTable="columnDisplayText" msprop:Generator_ColumnPropNameInRow="DisplayText" msprop:Generator_ColumnPropNameInTable="DisplayTextColumn" msprop:Generator_UserColumnName="DisplayText" type="xs:string" minOccurs="0" />
+              <xs:element name="Visible" msprop:Generator_ColumnVarNameInTable="columnVisible" msprop:Generator_ColumnPropNameInRow="Visible" msprop:Generator_ColumnPropNameInTable="VisibleColumn" msprop:Generator_UserColumnName="Visible" type="xs:boolean" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="MaterialFieldInfos" msprop:Generator_TableClassName="MaterialFieldInfosDataTable" msprop:Generator_TableVarName="tableMaterialFieldInfos" msprop:Generator_TablePropName="MaterialFieldInfos" msprop:Generator_RowDeletingName="MaterialFieldInfosRowDeleting" msprop:Generator_RowChangingName="MaterialFieldInfosRowChanging" msprop:Generator_RowEvHandlerName="MaterialFieldInfosRowChangeEventHandler" msprop:Generator_RowDeletedName="MaterialFieldInfosRowDeleted" msprop:Generator_UserTableName="MaterialFieldInfos" msprop:Generator_RowChangedName="MaterialFieldInfosRowChanged" msprop:Generator_RowEvArgName="MaterialFieldInfosRowChangeEvent" msprop:Generator_RowClassName="MaterialFieldInfosRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" />
+              <xs:element name="DisplayText" msprop:Generator_ColumnVarNameInTable="columnDisplayText" msprop:Generator_ColumnPropNameInRow="DisplayText" msprop:Generator_ColumnPropNameInTable="DisplayTextColumn" msprop:Generator_UserColumnName="DisplayText" type="xs:string" minOccurs="0" />
+              <xs:element name="ShowInGrid" msprop:Generator_ColumnVarNameInTable="columnShowInGrid" msprop:Generator_ColumnPropNameInRow="ShowInGrid" msprop:Generator_ColumnPropNameInTable="ShowInGridColumn" msprop:Generator_UserColumnName="ShowInGrid" type="xs:boolean" minOccurs="0" />
+              <xs:element name="ShowInDialog" msprop:Generator_ColumnVarNameInTable="columnShowInDialog" msprop:Generator_ColumnPropNameInRow="ShowInDialog" msprop:Generator_ColumnPropNameInTable="ShowInDialogColumn" msprop:Generator_UserColumnName="ShowInDialog" type="xs:boolean" minOccurs="0" />
+              <xs:element name="SortIndex" msprop:Generator_ColumnVarNameInTable="columnSortIndex" msprop:Generator_ColumnPropNameInRow="SortIndex" msprop:Generator_ColumnPropNameInTable="SortIndexColumn" msprop:Generator_UserColumnName="SortIndex" type="xs:int" minOccurs="0" />
+              <xs:element name="ReadOnly" msprop:Generator_ColumnVarNameInTable="columnReadOnly" msprop:Generator_ColumnPropNameInRow="ReadOnly" msprop:Generator_ColumnPropNameInTable="ReadOnlyColumn" msprop:Generator_UserColumnName="ReadOnly" type="xs:boolean" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="LabelInfos" msprop:Generator_TableClassName="LabelInfosDataTable" msprop:Generator_TableVarName="tableLabelInfos" msprop:Generator_TablePropName="LabelInfos" msprop:Generator_RowDeletingName="LabelInfosRowDeleting" msprop:Generator_RowChangingName="LabelInfosRowChanging" msprop:Generator_RowEvHandlerName="LabelInfosRowChangeEventHandler" msprop:Generator_RowDeletedName="LabelInfosRowDeleted" msprop:Generator_UserTableName="LabelInfos" msprop:Generator_RowChangedName="LabelInfosRowChanged" msprop:Generator_RowEvArgName="LabelInfosRowChangeEvent" msprop:Generator_RowClassName="LabelInfosRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" />
+              <xs:element name="DisplayText" msprop:Generator_ColumnVarNameInTable="columnDisplayText" msprop:Generator_ColumnPropNameInRow="DisplayText" msprop:Generator_ColumnPropNameInTable="DisplayTextColumn" msprop:Generator_UserColumnName="DisplayText" type="xs:string" minOccurs="0" />
+              <xs:element name="Visible" msprop:Generator_ColumnVarNameInTable="columnVisible" msprop:Generator_ColumnPropNameInRow="Visible" msprop:Generator_ColumnPropNameInTable="VisibleColumn" msprop:Generator_UserColumnName="Visible" type="xs:boolean" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="UserFields" msprop:Generator_TableClassName="UserFieldsDataTable" msprop:Generator_TableVarName="tableUserFields" msprop:Generator_TablePropName="UserFields" msprop:Generator_RowDeletingName="UserFieldsRowDeleting" msprop:Generator_RowChangingName="UserFieldsRowChanging" msprop:Generator_RowEvHandlerName="UserFieldsRowChangeEventHandler" msprop:Generator_RowDeletedName="UserFieldsRowDeleted" msprop:Generator_UserTableName="UserFields" msprop:Generator_RowChangedName="UserFieldsRowChanged" msprop:Generator_RowEvArgName="UserFieldsRowChangeEvent" msprop:Generator_RowClassName="UserFieldsRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" />
+              <xs:element name="DisplayText" msprop:Generator_ColumnVarNameInTable="columnDisplayText" msprop:Generator_ColumnPropNameInRow="DisplayText" msprop:Generator_ColumnPropNameInTable="DisplayTextColumn" msprop:Generator_UserColumnName="DisplayText" type="xs:string" minOccurs="0" />
+              <xs:element name="ShowInGrid" msprop:Generator_ColumnVarNameInTable="columnShowInGrid" msprop:Generator_ColumnPropNameInRow="ShowInGrid" msprop:Generator_ColumnPropNameInTable="ShowInGridColumn" msprop:Generator_UserColumnName="ShowInGrid" type="xs:boolean" minOccurs="0" />
+              <xs:element name="ShowInDialog" msprop:Generator_ColumnVarNameInTable="columnShowInDialog" msprop:Generator_ColumnPropNameInRow="ShowInDialog" msprop:Generator_ColumnPropNameInTable="ShowInDialogColumn" msprop:Generator_UserColumnName="ShowInDialog" type="xs:boolean" minOccurs="0" />
+              <xs:element name="SortIndex" msprop:Generator_ColumnVarNameInTable="columnSortIndex" msprop:Generator_ColumnPropNameInRow="SortIndex" msprop:Generator_ColumnPropNameInTable="SortIndexColumn" msprop:Generator_UserColumnName="SortIndex" type="xs:int" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="ShopViewDSKey1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:FieldInfos" />
+      <xs:field xpath="mstns:Name" />
+    </xs:unique>
+    <xs:unique name="ShopViewDSKey2" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:TabInfos" />
+      <xs:field xpath="mstns:Name" />
+    </xs:unique>
+    <xs:unique name="ShopViewDSKey3" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:ButtonInfos" />
+      <xs:field xpath="mstns:Name" />
+    </xs:unique>
+    <xs:unique name="ShopViewDSKey4" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:GroupBoxInfos" />
+      <xs:field xpath="mstns:Name" />
+    </xs:unique>
+    <xs:unique name="ShopViewDSKey5" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:MaterialFieldInfos" />
+      <xs:field xpath="mstns:Name" />
+    </xs:unique>
+    <xs:unique name="ShopViewDSKey6" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:LabelInfos" />
+      <xs:field xpath="mstns:Name" />
+    </xs:unique>
+    <xs:unique name="UserFields_ShopViewDSKey5" msdata:ConstraintName="ShopViewDSKey5" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:UserFields" />
+      <xs:field xpath="mstns:Name" />
+    </xs:unique>
+  </xs:element>
+</xs:schema>

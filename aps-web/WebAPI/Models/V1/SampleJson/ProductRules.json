@@ -1,0 +1,24 @@
+[
+  {
+    "importDate": "2024-02-05T08:00:00Z",
+    "ItemId": 123,
+    "PlantId": 456,
+    "DepartmentId": 789,
+    "ResourceId": 101,
+    "OperationName": "OperationA",
+    "SetupHrs": 2.5,
+    "UseSetupHrs": true,
+    "CycleHrs": 8.0,
+    "UseCycleHrs": true,
+    "QtyPerCycle": 100.0,
+    "UseQtyPerCycle": true,
+    "MaterialPostProcessingHrs": 1.5,
+    "UseMaterialPostProcessingHrs": true,
+    "PostProcessingHrs": 3.0,
+    "UsePostProcessingHrs": true,
+    "PlanningScrapPercent": 5.0,
+    "UsePlanningScrapPercent": true,
+    "HeadStartHrs": 1.0,
+    "UseHeadStartHrs": true
+  }
+]

@@ -1,0 +1,391 @@
+﻿@using ReportsWebApp.DB.Models
+@using ReportsWebApp.Pages
+@using System.Text.RegularExpressions
+@using Newtonsoft.Json
+@inject NavigationManager Navigation
+@inject IPlanningAreaDataService PlanningAreaDataService
+@inject DB.Services.ServiceContainer ServiceContainer
+
+<div class="sliding-panel @(visible ? "visible" : "")">
+    <DxFormLayout>
+        <DxFormLayoutGroup>
+            <HeaderTemplate>
+                <ServerContextHeader Title="@("Settings")" BigTitle=false
+                Subtitle="@($"for Planning Area '{PADetail?.Name}' ({PADetail?.Version})")"
+                OnSave="Save" ShowServerPill=true
+                SelectedServer=@PADetail?.Server
+                OnSaveAsCopy="SaveAsCopy"
+                OnClose="Close" 
+                ShowRevertButton="ChangesMade"
+                ShowSaveButton="ChangesMade"
+                OnRevert="RevertChanges"/>
+            </HeaderTemplate>
+            <Items>
+                <!-- Display a loading overlay when data is being processed -->
+                <LoadingOverlay IsLoading="@isLoading" Message="@loadingMessage">
+                    <Content>
+                        <DxScrollViewer CssClass="vh-90">
+                            <div class="container pt-3 pb-5">
+                                <DxAccordion ExpandMode="AccordionExpandMode.SingleOrNone"
+                                ExpandCollapseAction="AccordionExpandCollapseAction.HeaderClick"
+                                AnimationType="LayoutAnimationType.Slide">
+                                    <Items>
+                                        @if (PADetail?.PlanningArea != null)
+                                        {
+                                            <PlaningAreaDetailsTab Model="@PADetail" @ref="@PlaningAreaDetailsTabRef" ModelChanged="ModelChanged"/>
+                                            <DataImportTab Model="@PADetail" OnShowDatabaseSettings="@((dbType) => ShowDatabaseSettingsPopup(dbType))" ModelChanged="ModelChanged"/>
+                                            @if (currentUser != null && currentUser.IsAuthorizedFor(Permission.AdministrateServers))
+                                            {
+                                                <ExternalIntegrationTab PlanningArea="@PADetail"
+                                                AvailableIntegrations="ServiceContainer.ExternalIntegrationService.GetExternalIntegrationsForCompany(PADetail.CompanyId)" @ref="ExternalIntegrationTabRef" ModelChanged="ModelChanged"/>
+
+                                            }
+                                            <DataPublishTab Model="@PADetail" OnShowDatabaseSettings="@((dbType) => ShowDatabaseSettingsPopup(dbType))" ModelChanged="ModelChanged"/>
+                                            <ServiceConfigurationTab Model="@PADetail" ModelChanged="ModelChanged"/>
+                                            <ClientConnectionsTab Model="@PADetail" ModelChanged="ModelChanged" />
+                                            <DiagnosticsTab Model="@PADetail" ModelChanged="ModelChanged"/>
+                                            <BackupTab Model="@PADetail" ModelChanged="ModelChanged"/>
+                                            <StartUpTab Model="@PADetail" ModelChanged="ModelChanged"/>
+                                            <CopilotSettings Model="@PADetail" ModelChanged="ModelChanged"/>
+                                            <OtherTab Model="@PADetail" OnShowDatabaseSettings="@((dbType) => ShowDatabaseSettingsPopup(dbType))" ModelChanged="ModelChanged"/>
+                                        } 
+                                    </Items>
+                                </DxAccordion>
+                            </div>
+
+                        </DxScrollViewer>
+                    </Content>
+                </LoadingOverlay>
+            </Items>
+        </DxFormLayoutGroup>
+    </DxFormLayout>
+</div>
+
+<DatabaseSettings @bind-Visible="isDatabaseSettingsPopupVisible" @ref="@DatabaseSettingsEditorRef" ConnectionString="@GetConnectionStringForDbType(m_databaseUnderEdit)" ConnectionStringChanged="SetDbConnectionString" ShowTestButton="false"/>
+
+@code {
+    [Inject] IToastNotificationService ToastService { get; set; }
+    [Parameter] public PADetails PADetail { get; set; } = new();
+    [Parameter]
+    public EventCallback<PADetails> OnSave { get; set; }
+    [Parameter]
+    public EventCallback<PADetails> OnSaveAsCopy { get; set; }
+    [Parameter]
+    public int? CompanyId { get; set; }
+    private List<CompanyServer> availableServers = new() { };
+    [Parameter]
+    public CompanyServer selectedServer { get; set; }
+    Guid selectedServerKey { get; set; } = Guid.NewGuid();
+
+    public bool isLoading { get; set; }
+    public string loadingMessage { get; set; }
+    public bool visible { get; set; }
+    public bool isDatabaseSettingsPopupVisible { get; set; }
+    public string m_databaseUnderEdit { get; set; }
+    public int activeTabIndex { get; set; } = 0;
+    private bool reloadNextRender = false;
+    private PlaningAreaDetailsTab PlaningAreaDetailsTabRef { get; set; }
+    private DatabaseSettings DatabaseSettingsEditorRef { get; set; }
+    private ExternalIntegrationTab ExternalIntegrationTabRef { get; set; }
+
+    private User currentUser;
+
+    // These fields hold updated data temporarily, and are applied to the model when saved. This avoids updating the PA model before saving
+    private string? ConnectionString;
+    private string? PublishSqlServerConnectionString;
+    private string? DashboardConnString;
+    private string? LogDbConnectionString;
+    private string? IntegrationUserAndPass;
+
+    public async Task Show()
+    {
+        visible = true;
+        ChangesMade = false;
+        ShowLoadingState(true, "Loading values...");
+        ConnectionString = null;
+        PublishSqlServerConnectionString = null;
+        DashboardConnString = null;
+        LogDbConnectionString = null;
+        currentUser = await ServiceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+        availableServers = await ServiceContainer.ServerManagerService.GetServersByManagingCompanyAsync(currentUser.CompanyId);
+
+        PlaningAreaDetailsTabRef.LoadValues(PADetail);
+        selectedServerKey = Guid.NewGuid();
+        MakeStateCopies();
+        ShowLoadingState(false, ".");
+    }
+
+    private async Task SaveAsCopy()
+    {
+        await OnSaveAsCopy.InvokeAsync(PADetail);
+        Close();
+    }
+    private async Task Save()
+    {
+        try
+        {
+            ShowLoadingState(true, "Validating input fields...");
+
+            PADetail.PlanningArea.Settings.ErpDatabaseSettings.ConnectionString = ConnectionString ?? PADetail.PlanningArea.Settings.ErpDatabaseSettings.ConnectionString;
+            PADetail.PlanningArea.Settings.ErpDatabaseSettings.PublishSqlServerConnectionString = PublishSqlServerConnectionString ?? PADetail.PlanningArea.Settings.ErpDatabaseSettings.PublishSqlServerConnectionString;
+            PADetail.PlanningArea.Settings.DashboardConnString = DashboardConnString ?? PADetail.PlanningArea.Settings.DashboardConnString;
+            PADetail.PlanningArea.Settings.SystemServiceSettings.LogDbConnectionString = LogDbConnectionString ?? PADetail.PlanningArea.Settings.SystemServiceSettings.LogDbConnectionString;
+            PADetail.PlanningArea.Settings.ErpDatabaseSettings.IntegrationUserCreds = IntegrationUserAndPass ?? PADetail.PlanningArea.Settings.ErpDatabaseSettings.IntegrationUserCreds;
+
+            PADetail.ExternalIntegrationId = ExternalIntegrationTabRef.SelectedIntegration?.Id;
+
+            if (PADetail.ExternalIntegrationId.HasValue)
+            {
+                ExternalIntegration externalIntegration = ServiceContainer.ExternalIntegrationService.GetExternalIntegration(PADetail.ExternalIntegrationId.Value);
+                //TODO: Pre/PostImport / Publish Webhooks will be set here but i dont have a good description of the URI's to be used
+                switch (externalIntegration.Type)
+                {
+                    case EExternalIntegrationType.Null:                        
+                        break;
+                    case EExternalIntegrationType.Aha:
+                        AhaIntegrationModel ahaModel = JsonConvert.DeserializeObject<AhaIntegrationModel>(externalIntegration.SettingsJson);
+
+                        if (externalIntegration.ImportDataConnector.HasValue)
+                        {
+                            PADetail.PlanningArea.Settings.ErpDatabaseSettings.ConnectionString = ServiceContainer.DataConnectorService.GetDataConnector(externalIntegration.ImportDataConnector.Value).ConnectionString;
+                            PADetail.PlanningArea.Settings.ErpDatabaseSettings.IntegrationUserCreds = "";
+                        }
+
+                        if (externalIntegration.PublishDataConnector.HasValue)
+                        {
+                            PADetail.PlanningArea.Settings.ErpDatabaseSettings.PublishSqlServerConnectionString = ServiceContainer.DataConnectorService.GetDataConnector(externalIntegration.PublishDataConnector.Value).ConnectionString;
+                        }
+
+                        PADetail.PlanningArea.Settings.PreImportURL = $"{ahaModel.Endpoint.TrimEnd('/')}/{PADetail.CompanyId}/{PADetail.Id}/{(int)externalIntegration.Type}";
+                        PADetail.PlanningArea.Settings.PostExportURL = $"{ahaModel.Endpoint.TrimEnd('/')}/{PADetail.CompanyId}/{PADetail.Id}/{(int)externalIntegration.Type}";
+                        break;
+                    case EExternalIntegrationType.Maestro:
+                        //TODO:Zach PreImport/PostExport
+                        break;
+                    case EExternalIntegrationType.Netsuite:
+                        NetsuiteIntegrationModel netsuiteIntegrationModel = JsonConvert.DeserializeObject<NetsuiteIntegrationModel>(externalIntegration.SettingsJson);
+
+                        if (externalIntegration.ImportDataConnector.HasValue)
+                        {
+                            PADetail.PlanningArea.Settings.ErpDatabaseSettings.ConnectionString = ServiceContainer.DataConnectorService.GetDataConnector(externalIntegration.ImportDataConnector.Value).ConnectionString;
+                            PADetail.PlanningArea.Settings.ErpDatabaseSettings.IntegrationUserCreds = "";
+                        }
+
+                        if (externalIntegration.PublishDataConnector.HasValue)
+                        {
+                            PADetail.PlanningArea.Settings.ErpDatabaseSettings.PublishSqlServerConnectionString = ServiceContainer.DataConnectorService.GetDataConnector(externalIntegration.PublishDataConnector.Value).ConnectionString;
+                        }
+
+                        string endpoint = "https://pt-integrations-dev.azurewebsites.net";
+                        PADetail.PlanningArea.Settings.PreImportURL = $"{endpoint.TrimEnd('/')}/{PADetail.CompanyId}/{PADetail.Id}/{(int)externalIntegration.Type}";
+                        PADetail.PlanningArea.Settings.PostExportURL = $"{endpoint.TrimEnd('/')}/{PADetail.CompanyId}/{PADetail.Id}/{(int)externalIntegration.Type}";
+                        break;
+                    case EExternalIntegrationType.D365:
+                        //TODO:Zach PreImport/PostExport                                                                    
+                        break;                    
+                    default:                        
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            
+            if (string.IsNullOrWhiteSpace(PADetail.Name))
+            {
+                ShowToast("Validation Error", "Planning Area Name is required.", ToastRenderStyle.Warning);
+                return;
+            }
+
+            const string SerialCodePattern = "^(?:[A-Z0-9]{12,}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4,})$";
+            if (!string.IsNullOrWhiteSpace(PADetail.PlanningArea.LicenseInfo.SerialCode))
+            {
+                string cleanedSerial = PADetail.PlanningArea.LicenseInfo.SerialCode.Replace("-", "").Trim();
+                if (!Regex.IsMatch(cleanedSerial, SerialCodePattern, RegexOptions.IgnoreCase))
+                {
+                    ShowToast("Validation Error", "Serial Code must be a 12-length alphanumeric code like ****-****-****.", ToastRenderStyle.Warning);
+                    return;
+                }
+            }
+
+            if (PADetail.PlanningArea.Settings.DashboardTimeout < 1)
+            {
+                ShowToast("Validation Error", "Dashboard Timeout must be between 1 and 3600 seconds.", ToastRenderStyle.Warning);
+                return;
+            }
+
+            if (PADetail.PlanningArea.Settings.DashboardPublishFrequency < 0 || PADetail.PlanningArea.Settings.DashboardPublishFrequency > 23)
+            {
+                ShowToast("Validation Error", "Dashboard Frequency (Hours) must be between 0 and 23.", ToastRenderStyle.Warning);
+                return;
+            }
+
+            if (PADetail.PlanningArea.Settings.StartServicesTimeoutSeconds < 1 )
+            {
+                ShowToast("Validation Error", "Start Services Timeout must be between 1 and 300 seconds.", ToastRenderStyle.Warning);
+                return;
+            }
+
+            if (PADetail.PlanningArea.Settings.SystemServiceSettings.ClientTimeoutSeconds < 1)
+            {
+                ShowToast("Validation Error", "Client Timeout must be between 1 and 600 seconds.", ToastRenderStyle.Warning);
+                return;
+            }
+
+            if (PADetail.PlanningArea.Settings.SystemServiceSettings.WebApiTimeoutSeconds < 1)
+            {
+                ShowToast("Validation Error", "Web API Timeout must be between 1 and 1200 seconds.", ToastRenderStyle.Warning);
+                return;
+            }
+
+            ShowLoadingState(true, "Checking for duplicate Planning Area names before saving...");
+            if (await PlanningAreaDataService.IsPlanningAreaNameDuplicateAsync(PADetail))
+            {
+                ShowToast("Invalid Data", "A Planning Area with this Name and Version already exists on this Server. Please choose a different name or version.", ToastRenderStyle.Danger);
+                return;
+            }
+
+            ShowLoadingState(true, "Saving Planning Area...");
+            PADetail.CompanyId = CompanyId ?? 0;
+            await OnSave.InvokeAsync(PADetail);
+
+            ShowToast("Success", "Changes have been saved successfully.", ToastRenderStyle.Success);
+            Close();
+        }
+        catch (Exception ex)
+        {
+            ShowToast("Error", "An error occurred while saving: " + ex.Message, ToastRenderStyle.Danger);
+        }
+        finally
+        {
+            ShowLoadingState(false, "");
+        }
+    }
+
+    //I tried quite a bit to make this work in a way where you wouldnt need to remember to add the event call on every property `set` but I just couldnt get it
+    //to work unfortunately. So we'll just have to settle with the ModelChanged Callback and having to remember to call it anytime the model changes
+    
+    private PADetails? OldPlanningArea = null;
+    private string? OldConnectionString;
+    private string? OldPublishSqlServerConnectionString;
+    private string? OldDashboardConnString;
+    private string? OldLogDbConnectionString;
+    private string? OldIntegrationUserAndPass;
+    private bool ChangesMade;
+    private void MakeStateCopies()
+    {
+        ChangesMade = false;
+        OldPlanningArea = PADetail.Copy();
+        OldConnectionString = ConnectionString;
+        OldPublishSqlServerConnectionString = PublishSqlServerConnectionString;
+        OldDashboardConnString = DashboardConnString;
+        OldLogDbConnectionString = LogDbConnectionString;
+        OldIntegrationUserAndPass = IntegrationUserAndPass;
+    }
+    
+    private void RevertChanges()
+    {
+        PADetail = OldPlanningArea.Copy();
+        ConnectionString = OldConnectionString;
+        PublishSqlServerConnectionString = OldPublishSqlServerConnectionString;
+        DashboardConnString = OldDashboardConnString;
+        LogDbConnectionString = OldLogDbConnectionString;
+        IntegrationUserAndPass = OldIntegrationUserAndPass;
+        ChangesMade = false;
+        StateHasChanged();
+    }
+
+    private void ShowToast(string title, string message, ToastRenderStyle style)
+    {
+        ToastService.ShowToast(new ToastOptions
+            {
+                ProviderName = "MainLayout",
+                Title = title,
+                Text = message,
+                ThemeMode = ToastThemeMode.Saturated,
+                RenderStyle = style,
+            });
+    }
+
+    private async void Close()
+    {
+        visible = false;
+        StateHasChanged();
+    }
+
+    private async Task Apply()
+    {
+        await OnSave.InvokeAsync(PADetail);
+    }
+
+    private void ShowDatabaseSettingsPopup(string a_dbType)
+    {
+        m_databaseUnderEdit = a_dbType;
+        DatabaseSettingsEditorRef.SetCurrentConnectionInputs(GetConnectionStringForDbType(a_dbType), a_dbType, IntegrationUserAndPass ?? PADetail.PlanningArea?.Settings.ErpDatabaseSettings.IntegrationUserCreds);
+        isDatabaseSettingsPopupVisible = true;
+    }
+
+    private string GetConnectionStringForDbType(string a_dbType)
+    {
+        if (PADetail != null)
+        {
+            switch (a_dbType)
+            {
+                case "import":
+                    return ConnectionString ?? PADetail.PlanningArea?.Settings.ErpDatabaseSettings.ConnectionString;
+
+                case "publish":
+                    return PublishSqlServerConnectionString ?? PADetail.PlanningArea?.Settings.ErpDatabaseSettings.PublishSqlServerConnectionString;
+
+                case "analytics":
+                    return DashboardConnString ?? PADetail.PlanningArea?.Settings.DashboardConnString;
+
+                case "audit":
+                    return LogDbConnectionString ?? PADetail.PlanningArea?.Settings.SystemServiceSettings.LogDbConnectionString;
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private void SetDbConnectionString((string UpdatedDbString, string? IntegrationUserAndPass, bool? UseSeparateDatabases) a_dbString)
+    {
+        ChangesMade = true;
+        if (PADetail != null)
+        {
+            switch (m_databaseUnderEdit)
+            {
+                case "import":
+                    ConnectionString = a_dbString.UpdatedDbString;
+                    IntegrationUserAndPass = a_dbString.IntegrationUserAndPass;
+                    break;
+
+                case "publish":
+                    PublishSqlServerConnectionString = a_dbString.UpdatedDbString;
+                    break;
+
+                case "analytics":
+                    DashboardConnString = a_dbString.UpdatedDbString;
+                    break;
+
+                case "audit":
+                    LogDbConnectionString = a_dbString.UpdatedDbString;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+
+    // Show or hide the loading state (spinner)
+    private void ShowLoadingState(bool state, string message)
+    {
+        isLoading = state;
+        loadingMessage = message;
+        StateHasChanged();
+    }
+
+    private void ModelChanged(PADetails a_obj)
+    {
+        ChangesMade = true;
+    }
+
+}

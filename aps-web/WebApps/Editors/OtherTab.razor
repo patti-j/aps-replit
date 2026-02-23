@@ -1,0 +1,102 @@
+﻿@using System.Security.Cryptography
+@inject IToastNotificationService ToastService
+
+<DxAccordionItem Text="Service Configuration" Expanded=false>
+    <HeaderTextTemplate>
+        <i class="fas fas fa-ellipsis-h m-2"></i>Other Settings
+    </HeaderTextTemplate>
+    <ContentTemplate Context="accordionContext">
+        <DxFormLayout CssClass="w-100 p-3">
+            <!-- Time Zone    -->
+            <DxFormLayoutItem Caption="Time Zone">
+                <DxComboBox @bind-Value="ServerTimeZoneId" Data="@TimeZoneOptions" TextFieldName="DisplayName" ValueFieldName="Id"/>
+            </DxFormLayoutItem>
+
+            <!-- Scenario Limit -->
+            <DxFormLayoutItem Caption="Scenario Limit">
+                <DxSpinEdit @bind-Value="ScenarioLimit" />
+            </DxFormLayoutItem>
+            <DxFormLayoutGroup Caption="API Key">
+                <DxFormLayoutItem ColSpanMd="12">
+                    <p>This API Key is only used internally by the planning area to connect to the PT Web Api and generally should not need to be changed.
+                        If you believe that the Api Key for your planning area has been leaked or is otherwise in use by an attacker attempting to
+                        impersonate your planning area you may regenerate it here.
+                        <br/><br/>Changing this setting will require a restart of the Planning Area.
+                    </p>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="API Key: " ColSpanMd="3">
+                    <DxTextBox ReadOnly="true" Text="@ApiKey" TextChanged="(a) => { }"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem>
+                    <DxButton Text="Regenerate" Click="RegenerateKey"></DxButton>
+                </DxFormLayoutItem>
+            </DxFormLayoutGroup>
+            
+            <!-- Audit Log Database Settings -->
+            <DxFormLayoutItem Caption="Audit Log Database Settings">
+                <DxButton Text="Audit Log Database Settings" Click="ShowDatabaseSettings" />
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </ContentTemplate>
+</DxAccordionItem>
+
+@code {
+    public class TimeZoneOption
+    {
+        public string Id { get; set; }
+        public string DisplayName { get; set; }
+    }
+
+    [Parameter]
+    public PADetails Model { get; set; }
+    
+    [Parameter]
+    public EventCallback<PADetails> ModelChanged { get; set; }
+    
+    [Parameter]
+    public EventCallback<string> OnShowDatabaseSettings { get; set; }
+
+
+    // Define properties to bind the fields
+    public string ServerTimeZoneId
+    {
+        get => Model.PlanningArea.Settings.ServerTimeZoneId;
+        set
+        {
+            Model.PlanningArea.Settings.ServerTimeZoneId = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public int ScenarioLimit
+    {
+        get => Model.PlanningArea.Settings.ScenarioLimit;
+        set
+        {
+            Model.PlanningArea.Settings.ScenarioLimit = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    // List of time zone options
+    public List<TimeZoneOption> TimeZoneOptions { get; set; }
+    public string ApiKey => new string(Enumerable.Range(0, Model.ApiKey?[..^6]?.Length ?? 12).Select((a) => '•').ToArray()) + Model.ApiKey?[^6..] ?? "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        TimeZoneOptions = TimeZoneInfo.GetSystemTimeZones()
+                            .Select(tz => new TimeZoneOption { Id = tz.Id, DisplayName = tz.DisplayName }).ToList();
+    }
+
+    private void ShowDatabaseSettings()
+    {
+        OnShowDatabaseSettings.InvokeAsync("audit");
+    }
+
+    private void RegenerateKey()
+    {
+        Model.ApiKey = CommonUtils.GeneratePaApiKey();
+        ModelChanged.InvokeAsync();
+    }
+
+}

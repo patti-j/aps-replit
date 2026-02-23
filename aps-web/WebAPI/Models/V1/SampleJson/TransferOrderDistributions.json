@@ -1,0 +1,20 @@
+[
+  {
+    "importDate": "2024-02-05T12:00:00Z",
+    "TransferOrderId": 12345,
+    "TransferOrderDistributionId": 67890,
+    "ItemId": 54321,
+    "FromWarehouseId": 101,
+    "ToWarehouseId": 102,
+    "QtyOrdered": 100.0,
+    "QtyShipped": 80.0,
+    "QtyReceived": 75.0,
+    "MinSourceQty": 50.0,
+    "MaxSourceQty": 150.0,
+    "MaterialSourcing": "Internal",
+    "MaterialAllocation": "Standard",
+    "ScheduledShipDate": "2024-02-10T12:00:00Z",
+    "ScheduledReceiveDate": "2024-02-15T12:00:00Z",
+    "Closed": false
+  }
+]

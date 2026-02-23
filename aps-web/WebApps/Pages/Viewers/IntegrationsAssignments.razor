@@ -1,0 +1,593 @@
+﻿@page "/integrationsAssignments"
+@using ReportsWebApp.DB.Models
+@inject DB.Services.ServiceContainer _serviceContainer
+@inject IToastNotificationService ToastService
+
+@if (integrationNodes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="no-borders visible">
+        <DxFormLayout CssClass="no-borders">
+            <DxFormLayoutGroup>
+                <HeaderTemplate>
+                    <div class="bg-body pb-3 pt-1" style="box-shadow: none;">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <h3 class="mb-0">Integration Assignments</h3>
+
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted">Selected Server:</span>
+                                <span class="badge bg-secondary">
+                                    @(selectedServerNode?.ServerName ?? "— Click a server row —")
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Bulk Apply Toolbar -->
+                        <div class="card mt-3" style="background: transparent;">
+                            <div class="card-body p-2">
+                                <div class="row g-2 align-items-end">
+
+                                    <!-- Bulk Integration -->
+                                    <div class="col-12 col-lg-6">
+                                        <label class="form-label mb-1">Bulk Integration</label>
+                                        <div class="d-flex gap-2">
+                                            <select class="form-select"
+                                                    disabled="@(selectedServerNode is null)"
+                                                    @bind="bulkSelectedIntegrationId"
+                                                    @bind:event="onchange">
+                                                <option value="">-- None --</option>
+                                                @foreach (var integration in integrations)
+                                                {
+                                                    <option value="@integration.Id">@integration.Name</option>
+                                                }
+                                            </select>
+
+                                            <DxButton Text="Apply all"
+                                                      Size="Size.Small"
+                                                      RenderStyle="ButtonRenderStyle.Primary"
+                                                      Enabled="@(selectedServerNode is not null)"
+                                                      Click="@(async () => await ApplyBulkIntegrationToSelectedServerAsync())" />
+                                        </div>
+                                    </div>
+
+                                    <!-- Bulk Data Connector -->
+                                    <div class="col-12 col-lg-6">
+                                        <label class="form-label mb-1">Bulk Data Connector</label>
+                                        <div class="d-flex gap-2">
+                                            <select class="form-select"
+                                                    disabled="@(selectedServerNode is null)"
+                                                    @bind="bulkSelectedDataConnectorId"
+                                                    @bind:event="onchange">
+                                                <option value="">-- None --</option>
+                                                @foreach (var dc in dataConectors)
+                                                {
+                                                    <option value="@dc.Id">@dc.Name</option>
+                                                }
+                                            </select>
+
+                                            <DxButton Text="Apply all"
+                                                      Size="Size.Small"
+                                                      RenderStyle="ButtonRenderStyle.Secondary"
+                                                      Enabled="@(selectedServerNode is not null)"
+                                                      Click="@(async () => await ApplyBulkDataConnectorToSelectedServerAsync())" />
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </HeaderTemplate>
+
+                <Items>
+                    <DxTreeList Data="@integrationNodes"
+                                KeyFieldName="Key"
+                                ParentKeyFieldName="ParentKey"
+                                ShowFilterRow="false"
+                                PageSize="50"
+                                CssClass="ch-480"
+                                PagerPosition="TreeListPagerPosition.Bottom">
+                        <Columns>
+
+                            <!-- Planning Area column -->
+                            <DxTreeListDataColumn Caption="Planning Area">
+                                <CellDisplayTemplate Context="cellContext">
+                                    @{
+                                        var node = (IntegrationAssignmentNode)cellContext.DataItem;
+                                    }
+
+                                    @if (node.IsServer)
+                                    {
+                                        <div class="d-flex align-items-center"
+                                             style="cursor:pointer;"
+                                             title="Click to select this server"
+                                             @onclick="() => SelectServer(node)">
+                                            <i class="fa fa-server padded-icon"></i>
+                                            <strong>@node.ServerName</strong>
+
+                                            @if (selectedServerNode?.Key == node.Key)
+                                            {
+                                                <span class="badge bg-primary ms-2">Selected</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <i class="fa fa-computer padded-icon"></i>
+                                        <span>@node.PlanningAreaName</span>
+                                    }
+                                </CellDisplayTemplate>
+                            </DxTreeListDataColumn>
+
+                            <!-- Integration (dropdown + Apply only if changed) -->
+                            <DxTreeListDataColumn Caption="Integration" Width="460px">
+                                <CellDisplayTemplate Context="cellContext">
+                                    @{
+                                        var node = (IntegrationAssignmentNode)cellContext.DataItem;
+                                    }
+
+                                    @if (!node.IsServer)
+                                    {
+                                        <div class="d-flex gap-2 align-items-center" @key="node.Key">
+                                            <select class="form-select"
+                                                    style="min-width: 280px;"
+                                                    @bind="node.SelectedIntegrationId"
+                                                    @bind:event="onchange">
+                                                <option value="">-- None --</option>
+                                                @foreach (var integration in integrations)
+                                                {
+                                                    <option value="@integration.Id">@integration.Name</option>
+                                                }
+                                            </select>
+
+                                            @if (node.SelectedIntegrationId != node.SavedIntegrationId)
+                                            {
+                                                <DxButton Text="Apply"
+                                                          Size="Size.Small"
+                                                          RenderStyle="ButtonRenderStyle.Primary"
+                                                          Click="@(async () => await ApplyAssignmentAsync(node))" />
+                                            }                                            
+                                        </div>
+                                    }
+                                </CellDisplayTemplate>
+                            </DxTreeListDataColumn>
+
+                            <!-- Data Connector (dropdown + Apply only if changed) -->
+                            <DxTreeListDataColumn Caption="Data Connector" Width="520px">
+                                <CellDisplayTemplate Context="cellContext">
+                                    @{
+                                        var node = (IntegrationAssignmentNode)cellContext.DataItem;
+                                    }
+
+                                    @if (!node.IsServer)
+                                    {
+                                        <div class="d-flex gap-2 align-items-center" @key="node.Key">
+                                            <select class="form-select"
+                                                    style="min-width: 280px;"
+                                                    @bind="node.SelectedDataConnectorId"
+                                                    @bind:event="onchange">
+                                                <option value="">-- None --</option>
+                                                @foreach (var dc in dataConectors)
+                                                {
+                                                    <option value="@dc.Id">@dc.Name</option>
+                                                }
+                                            </select>
+
+                                            @if (node.SelectedDataConnectorId != node.SavedDataConnectorId)
+                                            {
+                                                <DxButton Text="Apply"
+                                                          Size="Size.Small"
+                                                          RenderStyle="ButtonRenderStyle.Secondary"
+                                                          Click="@(async () => await ApplyDataConnectorAssignmentAsync(node))" />
+                                            }
+                                            
+                                        </div>
+                                    }
+                                </CellDisplayTemplate>
+                            </DxTreeListDataColumn>
+
+                        </Columns>
+                    </DxTreeList>
+                </Items>
+
+            </DxFormLayoutGroup>
+        </DxFormLayout>
+    </div>
+}
+
+@code {
+    private User currentUser;
+
+    private List<IntegrationAssignmentNode> integrationNodes;
+
+    private List<ExternalIntegration> integrations = new();
+    private List<DataConnector> dataConectors = new();
+
+    private List<PADetails> planningAreas = new();
+
+    private IntegrationAssignmentNode? selectedServerNode;
+
+    private int? bulkSelectedIntegrationId = null;
+    private int? bulkSelectedDataConnectorId = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser = await _serviceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+
+        planningAreas = await _serviceContainer.PlanningAreaDataService
+            .GetPlanningAreasByCompanyIdAsync(currentUser.CompanyId);
+
+        integrations = _serviceContainer.ExternalIntegrationService
+            .GetExternalIntegrationsForCompany(currentUser.CompanyId);
+
+        dataConectors = _serviceContainer.DataConnectorService
+            .GetDataConnectorsForCompany(currentUser.CompanyId);
+
+        var servers = await _serviceContainer.ServerManagerService
+            .GetServersByManagingCompanyAsync(currentUser.CompanyId);
+
+        integrationNodes = new List<IntegrationAssignmentNode>();
+
+        foreach (var server in servers)
+        {
+            var serverKey = $"S_{server.Id}";
+
+            integrationNodes.Add(new IntegrationAssignmentNode
+                {
+                    Key = serverKey,
+                    ParentKey = null,
+                    IsServer = true,
+                    ServerId = server.Id,
+                    ServerName = server.Name
+                });
+
+            var pasForServer = planningAreas.Where(pa => pa.ServerId == server.Id);
+
+            foreach (var pa in pasForServer)
+            {
+                integrationNodes.Add(new IntegrationAssignmentNode
+                    {
+                        Key = $"PA_{pa.Id}",
+                        ParentKey = serverKey,
+                        IsServer = false,
+                        ServerId = server.Id,
+                        ServerName = server.Name,
+                        PlanningAreaId = pa.Id,
+                        PlanningAreaName = pa.Name,
+
+                    // UI selection
+                        SelectedIntegrationId = pa.ExternalIntegrationId,
+                        SelectedDataConnectorId = pa.DataConnectorId,
+
+                    // Saved values (DB baseline)
+                        SavedIntegrationId = pa.ExternalIntegrationId,
+                        SavedDataConnectorId = pa.DataConnectorId
+                    });
+            }
+        }
+    }
+
+    private void SelectServer(IntegrationAssignmentNode serverNode)
+    {
+        if (serverNode is null || !serverNode.IsServer)
+            return;
+
+        selectedServerNode = serverNode;
+        bulkSelectedIntegrationId = null;
+        bulkSelectedDataConnectorId = null;
+
+        StateHasChanged();
+    }
+
+    private async Task ApplyBulkIntegrationToSelectedServerAsync()
+    {
+        if (selectedServerNode is null)
+            return;
+
+        var children = integrationNodes
+            .Where(n => !n.IsServer && n.ParentKey == selectedServerNode.Key && n.PlanningAreaId.HasValue)
+            .ToList();
+
+        if (children.Count == 0)
+        {
+            ToastService?.ShowToast("Info",
+                $"No Planning Areas found for server {selectedServerNode.ServerName}.",
+                ToastRenderStyle.Info);
+            return;
+        }
+
+        foreach (var child in children)
+            child.SelectedIntegrationId = bulkSelectedIntegrationId;
+
+        int saved = 0, failed = 0;
+
+        foreach (var child in children)
+        {
+            try
+            {
+                await ApplyAssignmentAsync(child);
+                saved++;
+            }
+            catch
+            {
+                failed++;
+            }
+        }
+
+        ToastService?.ShowToast(
+            failed == 0 ? "Saved" : "Partial",
+            failed == 0
+                ? $"Integration applied to {saved} Planning Areas in {selectedServerNode.ServerName}."
+                : $"Applied to {saved} Planning Areas, failed on {failed} in {selectedServerNode.ServerName}.",
+            failed == 0 ? ToastRenderStyle.Success : ToastRenderStyle.Warning);
+    }
+
+    private async Task ApplyBulkDataConnectorToSelectedServerAsync()
+    {
+        if (selectedServerNode is null)
+            return;
+
+        var children = integrationNodes
+            .Where(n => !n.IsServer && n.ParentKey == selectedServerNode.Key && n.PlanningAreaId.HasValue)
+            .ToList();
+
+        if (children.Count == 0)
+        {
+            ToastService?.ShowToast("Info",
+                $"No Planning Areas found for server {selectedServerNode.ServerName}.",
+                ToastRenderStyle.Info);
+            return;
+        }
+
+        foreach (var child in children)
+            child.SelectedDataConnectorId = bulkSelectedDataConnectorId;
+
+        int saved = 0, failed = 0;
+
+        foreach (var child in children)
+        {
+            try
+            {
+                await ApplyDataConnectorAssignmentAsync(child);
+                saved++;
+            }
+            catch
+            {
+                failed++;
+            }
+        }
+
+        ToastService?.ShowToast(
+            failed == 0 ? "Saved" : "Partial",
+            failed == 0
+                ? $"Data Connector applied to {saved} Planning Areas in {selectedServerNode.ServerName}."
+                : $"Applied to {saved} Planning Areas, failed on {failed} in {selectedServerNode.ServerName}.",
+            failed == 0 ? ToastRenderStyle.Success : ToastRenderStyle.Warning);
+    }
+
+    // Apply Integration (same logic, but now sync SavedIntegrationId)
+    private async Task ApplyAssignmentAsync(IntegrationAssignmentNode node)
+    {
+        if (node?.PlanningAreaId == null)
+            return;
+
+        var currentNode = integrationNodes.FirstOrDefault(n => n.Key == node.Key);
+        if (currentNode == null)
+            return;
+
+        var selectedIntegrationId = currentNode.SelectedIntegrationId;
+
+        var pa = await _serviceContainer.PlanningAreaDataService
+            .GetPlanningAreaByIdAsync(node.PlanningAreaId.Value);
+
+        if (pa == null)
+            return;
+
+        pa.ExternalIntegrationId = selectedIntegrationId;
+
+        ExternalIntegration? integration = null;
+        if (pa.ExternalIntegrationId.HasValue)
+        {
+            integration = _serviceContainer.ExternalIntegrationService
+                .GetExternalIntegration(pa.ExternalIntegrationId.Value);
+
+            if (integration == null)
+            {
+                ToastService?.ShowToast("Error", "Selected integration not found.", ToastRenderStyle.Danger);
+                return;
+            }
+        }
+
+        var paSettings = pa.PlanningArea ?? new PlanningArea();
+        pa.PlanningArea = paSettings;
+
+        if (integration != null)
+        {
+            // (Keep your current integration behavior)
+            // if (integration.ImportDataConnector.HasValue)
+            // {
+            //     var importConnector = _serviceContainer.DataConnectorService
+            //         .GetDataConnector(integration.ImportDataConnector.Value);
+
+            //     if (importConnector != null)
+            //     {
+            //         paSettings.Settings.ErpDatabaseSettings.ConnectionString = importConnector.ConnectionString;
+            //         paSettings.Settings.ErpDatabaseSettings.IntegrationUserCreds = "";
+            //         paSettings.Settings.InterfaceServiceSettings.PreImportSQL = importConnector.PreImportSQL ?? string.Empty;
+            //     }
+            // }
+
+            // if (integration.PublishDataConnector.HasValue)
+            // {
+            //     var publishConnector = _serviceContainer.DataConnectorService
+            //         .GetDataConnector(integration.PublishDataConnector.Value);
+
+            //     if (publishConnector != null)
+            //     {
+            //         paSettings.Settings.ErpDatabaseSettings.PublishSqlServerConnectionString = publishConnector.ConnectionString;
+            //     }
+            // }
+
+            //paSettings.Settings.InterfaceServiceSettings.PreImportProgramPath = integration.PreImportProgramPath ?? string.Empty;
+            //paSettings.Settings.InterfaceServiceSettings.PreImportProgramArgs = integration.PreImportProgramArgs ?? string.Empty;
+            //paSettings.Settings.InterfaceServiceSettings.RunPreImportSQL = integration.RunPreImportSQL ?? false;
+
+            //paSettings.Settings.IntegrationV2Connection = (integration.IsIntegrationV2Enabled ?? false) ? "true" : "";
+
+            paSettings.Settings.PreImportURL = integration.PreImportURL ?? string.Empty;
+            //paSettings.Settings.PostImportURL = integration.PostImportURL ?? string.Empty;
+            //paSettings.Settings.PreExportURL = integration.PreExportURL ?? string.Empty;
+            paSettings.Settings.PostExportURL = integration.PostExportURL ?? string.Empty;
+            //paSettings.Settings.AnalyticsURL = integration.AnalyticsURL ?? string.Empty;
+
+            var basePre = integration.PreImportURL ?? string.Empty;
+            var basePost = integration.PostExportURL ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(basePre))
+                paSettings.Settings.PreImportURL = $"{basePre.TrimEnd('/')}/{pa.CompanyId}/{pa.Id}/{(int)integration.Type}";
+
+            if (!string.IsNullOrWhiteSpace(basePost))
+                paSettings.Settings.PostExportURL = $"{basePost.TrimEnd('/')}/{pa.CompanyId}/{pa.Id}/{(int)integration.Type}";
+        }
+        else
+        {
+            //paSettings.Settings.InterfaceServiceSettings.PreImportProgramPath = string.Empty;
+            //paSettings.Settings.InterfaceServiceSettings.PreImportProgramArgs = string.Empty;
+            //paSettings.Settings.InterfaceServiceSettings.PreImportSQL = string.Empty;
+            //paSettings.Settings.InterfaceServiceSettings.RunPreImportSQL = false;
+
+            paSettings.Settings.PreImportURL = string.Empty;
+            //paSettings.Settings.PostImportURL = string.Empty;
+            //paSettings.Settings.PreExportURL = string.Empty;
+            paSettings.Settings.PostExportURL = string.Empty;
+            //paSettings.Settings.AnalyticsURL = string.Empty;
+
+            //paSettings.Settings.IntegrationV2Connection = "";
+        }
+
+        await _serviceContainer.PlanningAreaDataService.SaveAsync(pa);
+
+        currentNode.SelectedIntegrationId = pa.ExternalIntegrationId;
+        currentNode.SavedIntegrationId = pa.ExternalIntegrationId;
+
+        ToastService?.ShowToast("Saved", $"Integration updated for {pa.Name}", ToastRenderStyle.Success);
+    }
+
+    // Apply Data Connector (sync SavedDataConnectorId)
+    private async Task ApplyDataConnectorAssignmentAsync(IntegrationAssignmentNode node)
+    {
+        if (node?.PlanningAreaId == null)
+            return;
+
+        var currentNode = integrationNodes.FirstOrDefault(n => n.Key == node.Key);
+        if (currentNode == null)
+            return;
+
+        var selectedDataConnectorId = currentNode.SelectedDataConnectorId;
+
+        var pa = await _serviceContainer.PlanningAreaDataService
+            .GetPlanningAreaByIdAsync(node.PlanningAreaId.Value);
+
+        if (pa == null)
+            return;
+
+        pa.DataConnectorId = selectedDataConnectorId;
+
+        bool hasIntegrationAssigned = pa.ExternalIntegrationId.HasValue;
+
+        var paSettings = pa.PlanningArea ?? new PlanningArea();
+        pa.PlanningArea = paSettings;
+
+        if (selectedDataConnectorId.HasValue)
+        {
+            var dataConnector = _serviceContainer.DataConnectorService
+                .GetDataConnector(selectedDataConnectorId.Value);
+
+            if (dataConnector == null)
+            {
+                ToastService?.ShowToast("Error", "Selected Data Connector not found.", ToastRenderStyle.Danger);
+                return;
+            }
+
+            paSettings.Settings.ErpDatabaseSettings.ConnectionString = dataConnector.ImportConnectionString ?? string.Empty;
+            paSettings.Settings.ErpDatabaseSettings.PublishSqlServerConnectionString = dataConnector.PublishConnectionString ?? string.Empty;
+            paSettings.Settings.InterfaceServiceSettings.PreImportSQL = dataConnector.PreImportSQL ?? string.Empty;      
+            
+            paSettings.Settings.InterfaceServiceSettings.PreImportProgramPath = dataConnector.PreImportProgramPath ?? string.Empty;
+            paSettings.Settings.InterfaceServiceSettings.PreImportProgramArgs = dataConnector.PreImportProgramArgs ?? string.Empty;
+            paSettings.Settings.InterfaceServiceSettings.RunPreImportSQL = dataConnector.RunPreImportSQL ?? false;
+            paSettings.Settings.IntegrationV2Connection = (dataConnector.IsIntegrationV2Enabled ?? false) ? "true" : "";
+            paSettings.Settings.ErpDatabaseSettings.IntegrationUserCreds = dataConnector.ImportIntegrationUserAndPass ?? string.Empty; ;
+
+            //TODO: Add the AnalyticsURL
+            //paSettings.Settings.AnalyticsURL = dataConnector.AnalyticsURL ?? string.Empty;
+            paSettings.Settings.PostImportURL = dataConnector.PostImportURL ?? string.Empty;
+            paSettings.Settings.PreExportURL = dataConnector.PreExportURL ?? string.Empty;
+
+            //If to validate if Integration PreImport URL has been set or not (Integration Assigned)
+            if (!hasIntegrationAssigned)
+            {
+                paSettings.Settings.PreImportURL = dataConnector.PreImportURL ?? string.Empty;
+                paSettings.Settings.PostExportURL = dataConnector.PostExportURL ?? string.Empty;
+            }
+                        
+
+        }
+        else
+        {
+            paSettings.Settings.ErpDatabaseSettings.ConnectionString = string.Empty;
+            paSettings.Settings.ErpDatabaseSettings.PublishSqlServerConnectionString = string.Empty;
+            paSettings.Settings.InterfaceServiceSettings.PreImportSQL = string.Empty;
+
+            paSettings.Settings.InterfaceServiceSettings.PreImportProgramPath = string.Empty;
+            paSettings.Settings.InterfaceServiceSettings.PreImportProgramArgs = string.Empty;
+            paSettings.Settings.InterfaceServiceSettings.RunPreImportSQL = false;
+			paSettings.Settings.IntegrationV2Connection = true ? "" : "";
+            paSettings.Settings.ErpDatabaseSettings.IntegrationUserCreds = string.Empty; ;
+
+            //TODO: Add the AnalyticsURL
+            //paSettings.Settings.AnalyticsURL = dataConnector.AnalyticsURL ?? string.Empty;
+            paSettings.Settings.PostImportURL =  string.Empty;
+            paSettings.Settings.PreExportURL =  string.Empty;
+
+            //If to validate if Integration PreImport URL has been set or not (Integration Assigned)
+            if (!hasIntegrationAssigned)
+            {
+                paSettings.Settings.PreImportURL = string.Empty;
+                paSettings.Settings.PostExportURL = string.Empty;
+            }
+
+        }
+
+        await _serviceContainer.PlanningAreaDataService.SaveAsync(pa);
+
+        currentNode.SelectedDataConnectorId = pa.DataConnectorId;
+        currentNode.SavedDataConnectorId = pa.DataConnectorId;
+
+        ToastService?.ShowToast("Saved", $"Data Connector updated for {pa.Name}", ToastRenderStyle.Success);
+    }
+
+    private class IntegrationAssignmentNode
+    {
+        public string Key { get; set; }
+        public string? ParentKey { get; set; }
+        public bool IsServer { get; set; }
+
+        public int? ServerId { get; set; }
+        public string ServerName { get; set; }
+
+        public int? PlanningAreaId { get; set; }
+        public string? PlanningAreaName { get; set; }
+
+        // UI-selected values
+        public int? SelectedIntegrationId { get; set; }
+        public int? SelectedDataConnectorId { get; set; }
+
+        // DB baseline values (used to show/hide Apply)
+        public int? SavedIntegrationId { get; set; }
+        public int? SavedDataConnectorId { get; set; }
+    }
+}

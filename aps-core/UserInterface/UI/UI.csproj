@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Import shared properties and targets. Including framework version -->
+	<Import Project="..\..\SolutionMiscFiles\ProjectSharedTargetsWindows.props" />
+  <PropertyGroup>
+    <AssemblyName>PT.UI</AssemblyName>
+    <RootNamespace>PT.UI</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+	  <DefineConstants>TRACE;DEBUG;EditionEarlyAccess,[Localization]</DefineConstants>
+	  <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+	<DefineConstants></DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\aps-packages\Definitions\PackageDefinitionsUI.Controls\PackageDefinitionsUI.Controls.csproj" />
+    <ProjectReference Include="..\..\..\aps-packages\Libraries\GanttDotNet\GanttDotNet.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\PackageDefinitionsUI\PackageDefinitionsUI.csproj" />
+    <ProjectReference Include="..\..\CommonProjects\PackageDefinitions\PackageDefinitions.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+    <ProjectReference Include="..\..\Scheduling\Scheduler\Scheduler.csproj" />
+    <ProjectReference Include="..\..\Services\Definitions\APIDefintion\APIDefinitions.csproj" />
+    <ProjectReference Include="..\..\Services\Definitions\InterfaceServiceDefinitions\ImportDefinitions.csproj" />
+    <ProjectReference Include="..\..\Services\Definitions\SystemDefinitions\SystemDefinitions.csproj" />
+    <ProjectReference Include="..\..\Services\PlanetTogetherAPI\PlanetTogetherAPI.csproj" />
+    <ProjectReference Include="..\..\Services\SystemService\SystemServiceProxy\SystemServiceProxy\SystemServiceProxy.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\ERPTransmissions\ERPTransmissions.csproj" />
+    <ProjectReference Include="..\..\TransmissionsAndBroadcasting\Transmissions\Transmissions.csproj" />
+    <ProjectReference Include="..\UIDefinitions\UIDefinitions.csproj" />
+    <ProjectReference Include="..\VisualControls\ComponentLibrary\ComponentLibrary.csproj" />
+    <ProjectReference Include="..\..\ImportAndPublishing\ERPLibrary\ERPLibrary.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerData\SchedulerData.csproj" />
+    <ProjectReference Include="..\..\Scheduling\SchedulerExtentions\SchedulerExtensions.csproj" />
+    <ProjectReference Include="..\VisualControls\ScenarioControls\ScenarioControls.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+	  <Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+      <Link>Properties\AssemblyInfoShared.cs</Link>
+    </Compile>
+	  <Compile Update="ScenarioViewer\ScenarioViewer.cs" />
+    <Compile Update="Dialogs\CommandWindow\CommandPrompt.cs" />
+    <Compile Update="PTInterface\ApplicationExceptionsDisplay.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="MainForm\MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="ScenarioViewer\ScenarioViewerContainer.cs" />
+  </ItemGroup>
+</Project>

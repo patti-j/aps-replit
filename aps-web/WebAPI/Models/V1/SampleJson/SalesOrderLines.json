@@ -1,0 +1,11 @@
+[
+  {
+    "importDate": "2024-02-05T00:00:00",
+    "salesOrderId": 123,
+    "salesOrderLineId": 456,
+    "description": "Sample Description",
+    "itemId": 789,
+    "lineNumber": "001",
+    "unitPrice": 10.99
+  }
+]

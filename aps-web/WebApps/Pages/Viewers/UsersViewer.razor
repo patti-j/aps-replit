@@ -1,0 +1,68 @@
+﻿@page "/usersViewer"
+@if (viewPermission)
+{
+    <UserGrid @ref="userGrid" AdminView="AdminView.HasValue && AdminView.Value" OnSave="OnSave" ParentCompany="ParentCompany" 
+              Companies="Companies" Roles="Roles" Users="Users" RefreshComponent="RefreshComponent"/>
+}
+
+@code {
+    private User User { get; set; }
+    private Company ParentCompany;
+    public List<User> Users { get; set; } = new List<User>();
+    public List<Company> Companies { get; set; } = new List<Company>();
+    public List<Role> Roles { get; set; } = new List<Role>();
+    private bool viewPermission = false;
+    private UserGrid userGrid;
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public bool? AdminView { get; set; }
+
+    public bool IsAdminView => AdminView.HasValue && AdminView.Value;
+
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    ICompanyService companyService { get; set; }
+    [Inject]
+    IRoleService RoleService { get; set; }
+    [Inject]
+    IAuthorizationService m_authService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.ManageUsers, NavigationManager, true)) return;
+        if (IsAdminView && Shared.Utils.BlockUsersByAuthStatus(User, Permission.PTAdmin, NavigationManager)) return;
+        viewPermission = true;
+
+        await ReloadData();
+    }
+
+    private async Task ReloadData()
+    {
+        ParentCompany = User.Company;
+        Companies = await companyService.GetCompaniesAsync();
+        if (User.Exists())
+        {
+            if (IsAdminView)
+            {
+                Roles = await RoleService.GetAllRoles();
+            }
+            else
+            {
+                Roles = await RoleService.GetRoles(User.CompanyId);
+            }
+            Users = await m_userService.GetUsersAsync(Roles, User.CompanyId);
+        }
+    }
+    private async Task<User> OnSave(User user)
+    {
+        return await m_userService.SaveAsync(user, IsAdminView);
+    }
+
+    private async Task RefreshComponent()
+    {
+        await ReloadData();
+        StateHasChanged();
+    }
+}

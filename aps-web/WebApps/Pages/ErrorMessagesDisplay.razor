@@ -1,0 +1,16 @@
+﻿@using System.Collections.Generic
+
+@code {
+    [Parameter]
+    public IEnumerable<string> ErrorMessages { get; set; }
+}
+
+@if (ErrorMessages?.Any() == true)
+{
+    <div class="alert alert-danger">
+        @foreach (var error in ErrorMessages)
+        {
+            <p>@error</p>
+        }
+    </div>
+}

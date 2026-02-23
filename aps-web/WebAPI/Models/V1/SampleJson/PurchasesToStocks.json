@@ -1,0 +1,29 @@
+[
+  {
+    "importDate": "2024-02-05T12:00:00",
+    "PurchaseToStockId": 12345,
+    "InventoryId": 67890,
+    "Name": "Sample Purchase",
+    "Description": "This is a sample purchase description.",
+    "ItemId": 54321,
+    "QtyOrdered": 100.0,
+    "ExternalId": "ABC123",
+    "ScheduledReceiptDate": "2024-02-10T14:30:00",
+    "UnloadHrs": 4.5,
+    "TransferHrs": 3.0,
+    "AvailableDate": "2024-02-11T08:00:00",
+    "VendorExternalId": "VENDOR456",
+    "BuyerExternalId": "BUYER789",
+    "WarehouseId": 9876,
+    "UnloadEndDate": "2024-02-11T12:00:00",
+    "Notes": "Sample notes for this purchase.",
+    "AttributesSummary": "Sample attributes summary",
+    "Firm": true,
+    "Closed": false,
+    "DbrReceivingBufferHrs": 2.5,
+    "DbrReceiptDate": "2024-02-12T10:15:00",
+    "DbrCurrentPenetrationPercent": 75.5,
+    "QtyReceived": 90.0,
+    "MaintenanceMethod": "Regular Maintenance"
+  }
+]

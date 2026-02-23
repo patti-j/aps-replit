@@ -1,0 +1,47 @@
+﻿@page "/categoriesViewer"
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+
+@if (viewPermission)
+{
+    <CategoryGrid @ref="categoryGrid" OnSave="OnSave" Groups="Roles" Categories="Categories" RefreshComponent="RefreshComponent" />
+}
+
+@code {
+    private User User { get; set; }
+
+    public List<Category> Categories { get; set; } = new List<Category>();
+    public List<Role> Roles { get; set; } = new List<Role>();
+    public List<User> Users { get; set; } = new List<User>();
+    private bool viewPermission = false;
+    private CategoryGrid categoryGrid;
+
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    ICategoryService categoryService { get; set; }
+    [Inject]
+    IRoleService RoleService { get; set; }
+    [Inject]
+    NavigationManager Navigation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.ManageReports, NavigationManager)) return;
+        viewPermission = true;
+
+        if (User.Exists())
+        {
+            Categories = categoryService.GetCategories(User.CompanyId);
+            Roles = await RoleService.GetRoles(User.CompanyId);
+        }
+    }
+    private async Task<Category> OnSave(Category category)
+    {
+        return await categoryService.SaveAsync(category);
+    }
+    private async Task RefreshComponent()
+    {
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+}

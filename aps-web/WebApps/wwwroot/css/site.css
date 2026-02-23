@@ -1,0 +1,50 @@
+/* Base Styles */
+@import 'site/base.css';
+
+/* Utilities */
+@import 'site/utilities.css';
+
+/* Layout and Structure */
+@import 'site/layout.css';
+@import 'site/grid.css';
+@import 'site/panels.css';
+
+/* Components */
+@import 'site/components.css';
+@import 'site/buttons.css';
+@import 'site/forms.css';
+@import 'site/tabs.css';
+@import 'site/modals.css';
+@import 'site/aichat.css';
+@import 'site/fab.css';
+@import 'site/integrations.css';
+
+/* Headers and Footers */
+@import 'site/header.css';
+@import 'site/footer.css';
+
+/* Notifications and Indicators */
+@import 'site/notifications.css';
+
+/* Specific UI Elements */
+@import 'site/treeview.css';
+@import 'site/pill.css';
+@import 'site/dashboard.css';
+
+/* Theme and Appearance */
+@import 'site/responsive.css';
+@import 'site/header.css';
+
+/* Icons and Images */
+@import 'site/icons.css';
+
+/* Developer Guide for Adding More Styles
+   -----------------------------------------------------------
+   - When adding new styles, first attempt to integrate them into the existing CSS files where they logically belong.
+   - If styles you're adding do not logically fit into existing categories, review whether they can enhance or expand existing categories without creating redundancy.
+   - For entirely new components or distinct visual themes that do not match existing files, create a new CSS file.
+   - Name the new file descriptively based on its purpose (e.g., 'alerts.css' for alert styles).
+   - Update this import list to include any new CSS files.
+   - Maintain a habit of reviewing and refactoring CSS to ensure efficiency and prevent style conflicts.
+   -----------------------------------------------------------
+*/

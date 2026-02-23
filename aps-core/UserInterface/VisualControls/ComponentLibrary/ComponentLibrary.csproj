@@ -1,0 +1,114 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\..\SolutionMiscFiles\ProjectSharedTargetsWindows.props" />
+  <PropertyGroup>
+    <AssemblyName>PT.ComponentLibrary</AssemblyName>
+    <RootNamespace>PT.ComponentLibrary</RootNamespace>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Styling\**" />
+    <EmbeddedResource Remove="Styling\**" />
+    <None Remove="Styling\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Update="System.Core">
+      <Name>System.Core</Name>
+    </Reference>
+    <Reference Update="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Update="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Update="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+      <Link>Properties\AssemblyInfoShared.cs</Link>
+    </Compile>
+    <PackageReference Include="DevExpress.Win.Design" Version="25.2.3" />
+    <Compile Update="Controls\CheckBoxTopLabel.cs" />
+    <Compile Update="Controls\CleanLayoutControl.cs" />
+    <Compile Update="Controls\ColorPickerBoxControl.cs" />
+    <Compile Update="Controls\DataLoadingSplashLite.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\DataLoadingSplash.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\DatePickerControl.cs" />
+    <Compile Update="Controls\DurationCombo.cs" />
+    <Compile Update="Controls\HelpLinkLabel.cs" />
+    <Compile Update="Controls\HighImpactButton.cs" />
+    <Compile Update="Controls\NoDataSplash.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\ValueSlider.cs" />
+    <Compile Update="Features\FeatureControlFrame.cs" />
+    <Compile Update="Navigation\PTNavigationFrame.cs" />
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Properties\SliderImages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SliderImages.resX</DependentUpon>
+    </Compile>
+    <Compile Update="PTLayoutPanel.cs" />
+    <Compile Update="PTUserSettingsBaseControl.cs" />
+    <Compile Update="Controls\SetJobsValuesGenericEditorControl.cs" />
+    <Compile Update="DateGenerator\DateGeneratorControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="DateGenerator\DateRangeEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="DateGenerator\RecurrenceIntervalEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Grids\GridControlPopupExport.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Grids\GridControlPopupView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="PTBaseControl.cs" />
+    <Compile Update="TipWindow.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\..\CommonProjects\PackageDefinitionsUI\PackageDefinitionsUI.csproj" />
+    <ProjectReference Include="..\..\..\CommonProjects\PackageDefinitions\PackageDefinitions.csproj" />
+    <ProjectReference Include="..\..\..\Scheduling\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+    <ProjectReference Include="..\..\..\TransmissionsAndBroadcasting\Transmissions\Transmissions.csproj" />
+    <ProjectReference Include="..\..\UIDefinitions\UIDefinitions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Properties\SliderImages.resX">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>SliderImages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants></DefineConstants>
+  </PropertyGroup>
+</Project>

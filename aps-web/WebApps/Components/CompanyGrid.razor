@@ -1,0 +1,621 @@
+﻿@page "/components/companygrid"
+@using Microsoft.EntityFrameworkCore
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components.Web
+@using ReportsWebApp.Helpers
+@using ReportsWebApp.DB.Models
+@using ReportsWebApp.DB.Models.DTOs
+@using ReportsWebApp.DB.Services.Interfaces
+@inject IUserService UserService
+@inject ICompanyService CompanyService
+@inject IToastNotificationService toastService
+@inject NavigationManager Navigation
+
+<style>
+    .wide-editor {
+        min-width: 1200px;
+    }
+</style>
+
+<h3>Companies</h3>
+
+@if (Companies == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid UnboundColumnData="Grid_CustomUnboundColumnData"
+            ShowFilterRow="true" Data="@Companies"
+            EditModelSaving="OnEditModelSaving" EditMode="GridEditMode.PopupEditForm"
+            @ref="m_companyGrid"
+            EditStart="OnEditStart"
+            CustomizeEditModel="(e) => GridHelpers.CustomizeEditorTitle(e, m_companyGrid)"
+            PageSize="10"
+            CssClass="ch-480"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer"
+            PopupEditFormHeaderText="Edit Company" PopupEditFormCssClass="wide-editor">
+        <Columns>
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                <HeaderTemplate>
+                    <DxButton IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1" Text="Add" Click="() => m_companyGrid.StartEditNewRowAsync()" />
+                </HeaderTemplate>
+                <CellDisplayTemplate Context="context">
+                    @{
+                        var dataItem = (Company)context.DataItem;
+                    }
+                    <ActionDropdown DataItem="dataItem" Actions="_companyActions" />
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+
+            <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" />
+            <DxGridDataColumn FieldName="Name" Caption="Company Name" MinWidth="200" />
+            <DxGridDataColumn FieldName="Email" Caption="Email" MinWidth="200" />
+            <DxGridDataColumn FieldName="PowerBI Workspaces" UnboundType="GridUnboundColumnType.String" MinWidth="200" />
+            <DxGridDataColumn FieldName="LicenseServiceCompany" UnboundType="GridUnboundColumnType.String" MinWidth="200" Caption="License Service Company">
+                <CellDisplayTemplate Context="cellContext">
+                    @{
+                        var company = (Company)cellContext.DataItem;
+                        if (company != null && !string.IsNullOrEmpty(company.LicenseServiceCompanyName))
+                        {
+                            if (!string.IsNullOrEmpty(company.LicenseServiceCompanyUrl))
+                            {
+                                <a href="@company.LicenseServiceCompanyUrl" target="_blank">@company.LicenseServiceCompanyName</a>
+                            }
+                            else
+                            {
+                                @company.LicenseServiceCompanyName
+                            }
+                        }
+                    }
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+            <DxGridDataColumn FieldName="Active" Caption="Active" MinWidth="100" />
+        </Columns>
+
+        <EditFormTemplate Context="EditFormContext">
+            @{
+                var company = (Company)EditFormContext.EditModel;
+            }
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <DxFormLayout>
+                <DxFormLayoutTabPages ActiveTabIndex="@_activeTabIndex" ActiveTabIndexChanged="@OnActiveTabIndexChanged">
+                    <DxFormLayoutTabPage Caption="General Information">
+                        <DxFormLayoutItem Caption="Company Name:" ColSpanMd="12">
+                            <DxTextBox @bind-Text="@company.Name" />
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Primary Contact Name:" ColSpanMd="12">
+                            <DxTextBox @bind-Text="@company.ContactName" />
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Primary Contact Email:" ColSpanMd="12">
+                            <DxTextBox @bind-Text="@company.Email" />
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Allowed Domains:" ColSpanMd="12">
+                            <DxTextBox @bind-Text="@company.AllowedDomains" />
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Active:" ColSpanMd="6">
+                            <DxCheckBox @bind-Checked="@company.Active" />
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Use SSO For User Login:" ColSpanMd="6">
+                            <DxCheckBox @bind-Checked="@company.UseSSOLogin" />
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Company Type:" ColSpanMd="12" Enabled="company.CompanyType != ECompanyType.PT">
+                            <DxComboBox Data="@getCompanyTypes(company.CompanyType)" @bind-Value="@company.CompanyType" Context="comboContext">
+                                <ItemTemplate>@(comboContext?.ToString() ?? "Not Set")</ItemTemplate>
+                                <EditBoxTemplate>@(comboContext?.ToString() ?? "Not Set")</EditBoxTemplate>
+                            </DxComboBox>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="PowerBI Workspaces:" ColSpanMd="12">
+                            <DxTagBox Data="@WorkspaceAvailableOptions" @bind-Values="selectedWorkspaces"
+                                      FilteringMode="DataGridFilteringMode.Contains" TextFieldName="@nameof(PBIWorkspaceOption.OptionName)" />
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="License Service Company:" ColSpanMd="12">
+                            <DxComboBox Data="@_licenseServiceCompanies" 
+                                        @bind-Value="@_selectedLicenseServiceCompany" 
+                                        TextFieldName="@nameof(LicenseServiceCompanyDto.Name)"
+                                        FilteringMode="DataGridFilteringMode.Contains"
+                                        ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                        NullText="Select a license service company...">
+                                <ItemTemplate Context="companyContext">
+                                    <div>
+                                        <div><strong>@companyContext.Name</strong></div>
+                                        @if (!string.IsNullOrEmpty(companyContext.Email))
+                                        {
+                                            <div style="font-size: 0.9em; color: #666;">@companyContext.Email</div>
+                                        }
+                                    </div>
+                                </ItemTemplate>
+                            </DxComboBox>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Workspaces Guids:" ColSpanMd="12">
+                            <DxListBox Data="@selectedWorkspaces"
+                                       Enabled="false"
+                                       @key="@selectedWorkspaces.GetHashCode()"
+                                       SelectionMode="ListBoxSelectionMode.Single"
+                                       @bind-Value="Workspace">
+                            </DxListBox>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Row Version:" ColSpanMd="12" Visible="false">
+                            <DxTextBox @bind-Text="@RowVersion" />
+                        </DxFormLayoutItem>
+                    </DxFormLayoutTabPage>
+                    <DxFormLayoutTabPage Caption="Databases">
+                        <DxGrid Data="@CompanyDbs" @ref="m_companyDbGrid"
+                                EditModelSaving="SaveCompanyDb"
+                                DataItemDeleting="CompanyDb_DataItemDeleting"
+                                EditMode="GridEditMode.PopupEditForm"
+                                EditFormButtonsVisible="false"
+                                CustomizeEditModel="(e) => OnCustomGridEdit(e)">
+                            <Columns>
+                                <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                                    <HeaderTemplate>
+                                        <DxButton IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1" Text="Add" Click="() => m_companyDbGrid.StartEditNewRowAsync()" />
+                                    </HeaderTemplate>
+                                    <CellDisplayTemplate Context="context1">
+                                        @{
+                                            <DxButton IconCssClass="fa fa-pencil" CssClass="btn-icon" Click="() => m_companyDbGrid.StartEditDataItemAsync(context1.DataItem)" />
+                                            <DxButton IconCssClass="fa fa-trash" CssClass="btn-icon" Click="() => m_companyDbGrid.ShowDataItemDeleteConfirmation(context1.DataItem)" />
+                                        }
+                                    </CellDisplayTemplate>
+
+                                </DxGridCommandColumn>
+                                <DxGridDataColumn FieldName="Name" Caption="Instance Name" MinWidth="200" />
+                                <DxGridDataColumn FieldName="DBName" Caption="DB Name" MinWidth="200" />
+                                <DxGridDataColumn FieldName="DBUserName" Caption="DB Username" MinWidth="200" />
+                                <DxGridDataColumn FieldName="DBPasswordKey" Caption="DB Password Key" MinWidth="200" />
+                                <DxGridDataColumn FieldName="DBServerName" Caption="DB Server Name" MinWidth="200" />
+                                <DxGridDataColumn FieldName="DbType" Caption="DB Type" MinWidth="200" />
+                                <DxGridDataColumn FieldName="Environment" Caption="Environment" MinWidth="200" />
+                                <DxGridDataColumn FieldName="ServerManagerUrl" Caption="ServerManagerUrl" MinWidth="200" />
+                                <DxGridDataColumn FieldName="ImportUserName" Caption="ImportUserName" MinWidth="200" />
+                                <DxGridDataColumn FieldName="ImportUserPasswordKey" Caption="ImportUserPasswordKey" MinWidth="200" />
+                                <DxGridDataColumn FieldName="CreatedBy" Caption="Created by" MinWidth="200" />
+                            </Columns>
+                            <EditFormTemplate Context="EditCompanyDbFormContext">
+                                @{
+                                    var companyDb = (CompanyDb)EditCompanyDbFormContext.EditModel;
+                                }
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+                                <DxFormLayout>
+                                    <DxFormLayoutItem Caption="Company Id:" ColSpanMd="12" Visible="false">
+                                        <DxTextBox @bind-Int="@EditingCompanyId" />
+                                    </DxFormLayoutItem>
+                                    <DxFormLayoutItem Caption="Instance Name:" ColSpanMd="12">
+                                        <DxTextBox @bind-Text="@companyDb.Name" />
+                                    </DxFormLayoutItem>
+                                    <DxFormLayoutItem Caption="Database Name:" ColSpanMd="12">
+                                        <DxTextBox @bind-Text="@companyDb.DBName" />
+                                    </DxFormLayoutItem>
+                                    <DxFormLayoutItem Caption="DB Username:" ColSpanMd="12">
+                                        <DxTextBox @bind-Text="@companyDb.DBUserName" />
+                                    </DxFormLayoutItem>
+                                    <DxFormLayoutItem Caption="DB Password Key:" ColSpanMd="12">
+                                        <DxTextBox @bind-Text="@companyDb.DBPasswordKey" />
+                                    </DxFormLayoutItem>
+                                    <DxFormLayoutItem Caption="DB Server Name:" ColSpanMd="12">
+                                        <DxTextBox @bind-Text="@companyDb.DBServerName" />
+                                    </DxFormLayoutItem>
+                                    <DxFormLayoutItem Caption="DB Type:" ColSpanMd="12">
+                                        <DxComboBox Data="@(Enum.GetValues<EDbType>())" @bind-Value="@companyDb.DbType" Context="comboContext">
+                                            <ItemTemplate>@comboContext.ToString()</ItemTemplate>
+                                            <EditBoxTemplate>@comboContext.ToString()</EditBoxTemplate>
+                                        </DxComboBox>
+                                    </DxFormLayoutItem>
+                                    <DxFormLayoutItem Caption="Environment:" ColSpanMd="12">
+                                        <DxTextBox @bind-Text="@companyDb.Environment" />
+                                    </DxFormLayoutItem>
+                                    <DxFormLayoutItem Caption="Server Manager URL:" ColSpanMd="12">
+                                        <DxTextBox @bind-Text="@companyDb.ServerManagerUrl" />
+                                    </DxFormLayoutItem>
+                                    <DxFormLayoutItem Caption="Import User Name:" ColSpanMd="12">
+                                        <DxTextBox @bind-Text="@companyDb.ImportUserName" />
+                                    </DxFormLayoutItem>
+                                    <DxFormLayoutItem Caption="Import Password Key:" ColSpanMd="12">
+                                        <DxTextBox @bind-Text="@companyDb.ImportUserPasswordKey" />
+                                    </DxFormLayoutItem>
+                                </DxFormLayout>
+                                <DxFormLayoutItem ColSpanMd="12">
+                                    <div class="d-flex justify-content-end" style="margin-top: 8px">
+                                        <DxButton SubmitFormOnClick="true" Text="Save"/>
+                                        <DxButton Click="@(() => m_companyDbGrid.CancelEditAsync())" Text="Cancel" class="ms-2" />
+                                    </div>
+                                </DxFormLayoutItem>
+                            </EditFormTemplate>
+                        </DxGrid>
+                    </DxFormLayoutTabPage>
+                </DxFormLayoutTabPages>
+            </DxFormLayout>
+        </EditFormTemplate>
+    </DxGrid>
+
+    <DxPopup @bind-Visible="@_popupVisible"
+             HeaderText="@_popupHeader"
+             BodyText="@_popupMessage"
+             ShowFooter="true"
+             @ref="_popup">
+        <FooterContentTemplate>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Close" Click="ClosePopup" />
+        </FooterContentTemplate>
+    </DxPopup>
+}
+
+@code {
+    //  UI Components
+    public IGrid? m_companyGrid { get; set; }
+    public IGrid? m_companyDbGrid { get; set; }
+    private DxPopup _popup;
+    private bool _popupVisible { get; set; } = false;
+    private string _popupHeader = "";
+    private string _popupMessage = "";
+    private bool _concurrencyException = false;
+
+
+    //  Injected Services
+    [Inject] private IUserService _userService { get; set; }
+    [Inject] private ICompanyService _companyService { get; set; }
+    [Inject] private IConfiguration _configuration { get; set; }
+
+    //  Component Parameters
+    [Parameter] public Func<Task> RefreshComponent { get; set; }
+    [Parameter] public List<Company> Companies { get; set; }
+    [Parameter] public Func<Company, Task<Company>> OnSave { get; set; }
+    [Parameter] public List<PBIWorkspaceOption> WorkspaceOptions { get; set; }
+    [Parameter] public string? FilterCompanyName { get; set; }
+
+    //  Component State
+    private int _activeTabIndex { get; set; }
+    private string _rowVersion { get; set; }
+    private User _currentUser { get; set; }
+
+    //  Actions for Dropdown
+    public List<PBIWorkspaceOption> WorkspaceAvailableOptions { get; set; }
+    int EditingCompanyId { get; set; }
+    public string RowVersion { get; set; }
+    PBIWorkspaceOption Workspace { get; set; } = null;
+    public List<CompanyDb> CompanyDbs { get; set; }
+    public IEnumerable<PBIWorkspaceOption> selectedWorkspaces { get; set; }
+    private IEnumerable<ActionItem<Company>> _companyActions;
+    private int nextTempId = -1;
+    private List<CompanyDb> m_dbsToSave = new();
+    private List<CompanyDb> m_dbsToDelete = new();
+
+    // License Service Company
+    private List<LicenseServiceCompanyDto> _licenseServiceCompanies = new();
+    private LicenseServiceCompanyDto _selectedLicenseServiceCompany = null;
+
+    //  Initialization
+    protected override async Task OnInitializedAsync()
+    {
+        _currentUser = await _userService.GetCurrentUserAsync(AuthenticationStateProvider);
+
+        _companyActions = new List<ActionItem<Company>>
+        {
+            new ActionItem<Company>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-pencil",
+                Action = async (company) => await m_companyGrid?.StartEditDataItemAsync(company)
+            },
+            new ActionItem<Company>
+            {
+                ActionText = "View Subscriptions",
+                IconCssClass = "fa fa-list",
+                Action = (company) => { Navigation.NavigateTo($"/subscriptions/{company.Id}"); return Task.CompletedTask; }
+            }
+        };
+
+        // Load license service companies
+        try
+        {
+            _licenseServiceCompanies = await _companyService.GetLicenseServiceCompaniesAsync();
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't fail - license service may be unavailable
+            Console.WriteLine($"Failed to load license service companies: {ex.Message}");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !string.IsNullOrWhiteSpace(FilterCompanyName) && m_companyGrid != null)
+        {
+            await ApplyCompanyNameFilter();
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task ApplyCompanyNameFilter()
+    {
+        if (m_companyGrid != null && !string.IsNullOrWhiteSpace(FilterCompanyName))
+        {
+            m_companyGrid.SetFilterCriteria(
+                new DevExpress.Data.Filtering.FunctionOperator(
+                    DevExpress.Data.Filtering.FunctionOperatorType.Contains,
+                    new DevExpress.Data.Filtering.OperandProperty("Name"),
+                    new DevExpress.Data.Filtering.OperandValue(FilterCompanyName)
+                )
+            );
+        }
+    }
+
+    //  Edit Start Handler
+    private void OnEditStart(GridEditStartEventArgs args)
+    {
+        if (args.IsNew)
+        {
+            selectedWorkspaces = new List<PBIWorkspaceOption>();
+
+            // Filter WorkspaceOptions to exclude workspaces already assigned to other companies
+            WorkspaceAvailableOptions = WorkspaceOptions
+                .Where(workspace => !Companies.Any(c => c.Workspaces.Any(ws => ws.PBIWorkspaceId == workspace.OptionValue)))
+                .ToList();
+            CompanyDbs = new();
+            _selectedLicenseServiceCompany = null;
+        }
+        else
+        {
+            var company = (Company)args.DataItem;
+            EditingCompanyId = company.Id;
+            RowVersion = Convert.ToBase64String(company.Version);
+            // Filter WorkspaceOptions to exclude workspaces already assigned to other companies
+            WorkspaceAvailableOptions = WorkspaceOptions
+                .Where(workspace => !Companies.Any(c => c.Workspaces.Any(ws => ws.PBIWorkspaceId == workspace.OptionValue && c != company)))
+                .ToList();
+
+            // Obtain the selectedWorkspaces for the particular selectedWorkspaces of the company to edit
+            selectedWorkspaces = WorkspaceAvailableOptions
+               .Where(workspace => company.Workspaces.Any(ws => ws.PBIWorkspaceId == workspace.OptionValue))
+               .ToList();
+            CompanyDbs = _companyService.GetCompanyDbsAsync(company.Id).Result;
+
+            // Set selected license service company
+            if (!string.IsNullOrEmpty(company.LicenseServiceCompanyName))
+            {
+                _selectedLicenseServiceCompany = _licenseServiceCompanies
+                    .FirstOrDefault(c => c.Name == company.LicenseServiceCompanyName);
+            }
+            else
+            {
+                _selectedLicenseServiceCompany = null;
+            }
+        }
+
+        m_dbsToSave = new();
+        m_dbsToDelete = new();
+    }
+
+    //  Save Handler
+    protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        try
+        {
+            var editModel = (Company)e.EditModel;
+            if (editModel == null) return;
+
+            var company = e.IsNew ? new Company() : Companies.FirstOrDefault(c => c.Id == editModel.Id);
+            if (company == null) return;
+
+            if (e.IsNew && Companies.Exists(c => c.Name.Equals(editModel.Name, StringComparison.OrdinalIgnoreCase)))
+                throw new Exception("Company name already exists");
+            company.Name = editModel.Name;
+            company.ContactName = editModel.ContactName;
+            company.Email = editModel.Email;
+            company.AllowedDomains = editModel.AllowedDomains;
+            company.Active = editModel.Active;
+            company.UseSSOLogin = editModel.UseSSOLogin;
+            company.CompanyType = editModel.CompanyType;
+
+            // Update license service company association
+            if (_selectedLicenseServiceCompany != null)
+            {
+                company.LicenseServiceCompanyName = _selectedLicenseServiceCompany.Name;
+                
+                // Build the license service company URL
+                var licenseServiceBaseUrl = _configuration["LicenseService:BaseUrl"];
+                if (!string.IsNullOrEmpty(licenseServiceBaseUrl))
+                {
+                    var encodedCompanyName = Uri.EscapeDataString(_selectedLicenseServiceCompany.Name);
+                    company.LicenseServiceCompanyUrl = $"{licenseServiceBaseUrl.TrimEnd('/')}/companies?companyName={encodedCompanyName}";
+                }
+            }
+            else
+            {
+                company.LicenseServiceCompanyName = null;
+                company.LicenseServiceCompanyUrl = null;
+            }
+
+            //company.Workspaces.Clear();
+            var toAdd = selectedWorkspaces
+                .Where(sw => !company.Workspaces.Any(w => w.PBIWorkspaceId == sw.OptionValue))
+                .ToList();
+            foreach (var w in toAdd)
+            {
+                company.Workspaces.Add(new PBIWorkspace() { PBIWorkspaceId = w.OptionValue, CompanyId = company.Id, Name = w.OptionName });
+            }
+            var toRemove = company.Workspaces
+                .Where(w => !selectedWorkspaces.Any(sw => sw.OptionValue == w.PBIWorkspaceId))
+                .ToList();
+            foreach (var w in toRemove)
+            {
+                company.Workspaces.Remove(w);
+            }
+            // foreach (PBIWorkspaceOption pbiWorkspaceOption in selectedWorkspaces)
+            // {
+            //     company.Workspaces.Add(new PBIWorkspace(){PBIWorkspaceId = pbiWorkspaceOption.OptionValue, CompanyId = company.Id, Name = pbiWorkspaceOption.OptionName});
+            // }
+            company.UpdatedBy = _currentUser.Email;
+
+            try
+            {
+                Company savedCompany = await OnSave(company);
+                if (e.IsNew)
+                    Companies.Add(company);
+                else
+                    Companies.Replace(company, (c1, c2) => c1.Id == c2.Id);
+
+                // Save companyDb updates
+                foreach (CompanyDb companyDb in m_dbsToSave)
+                {
+                    // Assure company is set (in case it's new)
+                    companyDb.CompanyId = savedCompany.Id;
+
+                    // If this db has a temporary negative id, it's new, so it should be set to 0 when saving to db
+                    if (companyDb.Id < 0)
+                    {
+                        companyDb.Id = 0;
+                    }
+                    await CompanyService.SaveCompanyDb(companyDb);
+                }
+
+                foreach (CompanyDb companyDb in m_dbsToDelete)
+                {
+                    await CompanyService.DeleteCompanyDb(companyDb);
+                }
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (_popup.IsInitialized)
+                {
+                    _concurrencyException = true;
+                    _popupHeader = "Concurrency Exception";
+                    _popupMessage = "Concurrency exception occurred. Please try again.";
+                    await _popup.ShowAsync();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            e.Cancel = true;
+            if (_popup.IsInitialized)
+            {
+                _popupHeader = "Validation Error";
+                _popupMessage = ex.Message;
+                _concurrencyException = false;
+                await _popup.ShowAsync();
+            }
+        }
+    }
+
+    //  Handle Grid Unbound Column Data
+    private void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+        if (e.FieldName == "PowerBI Workspaces")
+        {
+            var company = Companies.Find(c => c.Id == Convert.ToInt32(e.GetRowValue("Id")));
+            if (company != null && company.Workspaces != null)
+            {
+                e.Value = CommonUtils.ListToString(company.Workspaces.Select(x => x.Name).ToList());
+            }
+        }
+    }
+
+    private void OnCustomGridEdit(GridCustomizeEditModelEventArgs a_e)
+    {
+        // TODO: See if this is still needed after fixing the bug where dbs save before saving the underlying Company
+        EnsureEditModel(a_e, new CompanyDb());
+        GridHelpers.CustomizeEditorTitle(a_e, m_companyDbGrid);
+    }
+
+    private List<ECompanyType?> getCompanyTypes(ECompanyType? selectedCompanyType)
+    {
+        // Show "Not Set" option only if company type is not set
+        if (selectedCompanyType == null)
+        {
+            return new() { null, ECompanyType.Cloud, ECompanyType.Hybrid, ECompanyType.OnPrem };
+        }
+
+        // Show PT only if company type is PT
+        if (selectedCompanyType == ECompanyType.PT)
+        {
+            return new() { ECompanyType.PT };
+        }
+
+        // Show only standard options otherwise
+        return new () { ECompanyType.Cloud, ECompanyType.Hybrid, ECompanyType.OnPrem };
+    }
+
+    /// <summary>
+    /// Boilerplate checks to make sure editmodel exists.
+    /// DxGrids break if they can't supply an editmodel on opening the editgrid.
+    /// We had one example in a nested grid (For Company/CompanyDB), when the Company wasn't created yet.
+    /// </summary>
+    /// <param name="a_e"></param>
+    /// <param name="a_defaultEditModel"></param>
+    /// <exception cref="ArgumentException"></exception>
+    private static void EnsureEditModel(GridCustomizeEditModelEventArgs a_e, object? a_defaultEditModel)
+    {
+        a_e.EditModel ??= a_defaultEditModel;
+
+        if (a_e.EditModel is null)
+        {
+            throw new ArgumentException("Attempted to create an editor without a valid model.");
+        }
+    }
+
+    //  Close Popup
+    private async Task ClosePopup()
+    {
+        await _popup.CloseAsync();
+        if (_concurrencyException)
+            await RefreshComponent();
+    }
+
+    protected async Task SaveCompanyDb(GridEditModelSavingEventArgs e)
+    {
+        var editModel = (e.EditModel as CompanyDb);
+        editModel.CreatedBy = _currentUser.Email;
+        //for new ComapnayDb
+        try
+        {
+            // Set a temporary negative id so that if several new rows are added, they are considered distinct
+            m_dbsToSave.Add(editModel);
+            if (CompanyDbs.Contains(editModel))
+            {
+                CompanyDbs.Replace(editModel);
+            }
+            else
+            {
+                editModel.Id = nextTempId--;
+                CompanyDbs.Add(editModel);
+            }
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            if (_popup.IsInitialized)
+            {
+                _concurrencyException = true;
+                _popupHeader = "Concurrency Exception";
+                _popupMessage = "Concurrency exception occurred. Please try again.";
+                await _popup.ShowAsync();
+            }
+        }
+    }
+
+    protected async Task CompanyDb_DataItemDeleting(GridDataItemDeletingEventArgs e)
+    {
+        var editModel = (e.DataItem as CompanyDb);
+        if (editModel != null)
+        {
+            try
+            {
+                m_dbsToDelete.Add(editModel);
+                CompanyDbs.Remove(editModel);
+            }
+            catch (Exception ex)
+            {
+                toastService.ShowToast("Error", ex.Message, ToastRenderStyle.Danger, 0);
+            }
+        }
+    }
+    //  Handle Tab Index Change
+    private void OnActiveTabIndexChanged(int index) => _activeTabIndex = index;
+}

@@ -1,0 +1,62 @@
+﻿<div class="footer-content">
+    <div class="footer-rows">
+        <div class="footer-row">
+            <div class="footer-item">
+                <i class="fas @GetStatusIconClass(Result.Status)"></i>
+                <span class="footer-label">Result:</span>
+                <span class="footer-value">@Result.Status</span>
+            </div>
+            <div class="footer-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span class="footer-label">Start:</span>
+                <span class="footer-value">@Result.ScheduledStart.ToString(CommonUtils.DateTimeOfficialFormat)</span>
+            </div>
+            <div class="footer-item">
+                <i class="fas fa-calendar-check"></i>
+                <span class="footer-label">Finish:</span>
+                <span class="footer-value">@Result.ScheduledFinish.ToString(CommonUtils.DateTimeOfficialFormat)</span>
+            </div>
+            <div class="footer-item">
+                <i class="fas fa-hourglass-end"></i>
+                <span class="footer-label">Days Late:</span>
+                <span class="footer-value">@Result.DaysLate</span>
+            </div>
+            <div class="footer-item">
+                <i class="fas fa-dollar-sign"></i>
+                <span class="footer-label">Cost:</span>
+                <span class="footer-value">@Result.Cost.ToString("C")</span>
+            </div>
+            <div class="footer-item">
+                <i class="fas fa-map-signs"></i>
+                <span class="footer-label">Path:</span>
+                <span class="footer-value">@Result.ScheduledPath</span>
+            </div>
+        </div>
+    </div>
+    <!-- Submit Button -->
+    <div class="footer-submit">
+        <DxButton Enabled="@SubmitEnabled" Click="OnSubmit" Text="Submit" IconCssClass="fas fa-check-circle" />
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public CtpResult Result { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    [Parameter]
+    public bool SubmitEnabled { get; set; }
+
+    private string GetStatusIconClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "on time" => "fa-check-circle text-success",
+            "late" => "fa-times-circle text-danger",
+            _ => "fa-question-circle text-warning"
+        };
+    }
+}

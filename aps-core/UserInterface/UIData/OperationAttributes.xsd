@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="PtAttributes" targetNamespace="http://tempuri.org/PtAttributes.xsd" xmlns:mstns="http://tempuri.org/PtAttributes.xsd" xmlns="http://tempuri.org/PtAttributes.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="PtAttributes" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="PtAttributes" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="PtAttributes">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Attributes" msprop:Generator_RowEvHandlerName="AttributesRowChangeEventHandler" msprop:Generator_RowDeletedName="AttributesRowDeleted" msprop:Generator_RowDeletingName="AttributesRowDeleting" msprop:Generator_RowEvArgName="AttributesRowChangeEvent" msprop:Generator_TablePropName="Attributes" msprop:Generator_RowChangedName="AttributesRowChanged" msprop:Generator_UserTableName="Attributes" msprop:Generator_RowChangingName="AttributesRowChanging" msprop:Generator_RowClassName="AttributesRow" msprop:Generator_TableClassName="AttributesDataTable" msprop:Generator_TableVarName="tableAttributes">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="AttributeExternalId" msprop:Generator_ColumnPropNameInTable="AttributeExternalIdColumn" msprop:Generator_ColumnPropNameInRow="AttributeExternalId" msprop:Generator_UserColumnName="AttributeExternalId" msprop:Generator_ColumnVarNameInTable="columnAttributeExternalId" type="xs:string" minOccurs="0" />
+              <xs:element name="Code" msprop:Generator_ColumnPropNameInTable="CodeColumn" msprop:Generator_ColumnPropNameInRow="Code" msprop:Generator_UserColumnName="Code" msprop:Generator_ColumnVarNameInTable="columnCode" type="xs:string" minOccurs="0" />
+              <xs:element name="CodeManualUpdateOnly" msprop:Generator_ColumnPropNameInTable="CodeManualUpdateOnlyColumn" msprop:Generator_ColumnPropNameInRow="CodeManualUpdateOnly" msprop:Generator_UserColumnName="CodeManualUpdateOnly" msprop:Generator_ColumnVarNameInTable="columnCodeManualUpdateOnly" type="xs:boolean" minOccurs="0" />
+              <xs:element name="Number" msprop:Generator_ColumnPropNameInTable="NumberColumn" msprop:Generator_ColumnPropNameInRow="Number" msprop:Generator_UserColumnName="Number" msprop:Generator_ColumnVarNameInTable="columnNumber" type="xs:decimal" minOccurs="0" />
+              <xs:element name="NumberManualUpdateOnly" msprop:Generator_ColumnPropNameInTable="NumberManualUpdateOnlyColumn" msprop:Generator_ColumnPropNameInRow="NumberManualUpdateOnly" msprop:Generator_UserColumnName="NumberManualUpdateOnly" msprop:Generator_ColumnVarNameInTable="columnNumberManualUpdateOnly" type="xs:boolean" minOccurs="0" />
+              <xs:element name="DurationHrs" msprop:Generator_ColumnPropNameInTable="DurationHrsColumn" msprop:Generator_ColumnPropNameInRow="DurationHrs" msprop:Generator_UserColumnName="DurationHrs" msprop:Generator_ColumnVarNameInTable="columnDurationHrs" type="xs:double" minOccurs="0" />
+              <xs:element name="DurationOverride" msprop:Generator_ColumnPropNameInTable="DurationOverrideColumn" msprop:Generator_ColumnPropNameInRow="DurationOverride" msprop:Generator_UserColumnName="DurationOverride" msprop:Generator_ColumnVarNameInTable="columnDurationOverride" type="xs:boolean" minOccurs="0" />
+              <xs:element name="DurationHrsManualUpdateOnly" msprop:Generator_ColumnPropNameInTable="DurationHrsManualUpdateOnlyColumn" msprop:Generator_ColumnPropNameInRow="DurationHrsManualUpdateOnly" msprop:Generator_UserColumnName="DurationHrsManualUpdateOnly" msprop:Generator_ColumnVarNameInTable="columnDurationHrsManualUpdateOnly" type="xs:boolean" minOccurs="0" />
+              <xs:element name="Cost" msprop:Generator_ColumnPropNameInTable="CostColumn" msprop:Generator_ColumnPropNameInRow="Cost" msprop:Generator_UserColumnName="Cost" msprop:Generator_ColumnVarNameInTable="columnCost" type="xs:decimal" minOccurs="0" />
+              <xs:element name="CostOverride" msprop:Generator_ColumnPropNameInTable="CostOverrideColumn" msprop:Generator_ColumnPropNameInRow="CostOverride" msprop:Generator_UserColumnName="CostOverride" msprop:Generator_ColumnVarNameInTable="columnCostOverride" type="xs:boolean" minOccurs="0" />
+              <xs:element name="CostManualUpdateOnly" msprop:Generator_ColumnPropNameInTable="CostManualUpdateOnlyColumn" msprop:Generator_ColumnPropNameInRow="CostManualUpdateOnly" msprop:Generator_UserColumnName="CostManualUpdateOnly" msprop:Generator_ColumnVarNameInTable="columnCostManualUpdateOnly" type="xs:boolean" minOccurs="0" />
+              <xs:element name="ColorCode" msprop:Generator_ColumnPropNameInTable="ColorCodeColumn" msprop:Generator_ColumnPropNameInRow="ColorCode" msprop:Generator_UserColumnName="ColorCode" msprop:Generator_ColumnVarNameInTable="columnColorCode" type="xs:string" minOccurs="0" />
+              <xs:element name="ColorOverride" msprop:Generator_ColumnPropNameInTable="ColorOverrideColumn" msprop:Generator_ColumnPropNameInRow="ColorOverride" msprop:Generator_UserColumnName="ColorOverride" msprop:Generator_ColumnVarNameInTable="columnColorOverride" type="xs:boolean" minOccurs="0" />
+              <xs:element name="ColorCodeManualUpdateOnly" msprop:Generator_ColumnPropNameInTable="ColorCodeManualUpdateOnlyColumn" msprop:Generator_ColumnPropNameInRow="ColorCodeManualUpdateOnly" msprop:Generator_UserColumnName="ColorCodeManualUpdateOnly" msprop:Generator_ColumnVarNameInTable="columnColorCodeManualUpdateOnly" type="xs:boolean" minOccurs="0" />
+              <xs:element name="ShowInGantt" msprop:Generator_ColumnPropNameInTable="ShowInGanttColumn" msprop:Generator_ColumnPropNameInRow="ShowInGantt" msprop:Generator_UserColumnName="ShowInGantt" msprop:Generator_ColumnVarNameInTable="columnShowInGantt" type="xs:boolean" minOccurs="0" />
+              <xs:element name="ShowInGanttManualUpdateOnly" msprop:Generator_UserColumnName="ShowInGanttManualUpdateOnly" msprop:Generator_ColumnPropNameInTable="ShowInGanttManualUpdateOnlyColumn" msprop:Generator_ColumnPropNameInRow="ShowInGanttManualUpdateOnly" msprop:Generator_ColumnVarNameInTable="columnShowInGanttManualUpdateOnly" type="xs:boolean" minOccurs="0" />
+              <xs:element name="ShowInGanttOverride" msprop:Generator_ColumnPropNameInRow="ShowInGanttOverride" msprop:Generator_ColumnPropNameInTable="ShowInGanttOverrideColumn" msprop:Generator_ColumnVarNameInTable="columnShowInGanttOverride" msprop:Generator_UserColumnName="ShowInGanttOverride" type="xs:boolean" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

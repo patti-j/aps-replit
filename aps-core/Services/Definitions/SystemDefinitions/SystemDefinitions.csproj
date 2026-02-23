@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+  <PropertyGroup>
+	  <AssemblyName>PT.SystemDefinitions</AssemblyName>
+	  <RootNamespace>PT.SystemDefinitions</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\..\TransmissionsAndBroadcasting\Transmissions2\Transmissions2.csproj" />
+    <ProjectReference Include="..\..\..\TransmissionsAndBroadcasting\Transmissions\Transmissions.csproj" />
+    <ProjectReference Include="..\..\ServerManager\ServerManagerAPIProxy\ServerManagerAPIProxy.csproj" />
+    <ProjectReference Include="..\APIDefintion\APIDefinitions.csproj" />
+  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Sentry" Version="5.10.0" />
+	</ItemGroup>
+</Project>

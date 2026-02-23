@@ -1,0 +1,11 @@
+[
+  {
+    "importDate": "2024-02-05T10:30:00Z",
+    "JobProductId": 123,
+    "JobOperationId": 456,
+    "SalesOrderDistributionId": 789,
+    "RequiredDate": "2024-02-10T00:00:00Z",
+    "RequiredQty": 50.5,
+    "Notes": "Sample notes for the JobProductSalesOrderDemand"
+  }
+]

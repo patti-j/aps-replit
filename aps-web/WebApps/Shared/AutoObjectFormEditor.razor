@@ -1,0 +1,215 @@
+@using System.ComponentModel.DataAnnotations
+@typeparam T
+
+@foreach (PropertyInfo prop in Properties)
+{
+    @if (prop.GetCustomAttribute(typeof(HiddenAttribute)) != null)
+    {
+        continue;
+    }
+    //i tried for quite a while to make this fully dynamic and generic but csx *really* didnt like it. I think the 
+    //correct way to do it would be to override the BuildRenderTree function on a component and manually build the 
+    //render tree but I'm not sure how all of that works, so I just did it like this.
+    <DxFormLayoutItem Caption="@(((DisplayAttribute?)prop.GetCustomAttribute(typeof(DisplayAttribute), false))?.Name ?? prop.Name)">
+        @{ var type = prop.PropertyType;}
+        @if ((type == typeof(byte)))
+        {
+            Action<byte> setFunc = (b) =>
+            {
+                prop.SetValue(Bind, b);
+            };
+            <DxSpinEdit MinValue="@((byte)(prop.PropertyType.GetField("MinValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        MaxValue="@((byte)(prop.PropertyType.GetField("MaxValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        Value="@((byte)prop.GetValue(Bind))"
+                        ValueChanged="@setFunc"/>
+        }
+        else if (type == typeof(sbyte))
+        {
+            Action<sbyte> setFunc = (b) =>
+            {
+                prop.SetValue(Bind, b);
+            };
+            <DxSpinEdit MinValue="@((sbyte)(prop.PropertyType.GetField("MinValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        MaxValue="@((sbyte)(prop.PropertyType.GetField("MaxValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        Value="@((sbyte)prop.GetValue(Bind))"
+                        ValueChanged="@setFunc"/>
+        }
+        else if (type == typeof(ushort))
+        {
+            Action<ushort> setFunc = (b) =>
+            {
+                prop.SetValue(Bind, b);
+            };
+            <DxSpinEdit MinValue="@((ushort)(prop.PropertyType.GetField("MinValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        MaxValue="@((ushort)(prop.PropertyType.GetField("MaxValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        Value="@((ushort)prop.GetValue(Bind))"
+                        ValueChanged="@setFunc"/>
+        }
+        else if (type == typeof(short))
+        {
+            Action<short> setFunc = (b) =>
+            {
+                prop.SetValue(Bind, b);
+            };
+            <DxSpinEdit MinValue="@((short)(prop.PropertyType.GetField("MinValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        MaxValue="@((short)(prop.PropertyType.GetField("MaxValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        Value="@((short)prop.GetValue(Bind))"
+                        ValueChanged="@setFunc"/>
+        }
+        else if (type == typeof(uint))
+        {
+            Action<uint> setFunc = (b) =>
+            {
+                prop.SetValue(Bind, b);
+            };
+            <DxSpinEdit MinValue="@((uint)(prop.PropertyType.GetField("MinValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        MaxValue="@((uint)(prop.PropertyType.GetField("MaxValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        Value="@((uint)prop.GetValue(Bind))"
+                        ValueChanged="@setFunc"/>
+        }
+        else if (type == typeof(int))
+        {
+            Action<int> setFunc = (b) =>
+            {
+                prop.SetValue(Bind, b);
+            };
+            <DxSpinEdit MinValue="@((int)(prop.PropertyType.GetField("MinValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        MaxValue="@((int)(prop.PropertyType.GetField("MaxValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        Value="@((int)prop.GetValue(Bind))"
+                        ValueChanged="@setFunc"/>
+        }
+        else if (type == typeof(ulong))
+        {
+            Action<ulong> setFunc = (b) =>
+            {
+                prop.SetValue(Bind, b);
+            };
+            <DxSpinEdit MinValue="@((ulong)(prop.PropertyType.GetField("MinValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        MaxValue="@((ulong)(prop.PropertyType.GetField("MaxValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        Value="@((ulong)prop.GetValue(Bind))"
+                        ValueChanged="@setFunc"/>
+        }
+        else if (type == typeof(long))
+        {
+            Action<long> setFunc = (b) =>
+            {
+                prop.SetValue(Bind, b);
+            };
+            <DxSpinEdit MinValue="@((long)(prop.PropertyType.GetField("MinValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        MaxValue="@((long)(prop.PropertyType.GetField("MaxValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        Value="@((long)prop.GetValue(Bind))"
+                        ValueChanged="@setFunc"/>
+        }
+        else if (type == typeof(float))
+        {
+            Action<float> setFunc = (b) =>
+            {
+                prop.SetValue(Bind, b);
+            };
+            <DxSpinEdit MinValue="@((float)(prop.PropertyType.GetField("MinValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        MaxValue="@((float)(prop.PropertyType.GetField("MaxValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        Value="@((float)prop.GetValue(Bind))"
+                        ValueChanged="@setFunc"/>
+        }
+        else if (type == typeof(double))
+        {
+            Action<double> setFunc = (b) =>
+            {
+                prop.SetValue(Bind, b);
+            };
+            <DxSpinEdit MinValue="@((double)(prop.PropertyType.GetField("MinValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        MaxValue="@((double)(prop.PropertyType.GetField("MaxValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                        Value="@((double)prop.GetValue(Bind))"
+                        ValueChanged="@setFunc"/>
+        }
+        else if (type == typeof(decimal))
+        {
+            Action<decimal> setFunc = (b) =>
+            {
+                prop.SetValue(Bind, b);
+            };
+            <DxSpinEdit MinValue="@((decimal)(prop.PropertyType.GetField("MinValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                    MaxValue="@((decimal)(prop.PropertyType.GetField("MaxValue", BindingFlags.Static | BindingFlags.Public).GetValue(prop.GetValue(Bind))))"
+                    Value="@((decimal)prop.GetValue(Bind))"
+                    ValueChanged="@setFunc"/>
+        }
+        else if (type == typeof(string))
+        {
+            Action<string> setFunc = (v) =>
+            {
+                prop.SetValue(Bind, v);
+            };
+            if (prop.GetCustomAttribute(typeof(PasswordAttribute)) != null)
+            {
+                <PasswordEdit Value="@((string)prop.GetValue(Bind))" ValueChanged="@setFunc"/>
+            }
+            else
+            {
+                <DxTextBox Text="@((string)prop.GetValue(Bind))"
+                           TextChanged="@setFunc"
+                           BindValueMode="BindValueMode.OnInput"/>
+            }
+        }
+
+        
+        //This code helps to handle string lists
+        else if (type.IsGenericType
+        && typeof(System.Collections.IList).IsAssignableFrom(type)
+        && type.GetGenericArguments()[0] == typeof(string))
+        {
+            List<string> list = (List<string>)(prop.GetValue(Bind) ?? new List<string>());
+            prop.SetValue(Bind, list);
+
+            void AddItem() { list.Add(string.Empty); StateHasChanged(); }
+            void RemoveAt(int i) { list.RemoveAt(i); StateHasChanged(); }
+
+            <div class="mb-2">
+                <DxButton Text="Add" IconCssClass="fa-solid fa-plus" Click="@AddItem" />
+            </div>
+
+            @for (int i = 0; i < list.Count; i++)
+            {
+                int idx = i; 
+                <div class="d-flex gap-2 align-items-center mb-2">
+                    <DxTextBox Text="@list[idx]"
+                               TextChanged="@((string v) => { list[idx] = v ?? string.Empty; })"
+                               Placeholder="Endpoints" />
+                    <DxButton IconCssClass="fa fa-trash" Click="@(() => RemoveAt(idx))" />
+                </div>
+            }
+        }
+
+        @* else if (type.IsEnum) *@
+        @* { *@
+        @*     List<(string name, object value)> values = new (); *@
+        @* *@
+        @*     var enumVals = type.GetEnumValues(); *@
+        @*     var enumNames = type.GetEnumNames(); *@
+        @*      *@
+        @*     for (int i = 0; i < type.GetEnumValues().Length; i++) *@
+        @*     { *@
+        @*         values.Add((enumNames[i], enumVals.GetValue(i))); *@
+        @*     } *@
+        @* *@
+        @*     DxComboBox<(string name, object value),object> combo = null; *@
+        @*      *@
+        @*     Action setFunc = () => *@
+        @*     { *@
+        @*         prop.SetValue(Bind, combo?.Value); *@
+        @*     }; *@
+        @*     <DxComboBox Data="@values" *@
+        @*                 Value="@(prop.GetValue(Bind))" *@
+        @*                 ValueChanged="@setFunc" *@
+        @*                 @ref="combo"/> *@
+        @* } *@
+    </DxFormLayoutItem>
+}
+
+@code {
+
+    [Parameter]
+    public T Bind { get; set; }
+
+    private PropertyInfo[] Properties => Bind.GetType().GetProperties();
+    
+}

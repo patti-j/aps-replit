@@ -1,0 +1,10 @@
+[
+  {
+    "importDate": "2024-02-05T12:00:00Z",
+    "PurchaseToStockId": 12345,
+    "InventoryId": 67890,
+    "RequiredDate": "2024-02-15T00:00:00Z",
+    "RequiredQty": 100.5,
+    "Notes": "Sample notes for PurchaseToStockSafetyStockDemand"
+  }
+]

@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="RequestBase">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="SerialCode" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="RequestBase" nillable="true" type="tns:RequestBase" />
+  <xs:complexType name="ResponseBase">
+    <xs:sequence>
+      <xs:element name="Version" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ResponseBase" nillable="true" type="tns:ResponseBase" />
+  <xs:complexType name="LicenseServiceResultBase">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:BaseResultType">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="LicenseInUse" type="xs:boolean" />
+          <xs:element minOccurs="0" name="SessionTimedOut" type="xs:boolean" />
+          <xs:element minOccurs="0" name="KeyExpired" type="xs:boolean" />
+          <xs:element minOccurs="0" name="SessionDoesntExist" type="xs:boolean" />
+          <xs:element minOccurs="0" name="LicenseIsSystemIdType" type="xs:boolean" />
+          <xs:element minOccurs="0" name="LicenseIsWindowsProductIdType" type="xs:boolean" />
+          <xs:element minOccurs="0" name="InMaintenanceGracePeriod" type="xs:boolean" />
+          <xs:element minOccurs="0" name="InLicenseGracePeriod" type="xs:boolean" />
+          <xs:element minOccurs="0" name="MaintenanceExpired" type="xs:boolean" />
+          <xs:element minOccurs="0" name="TryAgainWithUpdateLicenseServiceAddress" type="xs:boolean" />
+          <xs:element minOccurs="0" name="InvalidReleaseReason" type="xs:boolean" />
+          <xs:element minOccurs="0" name="InvalidSessionID" type="xs:boolean" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="LicenseServiceResultBase" nillable="true" type="tns:LicenseServiceResultBase" />
+  <xs:complexType name="BaseResultType">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Success" type="xs:boolean" />
+      <xs:element minOccurs="0" name="InvalidSerialCode" type="xs:boolean" />
+      <xs:element minOccurs="0" name="Exception" type="xs:boolean" />
+      <xs:element minOccurs="0" name="FailedToUpdateDatabase" type="xs:boolean" />
+      <xs:element minOccurs="0" name="IPAddressNotAllowed" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="BaseResultType" nillable="true" type="tns:BaseResultType" />
+</xs:schema>

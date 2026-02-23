@@ -1,0 +1,389 @@
+﻿.b-sch-dependency-over {
+    display: block !important;
+}
+.b-highlighting .b-sch-event-wrap .b-sch-event.b-match {
+    opacity: 1 !important;
+    box-shadow: rgba(0, 0, 0, 0.2) 0 4px 8px;
+}
+
+.b-widget.b-hidden {
+    display: none !important
+}
+
+.event-name-default {
+    height: 200px;
+}
+.navigation-breadcrum {
+    font-size: .875rem;
+    position: relative;
+    top: 4px;
+}
+/* Media query to hide .navigation-breadcrum on small devices */
+@media only screen and (max-width: 768px) {
+    .navigation-breadcrum {
+        display: none;
+    }
+}
+/* Bryntum */
+.b-sch-event-content {
+    height: 100%; /* Adjust the height as needed */
+}
+
+.b-sch-resourcetimerange {
+    display:flex;
+    position: absolute;
+    z-index:2;
+    justify-content:center;
+    align-items:flex-end;
+}
+.b-sch-resourcetimerange [data-task-feature] {
+    display: flex;
+    height: 20px !important;
+    align-items: center;
+    font-size: 12px;
+    bottom: 20px;
+    clip-path: polygon( 0px 0px, /* top-left corner */
+    0px 100%, /* bottom-left */
+    100% 100%, /* bottom-right */
+    100% 0px, /* top-right corner */
+    calc(100% - 10px) 4px, 
+    10px 4px 
+    );
+}
+
+.b-sch-resourcetimerange .b-sch-event-content {
+    margin-top: 10px !important;
+    margin-left: 5px !important;
+    font-size: 10px;
+}
+.b-sch-event:not(.b-milestone) .b-sch-event-content {
+    margin: 0 !important;
+    width: 100%;
+    padding-bottom: 16px;
+}
+
+    .b-sch-event:not(.b-milestone) .b-sch-event-content > :not(i) {
+        width: 100%;
+    }
+
+.b-sch-event-content {
+    background-color: transparent !important;
+}
+    .b-sch-event-content::before {
+        background-color: #48a5e8 !important;
+        transform: translateX(-70%) rotate(45deg) !important;
+    }
+.b-sch-event {
+    background: transparent !important;
+}
+.b-sch-event-wrap {
+    background: transparent !important;
+    overflow: hidden !important;
+}
+.b-sch-event-container {
+    display: flex;
+    flex-direction: column;
+}
+.event-section {
+    flex: 1;
+    padding: 0.5px;
+    border: clamp(1px, .06em, 2px) solid;
+    border-radius: 0; /* Reset border-radius */
+    font-size: clamp(11px, 0.6em, 12px);
+    display: flex;
+    flex-direction: column;
+}
+
+    .event-section:first-child {
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+
+    .event-section:last-child {
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+    }
+
+    .event-section p {
+        padding: 0 !important;
+        margin: 0 !important;
+        white-space: pre-line; /* Preserve line breaks and allow text wrapping */
+        text-overflow: ellipsis; /* Add ellipsis if text overflows */
+        overflow-wrap: break-word;
+        overflow: hidden;
+    }
+    .event-section strong{
+    font-weight: 700 !important;
+}
+.b-sch-event-wrap.b-milestone-wrap .b-sch-event:not(.b-sch-event-withicon) .b-sch-event-content:before, .b-milestone {
+    width: 30px !important;
+    height: 30px !important;
+}
+.b-milestone-section {
+    /* Set the origin point of the transformation to the center of the element */
+    transform-origin: center;
+    /* Set a fixed width, if needed. Use !important only if necessary to override other styles */
+    width: 300px !important;
+    /* Scale down the element to 90% of its size */
+    transform: scale(0.85) translateX(-22px); /* Move the element 12 pixels to the right */
+    border: black 1px solid;
+}
+
+.segments-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.segment-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px; /* Adjust as needed */
+}
+
+.segment-name-box {
+    position: relative;
+    top: 10px;
+}
+
+.segment-name {
+    min-width: 130px;
+}
+/** Activity Display Options */
+
+.custom-attr-chbx {
+    width: 165px;
+    margin-right: 10px;
+    font-size: 11px;
+    padding-top: 8px;
+}
+
+.op-feat-label {
+    position: relative;
+    top: 9px;
+}
+
+.custom-attr-chbx .dxbl-checkbox-check-element {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 5px !important;
+    min-height: 5px !important;
+}
+.color-meanings {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.color-meaning {
+    display: flex;
+    margin-right: 10px; /* Space between color boxes */
+}
+
+.color-box-editable {
+    width: 15px;
+    height: 15px;
+    padding: 0px;
+    position: relative;
+    top: 5px;
+}
+
+.color-box {
+    padding: 5px;
+    display: inline-block;
+    margin-left: 5px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    width: 145px;
+    font-size: 11px;
+    font-weight: 500;
+}
+.progress-bar {
+    position: absolute;
+    top: 5%;
+    left: 1%;
+    width: 98%; /* Changed to 100% for full width */
+    height: 90%; /* Set a fixed height for consistency */
+    background-color: #e0e0e0; /* Background color of the empty part */
+    border-radius: 8px; /* Rounds the corners of the progress bar */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2); /* Adds some depth with an inner shadow */
+    overflow: hidden; /* Ensures the fill doesn't overflow the container */
+}
+
+.progress-bar-fill {
+    background-image: repeating-linear-gradient(45deg, #76a9fa, #76a9fa 10px, #4e69fa 10px, #4e69fa 20px);
+    height: 100%;
+    border-radius: 7px; /* Should be slightly less than the container's border-radius */
+    transition: width 0.5s ease-in-out; /* Smooth transition for changes in progress */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-bar-text {
+    position: absolute; /* Position absolutely to overlay on top of the fill */
+    width: 100%; /* Same width as the progress bar to center the text */
+    text-align: center; /* Center the text */
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    color: #FFF;
+    white-space: nowrap;
+    line-height: 30px; /* Same as the height of the progress bar for vertical centering */
+    font-size: 1em; /* Size of the text */
+}
+/* Side panel filter*/
+.side-panel {
+    width: 50%;
+    height: 100%;
+    position: fixed; 
+    top: 0;
+    right: -50%;
+    transition: right 0.5s;
+    background-color: #f0f0f0;
+    z-index: 100;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    border: solid;
+}
+
+    .side-panel.open {
+        right: 0; /* Muestra el panel */
+    }
+
+.picker-tab {
+    position: absolute;
+    top: 50%; /* Center vertically, adjust as needed */
+    left: -30px; /* Align the tab with the edge of the panel */
+    width: 30px; /* Width of the tab */
+    height: 70px; /* Height of the tab */
+    background-color: #f0f0f0; /* Or any color you prefer */
+    cursor: pointer;
+    z-index: 101; /* Ensure the tab is above other content */
+    transition: left 0.3s ease; /* Smooth transition */
+    border: solid;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+.icon-filter-cntrl {
+    font-size: 1.5em; /* Ajusta el tamaño del ícono */
+}
+.icon-filter-cntrl > i {
+    margin: auto;
+    padding-left: 5px;
+    display: block;
+}
+    .icon-filter-cntrl > i.fa-bars {
+    padding-left: 0px;
+    }
+/* Texto de la pestaña */
+.picker-tab span {
+    margin-left: 5px; 
+    font-weight: bold; 
+    color: #333; 
+    font-size: 7px;
+}
+.picker-tab .filter-label {
+    margin-left: 5px;
+}
+.picker-tab > .filter-label > span {
+    margin-left: 0px;
+    position: relative;
+    top: -10px;
+}
+/* Asegúrate de que los íconos giran al abrir y cerrar */
+.open-icon {
+    transform: rotate(0deg);
+    transition: transform 0.3s ease;
+}
+
+.close-icon {
+    transform: rotate(-180deg);
+    transition: transform 0.3s ease;
+}
+.split-container {
+    display: flex;
+    width: 100%;
+    height: 75vh;
+}
+
+.left-panel, .right-panel {
+    flex: 1;
+    overflow: auto;
+}
+
+.template-text, .display-text {
+    width: 100%;
+    height: 40%;
+}
+
+.tooltip-container {
+    font-size: 14px;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.tooltip-container span {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.tooltip-icon {
+    margin-right: 5px;
+}
+
+svg.b-sch-dependencies-canvas {
+    z-index: 7 !important;
+}
+
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    padding: 2px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toolbar-button {
+    margin-right: 8px; /* Spacing between buttons */
+    border: none;
+    background-color: transparent;
+    color: #2fa4e7;
+    font-size: 13px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    transition: background-color 0.3s, transform 0.3s;
+    cursor: pointer;
+    /* Adjust the box shadow to fit your design */
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+}
+
+    .toolbar-button:hover {
+        /* Slightly lift the button to give feedback */
+        transform: translateY(-2px);
+        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.2);
+    }
+
+.search-box {
+    flex-grow: 1; /* Search box takes up remaining space */
+    margin-left: 8px;
+    border-radius: 20px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+    .search-box input {
+        border-radius: 20px;
+        padding-left: 32px; /* Space for the search icon */
+    }
+
+    .search-box .dx-textbox-suffix {
+        right: 10px;
+    }
+
+    .search-box .dx-icon {
+        position: absolute;
+        left: 8px;
+        font-size: 20px;
+    }
+
+.b-sch-style-line {
+    height: 4px !important;
+}

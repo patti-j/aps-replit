@@ -1,0 +1,91 @@
+﻿<DxLoadingPanel Visible="IsLoading"
+                    IsContentBlocked="true"
+                    ApplyBackgroundShading="true"
+                    Text=@StatusText
+                    CssClass=@CssClass>
+    <div class="pa-info">
+        <div class="pa-name">@InstanceName</div>
+        <div class="pa-version">
+            @SoftwareVersion
+        </div>
+        @if (ShouldDisplayLogin)
+        {
+            <div class="pa-login">Last Login: @CommonUtils.DateToTimeAgo(LastLogon)</div>
+        }
+    </div>
+    <div class="pa-controls">
+        <DxButton Enabled="@EnableMainButton"
+                  Click="@Click">@TextButton</DxButton>
+            <DxButton CssClass="launch-param-button" Visible="@showParamButton"
+                      Click="@ShowParams">Get Launch Parameters</DxButton>
+        @* Hiding this for now and replacing with simple status, as we don't receive OnlineUser data yet'         
+        @if (!HideUsersOnline)
+        @switch (State)
+        {
+            case EServiceState.Active:
+            case EServiceState.Started:
+            case EServiceState.Idle:
+                <div class="pa-users online" title="@State.ToString()"><i class="fa fa-user"></i> @UsersOnline</div>
+                break;
+            case EServiceState.Starting:
+                <div class="pa-users start" title="@State.ToString()"><i class="fa fa-user"></i> ...</div>
+                break;
+            case EServiceState.Stopped:
+            case EServiceState.Stopping:
+                <div class="pa-users stop" title="@State.ToString()"><i class="fa fa-user"></i> <i class="fa fa-times"></i> </div>
+                break;
+            case EServiceState.Unknown:
+                <div class="pa-users unknown" title="@State.ToString()"><i class="fa fa-user"></i> ? </div>
+                break;
+            case EServiceState.NotFound:
+                <div class="pa-users unknown" title="Can't Connect"><i class="fa fa-user"></i> ? </div>
+                break;
+        }*@        
+        
+        @switch (State)
+        {
+            case EServiceState.Active:
+            case EServiceState.Started:
+            case EServiceState.Idle:
+                <div class="pa-users online"><i> @State.ToString()</i></div>
+                break;
+            case EServiceState.Starting:
+                <div class="pa-users start"><i> @State.ToString()</i></div>
+                break;
+            case EServiceState.Stopped:
+            case EServiceState.Stopping:
+                <div class="pa-users stop"><i> @State.ToString()</i></div>
+                break;
+            case EServiceState.Unknown:
+            case EServiceState.NotFound:
+            default:
+                <div class="pa-users unkown"><i> @State.ToString()</i></div>
+                break;
+        }
+
+    </div>
+</DxLoadingPanel>
+@code {
+    [Parameter] public bool HideUsersOnline { get; set; }
+    [Parameter] public string TextButton { get; set; } = "Connect";
+
+    [Parameter] public EServiceState State { get; set; }
+    [Parameter] public DateTime LastLogon { get; set; }
+    [Parameter] public bool ShouldDisplayLogin { get; set; }
+    [Parameter] public bool EnableMainButton { get; set; }
+    [Parameter] public bool FullWidth { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public int UsersOnline { get; set; }
+    [Parameter] public string StatusText { get; set; }
+    [Parameter] public string SoftwareVersion { get; set; }
+    [Parameter] public string InstanceName { get; set; }
+    [Parameter] public Action ShowParams { get; set; }
+    
+    [Parameter] public EventCallback<MouseEventArgs> Click { get; set; }
+    private string CssClass => $"pa-container {(FullWidth ? "w-100" : "")}";
+#if DEBUG
+    private bool showParamButton = true;
+#else
+    private bool showParamButton = false;
+#endif
+}

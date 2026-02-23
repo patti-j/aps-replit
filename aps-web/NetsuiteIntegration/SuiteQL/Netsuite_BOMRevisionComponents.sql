@@ -1,0 +1,1 @@
+﻿select quantity, item, bomrevision, displayname id, bomquantity from bomrevisioncomponent

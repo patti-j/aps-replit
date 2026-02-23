@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:tns="http://schemas.datacontract.org/2004/07/LicenseServices" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/LicenseServices" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" />
+  <xs:import namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:complexType name="LockLicenseRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q1="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" base="q1:RequestBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="InstanceInfo" nillable="true" type="tns:InstanceInfo" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="LockLicenseRequest" nillable="true" type="tns:LockLicenseRequest" />
+  <xs:complexType name="InstanceInfo">
+    <xs:sequence>
+      <xs:element name="SessionId" type="xs:long" />
+      <xs:element name="TimeoutTimeSpan" type="ser:duration" />
+      <xs:element name="ClientPingInterval" type="ser:duration" />
+      <xs:element name="InstanceName" nillable="true" type="xs:string" />
+      <xs:element name="InstanceServerManager" nillable="true" type="xs:string" />
+      <xs:element name="APSVersionNumber" nillable="true" type="xs:string" />
+      <xs:element name="IntegrationCode" nillable="true" type="xs:string" />
+      <xs:element name="ClientIPAddress" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CpuId" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="InstanceInfo" nillable="true" type="tns:InstanceInfo" />
+  <xs:complexType name="LockLicenseResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:LicenseServiceResponseBase">
+        <xs:sequence>
+          <xs:element name="LicenseInfo" nillable="true" type="tns:LicenseInfo" />
+          <xs:element name="LicenseServiceStartDateTimeUTC" type="xs:dateTime" />
+          <xs:element name="MaintenanceGracePeriodLength" type="ser:duration" />
+          <xs:element name="ServerSpecifiedPingInterval" type="ser:duration" />
+          <xs:element name="ServerTimeoutTimeSpan" type="ser:duration" />
+          <xs:element name="SessionIdReturned" type="xs:long" />
+          <xs:element name="UpdatedLicenseServiceAddress" nillable="true" type="tns:LicenseWebServiceAddresses" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="LockLicenseResponse" nillable="true" type="tns:LockLicenseResponse" />
+  <xs:complexType name="LicenseServiceResponseBase">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q2="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" base="q2:ResponseBase">
+        <xs:sequence>
+          <xs:element name="ResultLicenseService" nillable="true" type="q2:LicenseServiceResultBase" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="LicenseServiceResponseBase" nillable="true" type="tns:LicenseServiceResponseBase" />
+  <xs:complexType name="LicenseInfo">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:InstanceInfo">
+        <xs:sequence>
+          <xs:element name="StartDateTimeofLicenseLock" type="xs:dateTime" />
+          <xs:element name="ReleaseReasons" nillable="true" type="tns:ReleaseReasonResult" />
+          <xs:element name="LastPingDateTime" type="xs:dateTime" />
+          <xs:element name="TotalNbrOfPings" type="xs:long" />
+          <xs:element name="ShortestSpanBetweenPings" type="ser:duration" />
+          <xs:element name="LongestSpanBetweenPings" type="ser:duration" />
+          <xs:element name="ReleaseDateTimeUTC" type="xs:dateTime" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="LicenseInfo" nillable="true" type="tns:LicenseInfo" />
+  <xs:complexType name="ReleaseReasonResult">
+    <xs:sequence>
+      <xs:element name="None" type="xs:boolean" />
+      <xs:element name="ClientReleased" type="xs:boolean" />
+      <xs:element name="Administrator" type="xs:boolean" />
+      <xs:element name="Support" type="xs:boolean" />
+      <xs:element name="TimedOut" type="xs:boolean" />
+      <xs:element name="MaintenanceExpired" type="xs:boolean" />
+      <xs:element name="LicenseExpired" type="xs:boolean" />
+      <xs:element name="Shutdown" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ReleaseReasonResult" nillable="true" type="tns:ReleaseReasonResult" />
+  <xs:complexType name="LicenseWebServiceAddresses">
+    <xs:sequence>
+      <xs:element name="KeyServiceAddress" nillable="true" type="xs:string" />
+      <xs:element name="LicenseServiceAddress" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="LicenseWebServiceAddresses" nillable="true" type="tns:LicenseWebServiceAddresses" />
+  <xs:complexType name="PingRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:LicenseServiceBaseRequest">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="PingRequest" nillable="true" type="tns:PingRequest" />
+  <xs:complexType name="LicenseServiceBaseRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q3="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" base="q3:RequestBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="SessionId" type="xs:long" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="LicenseServiceBaseRequest" nillable="true" type="tns:LicenseServiceBaseRequest" />
+  <xs:complexType name="PingResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:LicenseServiceResponseBase">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="PingResponse" nillable="true" type="tns:PingResponse" />
+  <xs:complexType name="ReleaseLicenseRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:LicenseServiceBaseRequest">
+        <xs:sequence>
+          <xs:element name="ReleaseReason" nillable="true" type="tns:ReleaseReasonToSend" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ReleaseLicenseRequest" nillable="true" type="tns:ReleaseLicenseRequest" />
+  <xs:complexType name="ReleaseReasonToSend">
+    <xs:sequence>
+      <xs:element name="None" type="xs:boolean" />
+      <xs:element name="ClientReleased" type="xs:boolean" />
+      <xs:element name="Administrator" type="xs:boolean" />
+      <xs:element name="Support" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ReleaseReasonToSend" nillable="true" type="tns:ReleaseReasonToSend" />
+  <xs:complexType name="ReleaseLicenseResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:LicenseServiceResponseBase">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ReleaseLicenseResponse" nillable="true" type="tns:ReleaseLicenseResponse" />
+  <xs:complexType name="GetLicenseInfoRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q4="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" base="q4:RequestBase">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="GetLicenseInfoRequest" nillable="true" type="tns:GetLicenseInfoRequest" />
+  <xs:complexType name="GetLicenseInfoResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:LicenseServiceResponseBase">
+        <xs:sequence>
+          <xs:element name="LockInfo" nillable="true" type="tns:LicenseInfo" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="GetLicenseInfoResponse" nillable="true" type="tns:GetLicenseInfoResponse" />
+</xs:schema>

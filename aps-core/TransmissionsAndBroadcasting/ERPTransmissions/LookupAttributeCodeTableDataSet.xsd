@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="LookupAttributeCodeTableDataSet" targetNamespace="http://tempuri.org/LookupAttributeCodeTableDataSet.xsd" xmlns:mstns="http://tempuri.org/LookupAttributeCodeTableDataSet.xsd" xmlns="http://tempuri.org/LookupAttributeCodeTableDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="LookupAttributeCodeTableDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="LookupAttributeCodeTableDataSet" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="LookupAttributeCodeTableDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="AssignedResources" msprop:Generator_RowEvHandlerName="AssignedResourcesRowChangeEventHandler" msprop:Generator_RowDeletedName="AssignedResourcesRowDeleted" msprop:Generator_RowDeletingName="AssignedResourcesRowDeleting" msprop:Generator_RowEvArgName="AssignedResourcesRowChangeEvent" msprop:Generator_TablePropName="AssignedResources" msprop:Generator_RowChangedName="AssignedResourcesRowChanged" msprop:Generator_UserTableName="AssignedResources" msprop:Generator_RowChangingName="AssignedResourcesRowChanging" msprop:Generator_RowClassName="AssignedResourcesRow" msprop:Generator_TableClassName="AssignedResourcesDataTable" msprop:Generator_TableVarName="tableAssignedResources">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="PlantExternalId" msprop:Generator_ColumnPropNameInTable="PlantExternalIdColumn" msprop:Generator_ColumnPropNameInRow="PlantExternalId" msprop:Generator_UserColumnName="PlantExternalId" msprop:Generator_ColumnVarNameInTable="columnPlantExternalId" type="xs:string" />
+              <xs:element name="DepartmentExternalId" msprop:Generator_ColumnPropNameInTable="DepartmentExternalIdColumn" msprop:Generator_ColumnPropNameInRow="DepartmentExternalId" msprop:Generator_UserColumnName="DepartmentExternalId" msprop:Generator_ColumnVarNameInTable="columnDepartmentExternalId" type="xs:string" />
+              <xs:element name="ResourceExternalId" msprop:Generator_ColumnPropNameInTable="ResourceExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ResourceExternalId" msprop:Generator_UserColumnName="ResourceExternalId" msprop:Generator_ColumnVarNameInTable="columnResourceExternalId" type="xs:string" />
+              <xs:element name="TableName" msprop:Generator_ColumnPropNameInTable="TableNameColumn" msprop:Generator_ColumnPropNameInRow="TableName" msprop:Generator_UserColumnName="TableName" msprop:Generator_ColumnVarNameInTable="columnTableName" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="TableList" msprop:Generator_RowEvHandlerName="TableListRowChangeEventHandler" msprop:Generator_RowDeletedName="TableListRowDeleted" msprop:Generator_RowDeletingName="TableListRowDeleting" msprop:Generator_RowEvArgName="TableListRowChangeEvent" msprop:Generator_TablePropName="TableList" msprop:Generator_RowChangedName="TableListRowChanged" msprop:Generator_UserTableName="TableList" msprop:Generator_RowChangingName="TableListRowChanging" msprop:Generator_RowClassName="TableListRow" msprop:Generator_TableClassName="TableListDataTable" msprop:Generator_TableVarName="tableTableList">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="TableName" msprop:Generator_ColumnPropNameInTable="TableNameColumn" msprop:Generator_ColumnPropNameInRow="TableName" msprop:Generator_UserColumnName="TableName" msprop:Generator_ColumnVarNameInTable="columnTableName" type="xs:string" />
+              <xs:element name="Description" msprop:Generator_ColumnPropNameInTable="DescriptionColumn" msprop:Generator_ColumnPropNameInRow="Description" msprop:Generator_UserColumnName="Description" msprop:Generator_ColumnVarNameInTable="columnDescription" type="xs:string" minOccurs="0" />
+              <xs:element name="Wildcard" msprop:Generator_ColumnPropNameInRow="Wildcard" msprop:Generator_ColumnPropNameInTable="WildcardColumn" msprop:Generator_ColumnVarNameInTable="columnWildcard" msprop:Generator_UserColumnName="Wildcard" type="xs:string" minOccurs="0" />
+              <xs:element name="PreviousPrecedence" msprop:Generator_ColumnPropNameInRow="PreviousPrecedence" msprop:Generator_ColumnPropNameInTable="PreviousPrecedenceColumn" msprop:Generator_ColumnVarNameInTable="columnPreviousPrecedence" msprop:Generator_UserColumnName="PreviousPrecedence" type="xs:boolean" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="AttributeExternalId" msprop:Generator_RowEvHandlerName="AttributeExternalIdRowChangeEventHandler" msprop:Generator_RowDeletedName="AttributeExternalIdRowDeleted" msprop:Generator_RowDeletingName="AttributeExternalIdRowDeleting" msprop:Generator_RowEvArgName="AttributeExternalIdRowChangeEvent" msprop:Generator_TablePropName="AttributeExternalId" msprop:Generator_RowChangedName="AttributeExternalIdRowChanged" msprop:Generator_UserTableName="AttributeExternalId" msprop:Generator_RowChangingName="AttributeExternalIdRowChanging" msprop:Generator_RowClassName="AttributeExternalIdRow" msprop:Generator_TableClassName="AttributeExternalIdDataTable" msprop:Generator_TableVarName="tableAttributeExternalId">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="TableName" msprop:Generator_ColumnPropNameInTable="TableNameColumn" msprop:Generator_ColumnPropNameInRow="TableName" msprop:Generator_UserColumnName="TableName" msprop:Generator_ColumnVarNameInTable="columnTableName" type="xs:string" />
+              <xs:element name="AttributeExternalId" msprop:Generator_ColumnPropNameInTable="AttributeExternalIdColumn" msprop:Generator_ColumnPropNameInRow="AttributeExternalId" msprop:Generator_UserColumnName="AttributeExternalId" msprop:Generator_ColumnVarNameInTable="columnAttributeExternalId" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="AttributeCodes" msprop:Generator_RowEvHandlerName="AttributeCodesRowChangeEventHandler" msprop:Generator_RowDeletedName="AttributeCodesRowDeleted" msprop:Generator_RowDeletingName="AttributeCodesRowDeleting" msprop:Generator_RowEvArgName="AttributeCodesRowChangeEvent" msprop:Generator_TablePropName="AttributeCodes" msprop:Generator_RowChangedName="AttributeCodesRowChanged" msprop:Generator_UserTableName="AttributeCodes" msprop:Generator_RowChangingName="AttributeCodesRowChanging" msprop:Generator_RowClassName="AttributeCodesRow" msprop:Generator_TableClassName="AttributeCodesDataTable" msprop:Generator_TableVarName="tableAttributeCodes">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="TableName" msprop:Generator_ColumnPropNameInTable="TableNameColumn" msprop:Generator_ColumnPropNameInRow="TableName" msprop:Generator_UserColumnName="TableName" msprop:Generator_ColumnVarNameInTable="columnTableName" type="xs:string" />
+              <xs:element name="AttributeExternalId" msprop:Generator_ColumnPropNameInTable="AttributeExternalIdColumn" msprop:Generator_ColumnPropNameInRow="AttributeExternalId" msprop:Generator_UserColumnName="AttributeExternalId" msprop:Generator_ColumnVarNameInTable="columnAttributeExternalId" type="xs:string" />
+              <xs:element name="PreviousOpAttributeCode" msprop:Generator_ColumnPropNameInTable="PreviousOpAttributeCodeColumn" msprop:Generator_ColumnPropNameInRow="PreviousOpAttributeCode" msprop:Generator_UserColumnName="PreviousOpAttributeCode" msprop:Generator_ColumnVarNameInTable="columnPreviousOpAttributeCode" type="xs:string" />
+              <xs:element name="NextOpAttributeCode" msprop:Generator_ColumnPropNameInTable="NextOpAttributeCodeColumn" msprop:Generator_ColumnPropNameInRow="NextOpAttributeCode" msprop:Generator_UserColumnName="NextOpAttributeCode" msprop:Generator_ColumnVarNameInTable="columnNextOpAttributeCode" type="xs:string" />
+              <xs:element name="DurationHours" msprop:Generator_ColumnPropNameInTable="DurationHoursColumn" msprop:Generator_ColumnPropNameInRow="DurationHours" msprop:Generator_UserColumnName="DurationHours" msprop:Generator_ColumnVarNameInTable="columnDurationHours" type="xs:double" />
+              <xs:element name="Cost" msprop:Generator_ColumnPropNameInTable="CostColumn" msprop:Generator_ColumnPropNameInRow="Cost" msprop:Generator_UserColumnName="Cost" msprop:Generator_ColumnVarNameInTable="columnCost" type="xs:decimal" minOccurs="0" />
+              <xs:element name="CleanoutGrade" msprop:Generator_UserColumnName="CleanoutGrade" msprop:Generator_ColumnPropNameInTable="CleanoutGradeColumn" msprop:Generator_ColumnPropNameInRow="CleanoutGrade" msprop:Generator_ColumnVarNameInTable="columnCleanoutGrade" type="xs:int" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:AssignedResources" />
+      <xs:field xpath="mstns:PlantExternalId" />
+      <xs:field xpath="mstns:DepartmentExternalId" />
+      <xs:field xpath="mstns:ResourceExternalId" />
+      <xs:field xpath="mstns:TableName" />
+    </xs:unique>
+    <xs:unique name="TableListKey1">
+      <xs:selector xpath=".//mstns:TableList" />
+      <xs:field xpath="mstns:TableName" />
+    </xs:unique>
+    <xs:unique name="AttributeExternalId_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:AttributeExternalId" />
+      <xs:field xpath="mstns:TableName" />
+      <xs:field xpath="mstns:AttributeExternalId" />
+    </xs:unique>
+    <xs:unique name="AttributeCodes_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:AttributeCodes" />
+      <xs:field xpath="mstns:TableName" />
+      <xs:field xpath="mstns:AttributeExternalId" />
+    </xs:unique>
+  </xs:element>
+  <xs:annotation>
+    <xs:appinfo>
+      <msdata:Relationship name="TableList_AssignedResources" msdata:parent="TableList" msdata:child="AssignedResources" msdata:parentkey="TableName" msdata:childkey="TableName" msprop:Generator_UserParentTable="TableList" msprop:Generator_UserChildTable="AssignedResources" msprop:Generator_RelationVarName="relationTableList_AssignedResources" msprop:Generator_ChildPropName="GetAssignedResourcesRows" msprop:Generator_ParentPropName="TableListRow" msprop:Generator_UserRelationName="TableList_AssignedResources" />
+      <msdata:Relationship name="TableList_AttributeName" msdata:parent="TableList" msdata:child="AttributeExternalId" msdata:parentkey="TableName" msdata:childkey="TableName" msprop:Generator_UserParentTable="TableList" msprop:Generator_UserChildTable="AttributeExternalId" msprop:Generator_RelationVarName="relationTableList_AttributeName" msprop:Generator_ChildPropName="GetAttributeExternalIdRows" msprop:Generator_ParentPropName="TableListRow" msprop:Generator_UserRelationName="TableList_AttributeName" />
+      <msdata:Relationship name="AttributeName_AttributeCode" msdata:parent="AttributeExternalId" msdata:child="AttributeCodes" msdata:parentkey="TableName AttributeExternalId" msdata:childkey="TableName AttributeExternalId" msprop:Generator_UserParentTable="AttributeExternalId" msprop:Generator_UserChildTable="AttributeCodes" msprop:Generator_RelationVarName="relationAttributeName_AttributeCode" msprop:Generator_ChildPropName="GetAttributeCodesRows" msprop:Generator_ParentPropName="AttributeNameRowParent" msprop:Generator_UserRelationName="AttributeName_AttributeCode" />
+    </xs:appinfo>
+  </xs:annotation>
+</xs:schema>

@@ -1,0 +1,26 @@
+[
+  {
+    "importDate": "2024-02-05T08:00:00Z",
+    "JobId": 12345,
+    "ManufacturingOrderId": 67890,
+    "OperationId": 54321,
+    "ActivityId": 9876,
+    "BlockId": 5678,
+    "BatchId": 7890,
+    "PlantId": 123,
+    "DepartmentId": 456,
+    "ResourceId": 789,
+    "ScheduledStart": "2024-02-05T10:00:00Z",
+    "ScheduledEnd": "2024-02-05T12:00:00Z",
+    "Locked": true,
+    "Sequence": 1,
+    "RunNbr": 2,
+    "ResourceRequirementId": 345,
+    "DurationHrs": 2.5,
+    "LaborCost": 100.0,
+    "MachineCost": 50.0,
+    "ResourceRequirementIndex": 3,
+    "Scheduled": true,
+    "Batched": false
+  }
+]

@@ -1,0 +1,125 @@
+﻿@page "/UserAccountSetup/{Token}"
+@page "/UserAccountSetup"
+@using System.Text.RegularExpressions
+@using Microsoft.Azure.Cosmos.Linq
+@using PT.Common
+@inject IJSRuntime JSRuntime
+@inject IConfiguration Configuration
+@inject IUserService UserService
+
+@if (Token.IsNullOrEmpty())
+{
+    <div>Your email has not yet been verified.</div>
+    <DxButton Click="SendEmail">Resend Verification Email</DxButton>
+}
+else if (user == null)
+{
+    <div>Invalid or Expired link. Please contact your Administrator to get a new one.</div>
+}
+else
+{
+    <h3>Set Your Password</h3>
+    <span>Your password must contain at least one lower case letter, one upper case letter, one number, and one special character. It must also be at least 8 characters long.</span>
+    <DxFormLayout CssClass="password-update-form">
+        <DxFormLayoutItem Caption="Password:" ColSpanMd="12">
+            <DxTextBox @bind-text="Password" Password="true">
+            </DxTextBox>
+        </DxFormLayoutItem>
+        <DxFormLayoutItem Caption="Confirm Password:" ColSpanMd="12">
+            <DxTextBox @bind-text="Password2" Password="true"></DxTextBox>
+        </DxFormLayoutItem>
+        <DxButton Click="UpdatePasswordAsync">Submit</DxButton>
+    </DxFormLayout>
+}
+
+
+@code {
+    private User User { get; set; }
+    [Parameter]
+    public string Token { get; set; }
+
+    [Inject]
+    private IUserService m_userService { get; set; }
+    [Inject]
+    private Auth0Service Auth0Service { get; set; }
+    [Inject]
+    private IToastNotificationService ToastService { get; set; }
+    [Inject]
+    IAppInsightsLogger logger { get; set; }
+
+    private User user { get; set; }
+
+    private string Password { get; set; }
+    private string Password2 { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (m_userService.GetCurrentUserAsync(AuthenticationStateProvider).Result.UserType == EUserType.Service)
+            {
+                NavigationManager.NavigateTo($"/serviceUserNotAllowedHere", true);
+                return;
+            }
+            if (!Token.IsNullOrEmpty())
+            {
+                user = await m_userService.GetUserByInviteToken(Token);
+
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex);
+            // Handle the exception (e.g., log it) and possibly redirect the user to an error page.
+            RedirectToError();
+        }
+    }
+
+    private async Task UpdatePasswordAsync()
+    {
+        if (Password == Password2 && new Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$").IsMatch(Password))
+        {
+            try
+            {
+                var tokenUser = await UserService.GetUserByInviteToken(Token);
+
+                if (tokenUser == null)
+                {
+                    ToastService.ShowToast("Invite Link Expired", "Please ask your administrator to send you a new one.", ToastRenderStyle.Danger);
+                }
+
+                await Auth0Service.SetAuth0PasswordAndEmailValidation(tokenUser, Password);
+                await UserService.ClearUserInviteToken(Token);
+                ToastService.ShowToast("Password Updated", "Your password has been successfully set.", ToastRenderStyle.Success);
+                RedirectToLogin();
+            }
+            catch (Exception e)
+            {
+                ToastService.ShowToast("Error", "An error occurred while setting your password.", ToastRenderStyle.Danger);
+            }
+        }
+        else
+        {
+            ToastService.ShowToast("Password Not Valid", "Please make sure both passwords match, and that your password has at least one Upper Case letter, Lower Case letter, Number, and Symbol.", ToastRenderStyle.Danger);
+        }
+    }
+
+    private async Task SendEmail()
+    {
+        var emailer = Emailer.CreateWithPTSmtpSettings();
+        var currentUser = await UserService.GetCurrentUserAsync(await AuthenticationStateProvider.GetAuthenticationStateAsync());
+        var link = await UserService.CreateUserInviteLink(currentUser);
+
+        emailer.SendVerificationEmailAsync(currentUser.Email, NavigationManager.BaseUri + "UserAccountSetup/" + link);
+    }
+    
+    private void RedirectToLogin()
+    {
+        NavigationManager.NavigateTo($"./login?redirectUri=/", true);
+    }
+
+    private void RedirectToError()
+    {
+        NavigationManager.NavigateTo($"./error");
+    }
+}

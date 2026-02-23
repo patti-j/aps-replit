@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:tns="http://tempuri.org/" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="APSWebService" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://tempuri.org/Imports">
+      <xsd:import schemaLocation="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd0" namespace="http://tempuri.org/" />
+      <xsd:import schemaLocation="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import schemaLocation="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions.cs" />
+      <xsd:import schemaLocation="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/PT.PlanetTogetherExtraServicesDefinitions" />
+      <xsd:import schemaLocation="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd4" namespace="http://schemas.datacontract.org/2004/07/PT.SchedulerDefinitions" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="IExtraServicesWebService_AdvanceClock_InputMessage">
+    <wsdl:part name="parameters" element="tns:AdvanceClock" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_AdvanceClock_OutputMessage">
+    <wsdl:part name="parameters" element="tns:AdvanceClockResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_AdvanceClockStringDate_InputMessage">
+    <wsdl:part name="parameters" element="tns:AdvanceClockStringDate" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_AdvanceClockStringDate_OutputMessage">
+    <wsdl:part name="parameters" element="tns:AdvanceClockStringDateResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_AdvanceClockTicks_InputMessage">
+    <wsdl:part name="parameters" element="tns:AdvanceClockTicks" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_AdvanceClockTicks_OutputMessage">
+    <wsdl:part name="parameters" element="tns:AdvanceClockTicksResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Import_InputMessage">
+    <wsdl:part name="parameters" element="tns:Import" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Import_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ImportResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Optimize_InputMessage">
+    <wsdl:part name="parameters" element="tns:Optimize" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Optimize_OutputMessage">
+    <wsdl:part name="parameters" element="tns:OptimizeResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Publish_InputMessage">
+    <wsdl:part name="parameters" element="tns:Publish" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Publish_OutputMessage">
+    <wsdl:part name="parameters" element="tns:PublishResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_CTP_InputMessage">
+    <wsdl:part name="parameters" element="tns:CTP" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_CTP_OutputMessage">
+    <wsdl:part name="parameters" element="tns:CTPResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_CopyScenario_InputMessage">
+    <wsdl:part name="parameters" element="tns:CopyScenario" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_CopyScenario_OutputMessage">
+    <wsdl:part name="parameters" element="tns:CopyScenarioResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_GetScenarios_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetScenarios" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_GetScenarios_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetScenariosResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_DeleteScenario_InputMessage">
+    <wsdl:part name="parameters" element="tns:DeleteScenario" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_DeleteScenario_OutputMessage">
+    <wsdl:part name="parameters" element="tns:DeleteScenarioResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Hold_InputMessage">
+    <wsdl:part name="parameters" element="tns:Hold" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Hold_OutputMessage">
+    <wsdl:part name="parameters" element="tns:HoldResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Lock_InputMessage">
+    <wsdl:part name="parameters" element="tns:Lock" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Lock_OutputMessage">
+    <wsdl:part name="parameters" element="tns:LockResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Anchor_InputMessage">
+    <wsdl:part name="parameters" element="tns:Anchor" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Anchor_OutputMessage">
+    <wsdl:part name="parameters" element="tns:AnchorResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Unschedule_InputMessage">
+    <wsdl:part name="parameters" element="tns:Unschedule" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Unschedule_OutputMessage">
+    <wsdl:part name="parameters" element="tns:UnscheduleResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Move_InputMessage">
+    <wsdl:part name="parameters" element="tns:Move" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Move_OutputMessage">
+    <wsdl:part name="parameters" element="tns:MoveResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Chat_InputMessage">
+    <wsdl:part name="parameters" element="tns:Chat" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_Chat_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ChatResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_UndoByTransmissionNbr_InputMessage">
+    <wsdl:part name="parameters" element="tns:UndoByTransmissionNbr" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_UndoByTransmissionNbr_OutputMessage">
+    <wsdl:part name="parameters" element="tns:UndoByTransmissionNbrResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_UndoActions_InputMessage">
+    <wsdl:part name="parameters" element="tns:UndoActions" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_UndoActions_OutputMessage">
+    <wsdl:part name="parameters" element="tns:UndoActionsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_UndoLastUserAction_InputMessage">
+    <wsdl:part name="parameters" element="tns:UndoLastUserAction" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_UndoLastUserAction_OutputMessage">
+    <wsdl:part name="parameters" element="tns:UndoLastUserActionResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_ActivityStatusUpdate_InputMessage">
+    <wsdl:part name="parameters" element="tns:ActivityStatusUpdate" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_ActivityStatusUpdate_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ActivityStatusUpdateResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_ActivityQuantitiesUpdate_InputMessage">
+    <wsdl:part name="parameters" element="tns:ActivityQuantitiesUpdate" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_ActivityQuantitiesUpdate_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ActivityQuantitiesUpdateResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_ActivityDatesUpdate_InputMessage">
+    <wsdl:part name="parameters" element="tns:ActivityDatesUpdate" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_ActivityDatesUpdate_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ActivityDatesUpdateResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_KpiSnapshotOfLiveScenario_InputMessage">
+    <wsdl:part name="parameters" element="tns:KpiSnapshotOfLiveScenario" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_KpiSnapshotOfLiveScenario_OutputMessage">
+    <wsdl:part name="parameters" element="tns:KpiSnapshotOfLiveScenarioResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_AddADGroupUsers_InputMessage">
+    <wsdl:part name="parameters" element="tns:AddADGroupUsers" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_AddADGroupUsers_OutputMessage">
+    <wsdl:part name="parameters" element="tns:AddADGroupUsersResponse" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_DeleteADGroupUsers_InputMessage">
+    <wsdl:part name="parameters" element="tns:DeleteADGroupUsers" />
+  </wsdl:message>
+  <wsdl:message name="IExtraServicesWebService_DeleteADGroupUsers_OutputMessage">
+    <wsdl:part name="parameters" element="tns:DeleteADGroupUsersResponse" />
+  </wsdl:message>
+  <wsdl:portType name="IExtraServicesWebService">
+    <wsdl:operation name="AdvanceClock">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/AdvanceClock" message="tns:IExtraServicesWebService_AdvanceClock_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/AdvanceClockResponse" message="tns:IExtraServicesWebService_AdvanceClock_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="AdvanceClockStringDate">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/AdvanceClockStringDate" message="tns:IExtraServicesWebService_AdvanceClockStringDate_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/AdvanceClockStringDateResponse" message="tns:IExtraServicesWebService_AdvanceClockStringDate_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="AdvanceClockTicks">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/AdvanceClockTicks" message="tns:IExtraServicesWebService_AdvanceClockTicks_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/AdvanceClockTicksResponse" message="tns:IExtraServicesWebService_AdvanceClockTicks_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Import">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/Import" message="tns:IExtraServicesWebService_Import_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/ImportResponse" message="tns:IExtraServicesWebService_Import_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Optimize">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/Optimize" message="tns:IExtraServicesWebService_Optimize_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/OptimizeResponse" message="tns:IExtraServicesWebService_Optimize_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Publish">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/Publish" message="tns:IExtraServicesWebService_Publish_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/PublishResponse" message="tns:IExtraServicesWebService_Publish_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="CTP">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/CTP" message="tns:IExtraServicesWebService_CTP_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/CTPResponse" message="tns:IExtraServicesWebService_CTP_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="CopyScenario">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/CopyScenario" message="tns:IExtraServicesWebService_CopyScenario_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/CopyScenarioResponse" message="tns:IExtraServicesWebService_CopyScenario_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetScenarios">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/GetScenarios" message="tns:IExtraServicesWebService_GetScenarios_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/GetScenariosResponse" message="tns:IExtraServicesWebService_GetScenarios_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="DeleteScenario">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/DeleteScenario" message="tns:IExtraServicesWebService_DeleteScenario_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/DeleteScenarioResponse" message="tns:IExtraServicesWebService_DeleteScenario_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Hold">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/Hold" message="tns:IExtraServicesWebService_Hold_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/HoldResponse" message="tns:IExtraServicesWebService_Hold_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Lock">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/Lock" message="tns:IExtraServicesWebService_Lock_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/LockResponse" message="tns:IExtraServicesWebService_Lock_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Anchor">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/Anchor" message="tns:IExtraServicesWebService_Anchor_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/AnchorResponse" message="tns:IExtraServicesWebService_Anchor_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Unschedule">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/Unschedule" message="tns:IExtraServicesWebService_Unschedule_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/UnscheduleResponse" message="tns:IExtraServicesWebService_Unschedule_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Move">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/Move" message="tns:IExtraServicesWebService_Move_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/MoveResponse" message="tns:IExtraServicesWebService_Move_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Chat">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/Chat" message="tns:IExtraServicesWebService_Chat_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/ChatResponse" message="tns:IExtraServicesWebService_Chat_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UndoByTransmissionNbr">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/UndoByTransmissionNbr" message="tns:IExtraServicesWebService_UndoByTransmissionNbr_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/UndoByTransmissionNbrResponse" message="tns:IExtraServicesWebService_UndoByTransmissionNbr_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UndoActions">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/UndoActions" message="tns:IExtraServicesWebService_UndoActions_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/UndoActionsResponse" message="tns:IExtraServicesWebService_UndoActions_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UndoLastUserAction">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/UndoLastUserAction" message="tns:IExtraServicesWebService_UndoLastUserAction_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/UndoLastUserActionResponse" message="tns:IExtraServicesWebService_UndoLastUserAction_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="ActivityStatusUpdate">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/ActivityStatusUpdate" message="tns:IExtraServicesWebService_ActivityStatusUpdate_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/ActivityStatusUpdateResponse" message="tns:IExtraServicesWebService_ActivityStatusUpdate_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="ActivityQuantitiesUpdate">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/ActivityQuantitiesUpdate" message="tns:IExtraServicesWebService_ActivityQuantitiesUpdate_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/ActivityQuantitiesUpdateResponse" message="tns:IExtraServicesWebService_ActivityQuantitiesUpdate_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="ActivityDatesUpdate">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/ActivityDatesUpdate" message="tns:IExtraServicesWebService_ActivityDatesUpdate_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/ActivityDatesUpdateResponse" message="tns:IExtraServicesWebService_ActivityDatesUpdate_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="KpiSnapshotOfLiveScenario">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/KpiSnapshotOfLiveScenario" message="tns:IExtraServicesWebService_KpiSnapshotOfLiveScenario_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/KpiSnapshotOfLiveScenarioResponse" message="tns:IExtraServicesWebService_KpiSnapshotOfLiveScenario_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="AddADGroupUsers">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/AddADGroupUsers" message="tns:IExtraServicesWebService_AddADGroupUsers_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/AddADGroupUsersResponse" message="tns:IExtraServicesWebService_AddADGroupUsers_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="DeleteADGroupUsers">
+      <wsdl:input wsaw:Action="http://tempuri.org/IExtraServicesWebService/DeleteADGroupUsers" message="tns:IExtraServicesWebService_DeleteADGroupUsers_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IExtraServicesWebService/DeleteADGroupUsersResponse" message="tns:IExtraServicesWebService_DeleteADGroupUsers_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_IExtraServicesWebService" type="tns:IExtraServicesWebService">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="AdvanceClock">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/AdvanceClock" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AdvanceClockStringDate">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/AdvanceClockStringDate" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AdvanceClockTicks">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/AdvanceClockTicks" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Import">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/Import" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Optimize">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/Optimize" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Publish">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/Publish" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CTP">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/CTP" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CopyScenario">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/CopyScenario" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetScenarios">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/GetScenarios" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeleteScenario">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/DeleteScenario" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Hold">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/Hold" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Lock">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/Lock" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Anchor">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/Anchor" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Unschedule">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/Unschedule" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Move">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/Move" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Chat">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/Chat" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UndoByTransmissionNbr">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/UndoByTransmissionNbr" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UndoActions">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/UndoActions" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UndoLastUserAction">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/UndoLastUserAction" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ActivityStatusUpdate">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/ActivityStatusUpdate" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ActivityQuantitiesUpdate">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/ActivityQuantitiesUpdate" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ActivityDatesUpdate">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/ActivityDatesUpdate" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="KpiSnapshotOfLiveScenario">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/KpiSnapshotOfLiveScenario" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddADGroupUsers">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/AddADGroupUsers" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeleteADGroupUsers">
+      <soap:operation soapAction="http://tempuri.org/IExtraServicesWebService/DeleteADGroupUsers" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="APSWebService">
+    <wsdl:port name="BasicHttpBinding_IExtraServicesWebService" binding="tns:BasicHttpBinding_IExtraServicesWebService">
+      <soap:address location="http://desktop-kcipa6f:8788/APSWebService" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

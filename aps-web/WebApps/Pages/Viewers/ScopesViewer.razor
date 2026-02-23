@@ -1,0 +1,53 @@
+﻿@page "/scopesViewer"
+
+@if (viewPermission)
+{
+    <ScopeGrid @ref="scopeGrid" Scopes="Scopes" AvailablePlanningAreas="AvailablePlanningAreas" RefreshComponent="RefreshComponent" />
+}
+
+@code {
+
+    private User User { get; set; }
+
+    public List<Category> Categories { get; set; } = new List<Category>();
+    public List<PlanningAreaScope> Scopes { get; set; } = null;
+    public List<PADetails> AvailablePlanningAreas { get; set; } = null;
+    public List<User> Users { get; set; } = new List<User>();
+    private bool viewPermission = false;
+    private ScopeGrid scopeGrid;
+
+    [Inject]
+    IUserService userService { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    ScopeService scopeService { get; set; }
+    [Inject]
+    IPlanningAreaDataService paService{ get; set; }
+    [Inject] IAuthorizationService m_authService { get; set; }
+    [Inject]
+    NavigationManager Navigation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.EditUsers, NavigationManager)) return;
+        viewPermission = true;
+        await ReloadData();
+    }
+
+    private async Task ReloadData()
+    {
+        if (User.Exists())
+        {
+            Scopes = await scopeService.GetAllScopesForCompany(User.CompanyId);
+            AvailablePlanningAreas = await paService.GetPlanningAreasByCompanyIdAsync(User.CompanyId);
+        }
+        StateHasChanged();
+    }
+
+    private async Task RefreshComponent()
+    {
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+}

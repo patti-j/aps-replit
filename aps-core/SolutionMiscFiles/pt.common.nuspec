@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TODO: Unlist all old packages-->
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata>
+		<!-- Required elements-->
+		<id>PT.Common</id>
+		<version>$version$</version>
+		<description>PlanetTogether libraries required to build packages targeting a specific PlanetTogether framework</description>
+		<authors>PlanetTogether Inc</authors>
+
+		<!-- Optional elements -->
+		<icon>images\logo_500px.png</icon>
+		<copyright>PlanetTogether Inc 2025</copyright>
+		<!-- ... -->
+
+		<dependencies>
+			<group targetFramework="net8.0">
+				<!--Common-->
+				<dependency id="Newtonsoft.Json" version="13.0.3" exclude="Build,Analyzers" />
+				<dependency id="Microsoft.Data.SqlClient" version="5.2.2" exclude="Build,Analyzers" />
+				<dependency id="System.Management" version="7.0.0" exclude="Build,Analyzers" />
+				<dependency id="System.ServiceModel.Http" version="4.9.0" exclude="Build,Analyzers" />
+				<dependency id="System.ServiceProcess.ServiceController" version="6.0.0" exclude="Build,Analyzers" />
+			</group>
+		</dependencies>
+	</metadata>
+	<files>
+		<file src="..\UserInterface\PlanetTogetherClient\bin\Release\PT.Common.dll" target="lib\net8.0" />
+		<file src="logo_500px.png" target="images\" />
+	</files>
+</package>
+<!--Example publish command: ./nuget.exe pack pt.sdk.packages.nuspec -Version 12.0.2 -properties config=Release -->

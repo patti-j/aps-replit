@@ -1,0 +1,333 @@
+﻿@using ReportsWebApp.DB.Models
+@using ReportsWebApp.DB.Models.DTOs
+@using ReportsWebApp.DB.Services.Interfaces
+@inject IPlanningAreaDataService PlanningAreaDataService
+@inject ISubscriptionService SubscriptionService
+
+<DxAccordionItem Text="Planning Area Details" Expanded=false>
+    <HeaderTextTemplate>
+        <i class="fas fa-info-circle m-2"></i> Planning Area Details
+        </HeaderTextTemplate>
+    <ContentTemplate Context="accordionContext">
+        <DxFormLayout CssClass="w-100 p-3">
+            @foreach (var item in formItems)
+            {
+                <DxFormLayoutItem Caption="@item.Caption" ColSpanLg="4" CssClass="@item.CssClass">
+                    <DxTextBox @bind-Text="@item.BindingValue" ReadOnly="true"/>
+                </DxFormLayoutItem>
+            }
+            <DxFormLayoutItem Caption="Subscription" ColSpanLg="4">
+                <DxComboBox Data="@SubscriptionOptions" 
+                            @bind-Value="@SelectedSubscription" 
+                            NullText="Select Subscription"
+                            TextFieldName="@nameof(SubscriptionOption.DisplayText)"
+                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                            FilteringMode="DataGridFilteringMode.Contains">
+                    <ItemTemplate Context="subscriptionContext">
+                        <div>
+                            <strong>@subscriptionContext.DisplayText</strong>
+                            @if (!string.IsNullOrEmpty(subscriptionContext.Description))
+                            {
+                                <div style="font-size: 0.9em; color: #666;">@subscriptionContext.Description</div>
+                            }
+                        </div>
+                    </ItemTemplate>
+                </DxComboBox>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Serial Code" ColSpanLg="4">
+                <DxTextBox @bind-Text="@ManualSerialCode" 
+                           NullText="Enter serial code manually"
+                           ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"/>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Using Company" ColSpanLg="12">
+                <DxComboBox SearchMode="ListSearchMode.AutoSearch" Data="@Companies" Value="Model?.UsedByCompany" SelectedItemChanged="@((Company c) => OnCompanyChanged(c))" NullText="None"/>
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </ContentTemplate>
+</DxAccordionItem>
+
+
+@code {
+    [Inject] IToastNotificationService ToastService { get; set; }
+    [Inject] ICompanyService CompanyService { get; set; }
+
+    private bool IsInvalidName { get; set; } = false;
+    private bool IsInvalidVersion { get; set; } = false;
+    private bool IsDuplicateError { get; set; } = false;
+
+    [Parameter]
+    public PADetails Model { get; set; }
+
+    [Parameter]
+    public EventCallback<PADetails> ModelChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnShowDatabaseSettings { get; set; }
+
+    private List<FormItem> formItems { get; set; } = new();
+    private List<Company?> Companies { get; set; } = new();
+    private List<SubscriptionOption> SubscriptionOptions = new();
+    private SubscriptionOption _selectedSubscription;
+    private string _manualSerialCode;
+
+    private SubscriptionOption SelectedSubscription
+    {
+        get => _selectedSubscription;
+        set
+        {
+            _selectedSubscription = value;
+            if (Model?.PlanningArea?.LicenseInfo != null)
+            {
+                if (value != null)
+                {
+                    // Set the subscription name, serial code, and ID
+                    Model.PlanningArea.LicenseInfo.Subscription = value.DisplayText ?? string.Empty;
+                    Model.PlanningArea.LicenseInfo.SerialCode = CommonUtils.RemoveSerialCodeSeparators(value.SerialCode);
+                    Model.PlanningArea.LicenseInfo.SubscriptionId = value.SubscriptionId;
+                    
+                    // Update the manual serial code to match the selected subscription
+                    _manualSerialCode = value.SerialCode;
+                }
+                else
+                {
+                    // Clear all fields when no subscription is selected
+                    Model.PlanningArea.LicenseInfo.Subscription = string.Empty;
+                    Model.PlanningArea.LicenseInfo.SerialCode = string.Empty;
+                    Model.PlanningArea.LicenseInfo.SubscriptionId = 0;
+                }
+                NotifyModelChangedAsync().Wait();
+            }
+        }
+    }
+
+    private string ManualSerialCode
+    {
+        get => _manualSerialCode;
+        set
+        {
+            _manualSerialCode = value;
+            if (Model?.PlanningArea?.LicenseInfo != null)
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    // Set the serial code from manual input
+                    Model.PlanningArea.LicenseInfo.SerialCode = CommonUtils.RemoveSerialCodeSeparators(value);
+                    
+                    // Try to match with existing subscription
+                    var formattedCode = CommonUtils.FormatSerialCodeAddSeparators(value);
+                    var matchingSubscription = SubscriptionOptions.FirstOrDefault(s => 
+                        s.SerialCode?.Equals(formattedCode, StringComparison.OrdinalIgnoreCase) == true);
+                    
+                    if (matchingSubscription != null)
+                    {
+                        // If it matches an existing subscription, select it and update all fields
+                        _selectedSubscription = matchingSubscription;
+                        Model.PlanningArea.LicenseInfo.Subscription = matchingSubscription.DisplayText ?? string.Empty;
+                        Model.PlanningArea.LicenseInfo.SubscriptionId = matchingSubscription.SubscriptionId;
+                    }
+                    else
+                    {
+                        // Manual entry that doesn't match any subscription
+                        _selectedSubscription = null;
+                        Model.PlanningArea.LicenseInfo.Subscription = string.Empty;
+                        Model.PlanningArea.LicenseInfo.SubscriptionId = 0;
+                    }
+                }
+                else
+                {
+                    // Clear all fields when manual input is cleared
+                    Model.PlanningArea.LicenseInfo.SerialCode = string.Empty;
+                    Model.PlanningArea.LicenseInfo.Subscription = string.Empty;
+                    Model.PlanningArea.LicenseInfo.SubscriptionId = 0;
+                    _selectedSubscription = null;
+                }
+                NotifyModelChangedAsync().Wait();
+            }
+        }
+    }
+
+    // TODO: Integration code should be a combobox of existing options rather than an input. Fix this when we have better connection with the SM (and look for other inconsistencies vs old SM)
+    public async void LoadValues(PADetails paDetails)
+    {
+        formItems = new List<FormItem>
+        {
+            new FormItem("Name", () => InstanceName, value => InstanceName = value, IsInvalidName, IsInvalidName),
+            new FormItem("Version", () => SoftwareVersion, value => SoftwareVersion = value, IsInvalidVersion, IsInvalidVersion),
+            new FormItem("Integration Code", () => IntegrationCode, value => IntegrationCode = value),
+            new FormItem("Port", () => PortString, value => PortString = value)
+        };
+        Companies = new();
+        var serverManagingCompany = paDetails.Server?.ManagingCompany;
+        if (serverManagingCompany != null)
+        {
+            Companies.Add(serverManagingCompany);
+            Companies.AddRange(paDetails.Server.UsingCompanies.Select(x => x.Company));
+        }
+
+        Companies.RemoveAll(x => x == null);
+        // Clear duplicates
+        Companies = Companies.GroupBy(x => x.Id).Select(x => x.FirstOrDefault()).ToList();
+        Companies.Insert(0, null);
+
+        // Load subscriptions
+        await LoadSubscriptions();
+    }
+
+    private async Task LoadSubscriptions()
+    {
+        try
+        {
+            if (Model?.CompanyId > 0)
+            {
+                var subscriptions = await SubscriptionService.GetLiveSubscriptionsForCompanyAsync(Model.CompanyId);
+                
+                SubscriptionOptions = subscriptions.Select(s => new SubscriptionOption
+                {
+                    SubscriptionId = s.SubscriptionId,
+                    SerialCode = CommonUtils.FormatSerialCodeAddSeparators(s.SerialCode),
+                    DisplayText = s.Name,
+                    Description = s.Description
+                }).ToList();
+                
+                // Try to match by serial code first, then by subscription name
+                var currentSerialCode = Model?.PlanningArea?.LicenseInfo?.SerialCode ?? string.Empty;
+                var currentSubscriptionName = Model?.PlanningArea?.LicenseInfo?.Subscription ?? string.Empty;
+                var currentSubscriptionId = Model?.PlanningArea?.LicenseInfo?.SubscriptionId ?? 0;
+                
+                // First try to match by subscription ID (when available)
+                if (currentSubscriptionId > 0)
+                {
+                    _selectedSubscription = SubscriptionOptions.FirstOrDefault(s => s.SubscriptionId == currentSubscriptionId);
+                }
+                
+                // If no match by ID, try to match by serial code
+                if (_selectedSubscription == null && !string.IsNullOrWhiteSpace(currentSerialCode))
+                {
+                    var formattedSerialCode = CommonUtils.FormatSerialCodeAddSeparators(currentSerialCode);
+                    _selectedSubscription = SubscriptionOptions.FirstOrDefault(s => s.SerialCode == formattedSerialCode);
+                }
+                
+                // If no match by serial code, try to match by subscription name
+                if (_selectedSubscription == null && !string.IsNullOrWhiteSpace(currentSubscriptionName))
+                {
+                    _selectedSubscription = SubscriptionOptions.FirstOrDefault(s => s.DisplayText == currentSubscriptionName);
+                }
+                
+                // Set the manual serial code field
+                if (_selectedSubscription != null)
+                {
+                    _manualSerialCode = _selectedSubscription.SerialCode;
+                }
+                else if (!string.IsNullOrWhiteSpace(currentSerialCode))
+                {
+                    _manualSerialCode = CommonUtils.FormatSerialCodeAddSeparators(currentSerialCode);
+                }
+                
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast("Error Loading Subscriptions", $"Could not load subscriptions: {ex.Message}", ToastRenderStyle.Warning);
+            SubscriptionOptions = new();
+        }
+    }
+
+    public string InstanceName
+    {
+        get => Model?.PlanningArea?.PublicInfo?.InstanceName ?? string.Empty;
+        set
+        {
+            IsInvalidName = UpdateModelPropertyAsync(value, SoftwareVersion, nameof(InstanceName)).Result;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string SoftwareVersion
+    {
+        get => Model?.PlanningArea?.PublicInfo?.SoftwareVersion ?? string.Empty;
+        set
+        {
+            IsInvalidVersion = UpdateModelPropertyAsync(InstanceName, value, nameof(SoftwareVersion)).Result;
+            ModelChanged.InvokeAsync(Model);
+        }
+    }
+
+    public string IntegrationCode
+    {
+        get => Model?.PlanningArea?.ServicePaths?.IntegrationCode ?? string.Empty;
+        set
+        {
+            if (Model?.PlanningArea?.ServicePaths != null)
+            {
+                Model.PlanningArea.ServicePaths.IntegrationCode = value;
+                NotifyModelChangedAsync().Wait();
+            }
+        }
+    }
+
+    public string PortString
+    {
+        get => Model?.PlanningArea?.Settings?.SystemServiceSettings?.Port.ToString() ?? string.Empty;
+        set
+        {
+            if (int.TryParse(value, out int result) && Model?.PlanningArea?.Settings?.SystemServiceSettings != null)
+            {
+                Model.PlanningArea.Settings.SystemServiceSettings.Port = result;
+                NotifyModelChangedAsync().Wait();
+            }
+        }
+    }
+
+    private void OnCompanyChanged(Company c)
+    {
+        Model.UsedByCompanyId = c?.Id;
+        Model.UsedByCompany = c;
+        NotifyModelChangedAsync().Wait();
+    }
+
+    private async Task<bool> UpdateModelPropertyAsync(string name, string version, string propertyName)
+    {
+        // Update the appropriate model property based on 'propertyName'
+        if (propertyName == nameof(InstanceName))
+        {
+            Model.PlanningArea.PublicInfo.InstanceName = name;
+            Model.Name = name; // Sync Model's Name with InstanceName
+        }
+        else if (propertyName == nameof(SoftwareVersion))
+        {
+            Model.PlanningArea.PublicInfo.SoftwareVersion = version;
+            Model.Version = version; // Sync Model's Version with SoftwareVersion
+        }
+
+        // Notify that the model has been updated
+        await NotifyModelChangedAsync();
+
+        return false; // No issues, save was successful
+    }
+
+
+    private async Task NotifyModelChangedAsync() => await ModelChanged.InvokeAsync(Model);
+
+    private void ShowToast(string title, string message, ToastRenderStyle style)
+    {
+        ToastService.ShowToast(new ToastOptions
+            {
+                ProviderName = "MainLayout",
+                Title = title,
+                Text = message,
+                ThemeMode = ToastThemeMode.Saturated,
+                RenderStyle = style,
+            });
+    }
+
+    private async Task ShowDatabaseSettingsAsync() => await OnShowDatabaseSettings.InvokeAsync();
+
+    private class SubscriptionOption
+    {
+        public int SubscriptionId { get; set; }
+        public string SerialCode { get; set; }
+        public string DisplayText { get; set; }
+        public string Description { get; set; }
+    }
+}

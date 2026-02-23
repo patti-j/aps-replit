@@ -1,0 +1,41 @@
+﻿@page "/permissionGroupViewer"
+@using ReportsWebApp.DB.Services.Interfaces
+@if (viewPermission)
+{
+    <PermissionGroupGrid OnSave="OnSave" OnDelete="OnDelete" Company="Company" PermissionGroups="PermissionGroups" />
+}
+
+@code {
+    private User User { get; set; }
+    private Company Company;
+    public List<PAPermissionGroup> PermissionGroups { get; set; } = new List<PAPermissionGroup>();
+    public List<Company> Companies { get; set; } = new List<Company>();
+    private bool viewPermission = false;
+
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    ICompanyService companyService { get; set; }
+    [Inject]
+    IPlanningAreaLoginService paService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.EditUsers, NavigationManager, true)) return;
+        viewPermission = true;
+
+        Company = User.Company;
+        PermissionGroups = await paService.GetPermissionGroupsAsync(Company);
+    }
+
+    private async Task<PAPermissionGroup> OnSave(PAPermissionGroup group)
+    {
+        return await paService.AddOrUpdatePAPermissionGroupAsync(group);
+    }
+
+    private async Task OnDelete(int id)
+    {
+        await paService.RemovePAPermissionGroupAsync(id);
+    }
+}

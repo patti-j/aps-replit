@@ -1,0 +1,98 @@
+﻿@using DevExpress.Blazor
+@implements IDisposable
+
+<DxPopup @bind-Visible="@InputDialogShown"
+         HeaderText="@HeaderText"
+         HeaderCssClass="confirmation-dialog-header"
+         ShowCloseButton="false"
+         CloseOnOutsideClick="false"
+         CloseOnEscape="false"
+         Width="400px">
+    <BodyContentTemplate>
+        @if (!AdditionalLinesBelow)
+        {
+            @foreach (string text in AdditionalLines)
+            {
+                <p>@text</p>
+            }
+        }
+        <p>@BodyText</p>
+        @if (AdditionalLinesBelow)
+        {
+            @foreach (string text in AdditionalLines)
+            {
+                <p>@text</p>
+            }
+        }
+        <DxTextBox @bind-Text="Text" style="margin-bottom: 12px"/>
+        <div class="confirmation-dialog-content">
+            <DxButton Text="@CancelButton" Click="NoClick" RenderStyle="ButtonRenderStyle.Secondary" Visible="DisplayCancelButton"></DxButton>
+            <DxButton Text="@SubmitButton" Click="YesClick" RenderStyle="@currentConfirmButtonRenderStyle"></DxButton>
+        </div>
+    </BodyContentTemplate>
+</DxPopup>
+
+@code {
+    bool InputDialogShown { get; set; } = false;
+    string HeaderText { get; set; } = string.Empty;
+    string BodyText { get; set; } = string.Empty;
+    string SubmitButton { get; set; } = "Ok";
+    string CancelButton { get; set; } = "Cancel";
+    bool DisplayCancelButton { get; set; } = true;
+    IEnumerable<string> AdditionalLines { get; set; } = new List<string>();
+    bool AdditionalLinesBelow { get; set; }
+
+    private string? Text { get; set; } = "";
+
+    TaskCompletionSource<string?> tcs;
+    [Parameter]
+    public ButtonRenderStyle DefaultConfirmButtonStyle { get; set; } = ButtonRenderStyle.Primary;
+
+    private ButtonRenderStyle currentConfirmButtonRenderStyle = ButtonRenderStyle.Primary;
+
+    /// <summary>
+    /// Shows a confirmation dialog with the given label and text
+    /// </summary>
+    /// <param name="headerText">The text to display in the header</param>
+    /// <param name="bodyText">The primary line of text for the body</param>
+    /// <param name="additionalLines">Any additional lines of text for the body</param>
+    /// <param name="additionalLinesBelow">Whether the additional lines should be displayed above or below the main body text</param>
+    /// <returns>True if the user clicked Yes, false otherwise</returns>
+    public Task<string?> GetUserInput(string headerText, string bodyText, IEnumerable<string>? additionalLines = null, bool additionalLinesBelow = true, string yesButtonText = "Ok", string noButtonText = "Cancel", ButtonRenderStyle? renderStyle = null, bool useConfirmBox = false, string? initialText = "", bool displayNoButton = true)
+    {
+        HeaderText = headerText;
+        BodyText = bodyText;
+        AdditionalLines = additionalLines ?? new List<string>();
+        AdditionalLinesBelow = additionalLinesBelow;
+        SubmitButton = yesButtonText;
+        CancelButton = noButtonText;
+        InputDialogShown = true;
+        DisplayCancelButton = displayNoButton;
+        currentConfirmButtonRenderStyle = renderStyle ?? DefaultConfirmButtonStyle;
+
+        InvokeAsync(StateHasChanged);
+
+        tcs = new TaskCompletionSource<string?>();
+        return tcs.Task;
+    }
+
+    private void YesClick()
+    {
+        tcs.TrySetResult(Text);
+        InputDialogShown = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void NoClick()
+    {
+        tcs.TrySetResult(null);
+        InputDialogShown = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        tcs = null;
+    }
+
+}

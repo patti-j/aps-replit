@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="MOBatchDefDataset" targetNamespace="http://tempuri.org/MOBatchDefDataset.xsd" xmlns:mstns="http://tempuri.org/MOBatchDefDataset.xsd" xmlns="http://tempuri.org/MOBatchDefDataset.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="MOBatchDefDataset" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="MOBatchDefDataset" msprop:Generator_UserDSName="MOBatchDefDataset">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="BatchDefinitions" msprop:Generator_UserTableName="BatchDefinitions" msprop:Generator_RowEvArgName="BatchDefinitionsRowChangeEvent" msprop:Generator_TableVarName="tableBatchDefinitions" msprop:Generator_TablePropName="BatchDefinitions" msprop:Generator_RowDeletingName="BatchDefinitionsRowDeleting" msprop:Generator_RowChangingName="BatchDefinitionsRowChanging" msprop:Generator_RowDeletedName="BatchDefinitionsRowDeleted" msprop:Generator_RowEvHandlerName="BatchDefinitionsRowChangeEventHandler" msprop:Generator_TableClassName="BatchDefinitionsDataTable" msprop:Generator_RowChangedName="BatchDefinitionsRowChanged" msprop:Generator_RowClassName="BatchDefinitionsRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Id" msprop:Generator_ColumnVarNameInTable="columnId" msprop:Generator_ColumnPropNameInRow="Id" msprop:Generator_ColumnPropNameInTable="IdColumn" msprop:Generator_UserColumnName="Id" type="xs:long" minOccurs="0" />
+              <xs:element name="ExternalId" msprop:Generator_ColumnVarNameInTable="columnExternalId" msprop:Generator_ColumnPropNameInRow="ExternalId" msprop:Generator_ColumnPropNameInTable="ExternalIdColumn" msprop:Generator_UserColumnName="ExternalId" type="xs:string" default="" />
+              <xs:element name="Name" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_UserColumnName="Name" type="xs:string" default="" />
+              <xs:element name="Description" msprop:Generator_ColumnVarNameInTable="columnDescription" msprop:Generator_ColumnPropNameInRow="Description" msprop:Generator_ColumnPropNameInTable="DescriptionColumn" msprop:Generator_UserColumnName="Description" type="xs:string" default="" minOccurs="0" />
+              <xs:element name="Batch_x0020_Method" msprop:Generator_ColumnVarNameInTable="columnBatch_Method" msprop:Generator_ColumnPropNameInRow="Batch_Method" msprop:Generator_ColumnPropNameInTable="Batch_MethodColumn" msprop:Generator_UserColumnName="Batch Method" type="xs:string" />
+              <xs:element name="Batch_x0020_Window_x0020_Days" msprop:Generator_ColumnVarNameInTable="columnBatch_Window_Days" msprop:Generator_ColumnPropNameInRow="Batch_Window_Days" msprop:Generator_ColumnPropNameInTable="Batch_Window_DaysColumn" msprop:Generator_UserColumnName="Batch Window Days" type="xs:double" />
+              <xs:element name="Max_x0020_Batch_x0020_Qty" msprop:Generator_ColumnVarNameInTable="columnMax_Batch_Qty" msprop:Generator_ColumnPropNameInRow="Max_Batch_Qty" msprop:Generator_ColumnPropNameInTable="Max_Batch_QtyColumn" msprop:Generator_UserColumnName="Max Batch Qty" type="xs:decimal" />
+              <xs:element name="Notes" msprop:Generator_ColumnVarNameInTable="columnNotes" msprop:Generator_ColumnPropNameInRow="Notes" msprop:Generator_ColumnPropNameInTable="NotesColumn" msprop:Generator_UserColumnName="Notes" type="xs:string" default="" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint3">
+      <xs:selector xpath=".//mstns:BatchDefinitions" />
+      <xs:field xpath="mstns:Name" />
+    </xs:unique>
+  </xs:element>
+</xs:schema>

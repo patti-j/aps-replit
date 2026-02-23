@@ -1,0 +1,326 @@
+﻿@page "/components/reportgrid"
+@inject NavMenuUpdateService NavMenuUpdateService
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<ReportGrid> Localizer
+@inject PowerBIService PowerBIService
+@inject IUserService m_userService
+@inject IReportService reportService
+@inject IAppInsightsLogger logger
+@using ReportsWebApp.DB.Services
+@using Microsoft.Extensions.Localization
+@using Microsoft.EntityFrameworkCore
+@using ReportsWebApp.Helpers
+
+<h3 class="mt-3">@Localizer["Reports"]</h3>
+
+@if (Reports == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid UnboundColumnData="Grid_CustomUnboundColumnData" ShowFilterRow="true" Data="@Reports" 
+            EditModelSaving="OnEditModelSaving"
+            EditMode="GridEditMode.PopupEditForm" @ref="m_grid"
+            EditStart="OnEditStart"
+            CustomizeEditModel="(e) => GridHelpers.CustomizeEditorTitle(e, m_grid)"
+            PageSize="10"
+            CssClass="ch-480"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer"
+            PopupEditFormHeaderText="New Report">
+        <Columns>
+
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                <HeaderTemplate>
+                    @{
+                        string NewReportPopupHeader = "New Report";
+                        <DxButton IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1 large-tap-target" 
+                        Text=@Localizer["Add"] Click="() => {m_grid.BeginUpdate(); m_grid.PopupEditFormHeaderText = NewReportPopupHeader; m_grid.StartEditNewRowAsync(); m_grid.EndUpdate(); }"/>
+                    }
+                </HeaderTemplate>
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = (Report)context.DataItem;
+                    }
+                    <ActionDropdown DataItem="dataItem" Actions="_actions" />
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+
+            <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" />
+            <DxGridDataColumn FieldName="Name" Caption=@Localizer["Report Name"] MinWidth="200" />
+            <DxGridDataColumn FieldName="PBIReportName" Caption=@Localizer["PBI Report Name"] MinWidth="200" />
+            <DxGridDataColumn FieldName="PBIWorkspace.Name" Caption=@Localizer["PBI Workspace"] MinWidth="200" />
+            <DxGridDataColumn FieldName="Categories selected" Caption=@Localizer["Categories Selected"] UnboundType="GridUnboundColumnType.String" MinWidth="200" />
+        </Columns>
+        <EditFormTemplate Context="EditFormContext">
+            @{
+                var report = (Report)EditFormContext.EditModel;
+            }
+            <CustomValidator DataItemValidating="ValidateData" ValidateOnFieldChange="false"></CustomValidator>
+            <ValidationSummary />
+            <DxFormLayout CssClass="w-100">
+                <DxFormLayoutItem Caption=@Localizer["Report Name"] ColSpanMd="12">
+                    <DxTextBox @bind-Text="@report.Name" ValidationEnabled="true" ShowValidationIcon="true" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption=@Localizer["PBI Workspace"] ColSpanMd="12">
+                    <DxComboBox Data="@AvailableWorkspaces" ValidationEnabled="true" ShowValidationIcon="true"
+                    TextFieldName="@nameof(PBIWorkspace.Name)"
+                    @bind-Value="@selectedWorkspace"
+                    SelectedItemChanged="@((PBIWorkspace pBIWorkspace) => SelectedPBIWorkspaceChanged(pBIWorkspace))" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption=@Localizer["PBI Report Name"] ColSpanMd="12">
+                    <DxComboBox Data="@PowerBIReportsNames" ValidationEnabled="true" ShowValidationIcon="true"
+                    TextFieldName="@nameof(SelectedPBIReportName.OptionName)"
+                    @bind-Value="@SelectedPBIReportName"
+                    AllowUserInput="true"
+                    SearchMode="ListSearchMode.AutoSearch"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption=@Localizer["Categories"] ColSpanMd="12">
+                    <DxTagBox Data="@Categories" @bind-Values="selectedCategories" ValidationEnabled="true" ShowValidationIcon="true"
+                    FilteringMode="DataGridFilteringMode.Contains" TextFieldName="@nameof(Category.Name)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption=@Localizer["Show on Home Page:"] ColSpanMd="12">
+                    <DxCheckBox @bind-Checked="showOnOverview"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Row Version:" ColSpanMd="12" Visible="false">
+                    <DxTextBox @bind-Text="@RowVersion" ValidationEnabled="true" ShowValidationIcon="true" />
+                </DxFormLayoutItem>
+            </DxFormLayout>
+        </EditFormTemplate>
+    </DxGrid>
+    <DxPopup @bind-Visible="@PopupVisible"
+    HeaderText="Concurrency Exception"
+    BodyText="This record was updated or deleted while you were editing. Please retry"
+    ShowFooter="true"
+    @ref="Popup">
+        <FooterContentTemplate>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Close" Click="CloseClick" />
+        </FooterContentTemplate>
+    </DxPopup>
+}    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+
+
+@code {
+    IGrid? m_grid { get; set; }
+    DxPopup Popup;
+    bool PopupVisible { get; set; } = false;
+    [Parameter]
+    public Func<Task> RefreshComponent { get; set; }
+    [Parameter]
+    public List<Report> Reports { get; set; }
+    [Parameter]
+    public List<Category> Categories { get; set; }
+    [Parameter]
+    public List<PBIWorkspace> AvailableWorkspaces { get; set; }
+    public string RowVersion { get; set; }
+
+    public bool showOnOverview { get; set; }
+    public IEnumerable<Category> selectedCategories { get; set; }
+    public List<PBIReportNameDropdownOption> PowerBIReportsNames { get; } = new();
+    public PBIReportNameDropdownOption? SelectedPBIReportName { get; set; }
+    public PBIWorkspace selectedWorkspace { get; set; }
+    private AuthenticationState authState { get; set; }
+    private string userEmailClaim { get; set; }
+    private User User { get; set; }
+    string EditReportPopupHeader = "Edit Report";
+    private IEnumerable<ActionItem<Report>> _actions { get; set; }
+    private ConfirmationDialog Dialog;
+    // Create a dictionary to store the datasets for each report id
+    [Parameter]
+    public Func<Report, Task<Report>> OnSave { get; set; }
+    [Parameter]
+    public Func<int, Task<bool>> OnDelete { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        _actions = new List<ActionItem<Report>>
+        {
+            new ActionItem<Report>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-info-circle",
+                Action = async (report) =>
+                {
+                    m_grid?.BeginUpdate();
+                    m_grid.PopupEditFormHeaderText = EditReportPopupHeader;
+                    await m_grid?.StartEditDataItemAsync(report);
+                    m_grid?.EndUpdate();
+                }
+            },
+            new ActionItem<Report>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fa fa-trash",
+                Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog),
+            },
+            new ActionItem<Report>
+            {
+                ActionText = "Open Viewer",
+                IconCssClass = "fa fa-pencil",
+                Action = async (report) => RedirectToReportViewer(report)
+            }
+        };
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(m_grid);
+        base.OnAfterRender(firstRender);
+    }
+
+    async Task CloseClick(MouseEventArgs args)
+    {
+        await RefreshComponent();
+        await Popup.CloseAsync();
+    //Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+    public async Task SelectedPBIWorkspaceChanged(PBIWorkspace pBIWorkspace)
+    {
+        PowerBIReportsNames.Clear();
+        if (pBIWorkspace == null)
+        {
+            SelectedPBIReportName = null;
+            StateHasChanged();
+            return;
+        }
+        var result = await PowerBIService.GetReportsAsync(pBIWorkspace.PBIWorkspaceId);
+        foreach (var rpt in result.reportsList)
+        {
+            PowerBIReportsNames.Add(new PBIReportNameDropdownOption() { OptionName = rpt.Reportname, OptionValue = rpt.Id });
+        }
+
+        SelectedPBIReportName = PowerBIReportsNames.FirstOrDefault(x => x?.OptionValue == SelectedPBIReportName?.OptionValue);
+        StateHasChanged();
+    }
+
+    private async Task OnEditStart(GridEditStartEventArgs args)
+    {
+        if (args.IsNew)
+        {
+            selectedCategories = new List<Category>();
+            selectedWorkspace = null;
+            SelectedPBIReportName = null;
+            showOnOverview = false;
+        }
+        else
+        {
+            var report = (Report)args.DataItem;
+            RowVersion = Convert.ToBase64String(report.Version);
+            selectedCategories = report.Categories.ToList();
+            selectedWorkspace = report.PBIWorkspace;
+	        showOnOverview = report.ShowOnOverview;
+            PowerBIReportsNames.Clear();
+
+            var result =  await PowerBIService.GetReportsAsync(report.PBIWorkspace.PBIWorkspaceId);
+            foreach (var rpt in result.reportsList)
+            {
+                PowerBIReportsNames.Add(new PBIReportNameDropdownOption() { OptionName = rpt.Reportname, OptionValue = rpt.Id });
+            }
+            SelectedPBIReportName = PowerBIReportsNames.FirstOrDefault(x => x.OptionValue == report.PBIReportId);
+        }
+    }
+    protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        var editModel = (e.EditModel as Report);
+        if (editModel != null)
+        {
+            var dataItem = e.IsNew ? new Report() : Reports.Find(report => report.Id == editModel.Id);
+            if (dataItem != null)
+            {
+                dataItem.Name = editModel.Name;
+                dataItem.PBIReportId = SelectedPBIReportName.OptionValue;
+                dataItem.PBIReportName = SelectedPBIReportName.OptionName;
+                dataItem.PBIWorkspace = selectedWorkspace;
+                dataItem.ShowOnOverview = showOnOverview;
+                dataItem.UpdatedBy = User.Email;
+
+                //we clear and add the new selected entities
+                dataItem.Categories.Clear();
+                dataItem.Categories.AddRange(selectedCategories);
+
+                try
+                {
+                    var savedReportRelationed = await OnSave(dataItem);
+
+                    if (e.IsNew)
+                    {
+                        Reports.Add(savedReportRelationed);
+                    }
+                    else
+                    {
+                        Reports.Replace(savedReportRelationed);
+                    }
+
+                    NavMenuUpdateService.TriggerUpdate();
+                }
+                catch (DbUpdateConcurrencyException x)
+                {
+                    if (Popup.IsInitialized)
+                        await Popup.ShowAsync();
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+        }
+    }
+
+    protected async Task DeleteItem(object a_item)
+    {
+        var editModel = (a_item as Report);
+        if (editModel != null)
+        {
+            await OnDelete(editModel.Id);
+            Reports.Remove(editModel);
+            NavMenuUpdateService.TriggerUpdate();
+            StateHasChanged();
+        }
+    }
+
+    void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+        if (e.FieldName == "Categories selected")
+        {
+            var id = Convert.ToDecimal(e.GetRowValue("Id"));
+
+            var dataItem = Reports.Find(delegate (Report c)
+                {
+                    return c.Id == id;
+                });
+            if (dataItem != null)
+            {
+                if (dataItem?.Categories?.Count > 0)
+                {
+                    List<string> w = dataItem.Categories.Select(x => x.Name).ToList();
+                    e.Value = CommonUtils.ListToString(w);
+                }
+            }
+        }
+    }
+
+    private void RedirectToReportViewer(Report report)
+    {
+        if (report != null)
+        {
+            var reportViewerUrl = $"/reportsViewer/{report.PBIWorkspace.PBIWorkspaceId}/{report.PBIReportId}/{report.Categories.First().Id}/{report.Id}";
+            NavigationManager.NavigateTo(reportViewerUrl);
+        }
+    }
+
+    void ValidateData(ValidationMessageStoreEventArgs e)
+    {
+        var report = (Report)e.EditModel;
+        if (SelectedPBIReportName == null)
+        {
+            e.AddError("SelectedPBIReportName", "The PBI Report Name field is required.");
+        }
+    }
+}

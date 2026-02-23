@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Does NOT use ProjectSharedTargetsWindows.props like other projects. Has its own config, shareable outside of winforms apps-->
+  <Import Project="..\..\SolutionMiscFiles\ProjectSharedTargets.props" />
+  <PropertyGroup>
+	  <AssemblyName>PT.Common</AssemblyName>
+    <RootNamespace>PT.Common</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+	  <Compile Include="..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+		  <Link>Properties\AssemblyInfoShared.cs</Link>
+	  </Compile>
+	  <PackageReference Include="lz4net" Version="1.0.15.93" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>true</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+</Project>

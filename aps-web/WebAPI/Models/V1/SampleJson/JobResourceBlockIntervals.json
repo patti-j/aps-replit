@@ -1,0 +1,26 @@
+[
+  {
+    "importDate": "2024-02-05T08:30:00",
+    "JobId": 12345,
+    "ManufacturingOrderId": 67890,
+    "OperationId": 78901,
+    "ActivityId": 23456,
+    "BlockId": 34567,
+    "IntervalIndex": 1,
+    "OutputQty": 100.5,
+    "ShiftStart": "2024-02-05T06:00:00",
+    "ShiftEnd": "2024-02-05T14:00:00",
+    "ShiftName": "Day Shift",
+    "ShiftDescription": "Regular work hours",
+    "ShiftNbrOfPeople": 25,
+    "ShiftType": "Regular",
+    "SetupStart": "2024-02-05T06:00:00",
+    "SetupEnd": "2024-02-05T06:30:00",
+    "RunStart": "2024-02-05T07:00:00",
+    "RunEnd": "2024-02-05T13:00:00",
+    "PostProcessingStart": "2024-02-05T13:30:00",
+    "PostProcessingEnd": "2024-02-05T14:00:00",
+    "ScheduledStart": "2024-02-05T06:00:00",
+    "ScheduledEnd": "2024-02-05T14:00:00"
+  }
+]

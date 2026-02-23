@@ -1,0 +1,137 @@
+﻿@using DevExpress.Blazor
+@implements IDisposable
+
+<DxPopup @bind-Visible="@ConfirmationShown"
+         HeaderText="@HeaderText"
+         HeaderCssClass="confirmation-dialog-header"
+         ShowCloseButton="false"
+         CloseOnOutsideClick="false"
+         CloseOnEscape="false"
+         Width="400px">
+    <BodyContentTemplate>
+        @if (!AdditionalLinesBelow)
+        {
+            @foreach (string text in AdditionalLines)
+            {
+                <p>@text</p>
+            }
+        }
+        <p>@BodyText</p>
+        @if (AdditionalLinesBelow)
+        {
+            @foreach (string text in AdditionalLines)
+            {
+                <p>@text</p>
+            }
+        }
+        @if (!string.IsNullOrEmpty(ConfirmText))
+        {
+            <p style="margin-bottom: 2px">To confirm, type "@(ConfirmText)" in the box below.</p>
+            <DxTextBox TextChanged="ConfirmBoxTextChanged" BindValueMode="BindValueMode.OnInput" style="margin-bottom: 12px"/>
+        }
+        <div class="confirmation-dialog-content">
+            <DxButton Text="@NoButtonText" Click="NoClick" RenderStyle="ButtonRenderStyle.Secondary" Visible="DisplayNoButton"></DxButton>
+            <DxButton Text="@YesButtonText" Click="YesClick" RenderStyle="@currentConfirmButtonRenderStyle" Enabled="@(string.IsNullOrEmpty(ConfirmText) || doesConfirmTextMatch)"></DxButton>
+        </div>
+    </BodyContentTemplate>
+</DxPopup>
+
+@code {
+    bool ConfirmationShown { get; set; } = false;
+    string HeaderText { get; set; } = string.Empty;
+    string BodyText { get; set; } = string.Empty;
+    string YesButtonText { get; set; } = string.Empty;
+    string NoButtonText { get; set; } = string.Empty;
+    bool DisplayNoButton { get; set; } = true;
+    IEnumerable<string> AdditionalLines { get; set; } = new List<string>();
+    bool AdditionalLinesBelow { get; set; }
+
+    private string? ConfirmText { get; set; } = null;
+
+    TaskCompletionSource<bool> tcs;
+    [Parameter]
+    public ButtonRenderStyle DefaultConfirmButtonStyle { get; set; } = ButtonRenderStyle.Primary;
+
+    private ButtonRenderStyle currentConfirmButtonRenderStyle = ButtonRenderStyle.Primary;
+
+    /// <summary>
+    /// Shows a confirmation dialog with the given label and text
+    /// </summary>
+    /// <param name="headerText">The text to display in the header</param>
+    /// <param name="bodyText">The primary line of text for the body</param>
+    /// <param name="additionalLines">Any additional lines of text for the body</param>
+    /// <param name="additionalLinesBelow">Whether the additional lines should be displayed above or below the main body text</param>
+    /// <returns>True if the user clicked Yes, false otherwise</returns>
+    public Task<bool> ConfirmOperation(string headerText, string bodyText, IEnumerable<string>? additionalLines = null, bool additionalLinesBelow = true, string yesButtonText = "Yes", string noButtonText = "No", ButtonRenderStyle? renderStyle = null, bool useConfirmBox = false, string? confirmText = null, bool displayNoButton = true)
+    {
+        doesConfirmTextMatch = false;
+        HeaderText = headerText;
+        BodyText = bodyText;
+        AdditionalLines = additionalLines ?? new List<string>();
+        AdditionalLinesBelow = additionalLinesBelow;
+        YesButtonText = yesButtonText;
+        NoButtonText = noButtonText;
+        ConfirmationShown = true;
+        DisplayNoButton = displayNoButton;
+        currentConfirmButtonRenderStyle = renderStyle ?? DefaultConfirmButtonStyle;
+        if (useConfirmBox && !string.IsNullOrEmpty(confirmText))
+        {
+            ConfirmText = confirmText;
+        }
+        InvokeAsync(StateHasChanged);
+
+        tcs = new TaskCompletionSource<bool>();
+        return tcs.Task;
+    }
+    
+    public Task<bool> ConfirmDeleteOperation(string headerText, string bodyText, string confirmText, IEnumerable<string>? additionalLines = null, bool additionalLinesBelow = true, string yesButtonText = "Delete", string noButtonText = "Cancel", ButtonRenderStyle? renderStyle = null)
+    {
+        doesConfirmTextMatch = false;
+        HeaderText = headerText;
+        BodyText = bodyText;
+        AdditionalLines = additionalLines ?? new List<string>();
+        AdditionalLinesBelow = additionalLinesBelow;
+        YesButtonText = yesButtonText;
+        NoButtonText = noButtonText;
+        ConfirmationShown = true;
+        currentConfirmButtonRenderStyle = renderStyle ?? DefaultConfirmButtonStyle;
+        if (!string.IsNullOrEmpty(confirmText))
+        {
+            ConfirmText = confirmText;
+        }
+        InvokeAsync(StateHasChanged);
+
+        tcs = new TaskCompletionSource<bool>();
+        return tcs.Task;
+    }
+    private void YesClick()
+    {
+        tcs.TrySetResult(true);
+        ConfirmationShown = false;
+        InvokeAsync(StateHasChanged);
+    }
+    private void NoClick()
+    {
+        tcs.TrySetResult(false);
+        ConfirmationShown = false;
+        InvokeAsync(StateHasChanged);
+    }
+    public void Dispose()
+    {
+        tcs = null;
+    }
+
+    private bool doesConfirmTextMatch;
+    private void ConfirmBoxTextChanged(string a_obj)
+    {
+        if (a_obj == ConfirmText)
+        {
+            doesConfirmTextMatch = true;
+        }
+        else
+        {
+            doesConfirmTextMatch = false;
+        }
+    }
+
+}

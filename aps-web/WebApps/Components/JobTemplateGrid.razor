@@ -1,0 +1,71 @@
+﻿@using ReportsWebApp.DB.Models
+@using DevExpress.Blazor
+
+<DxGrid Data="@GridDataSource"
+        SelectionMode="GridSelectionMode.Single"
+        SelectedDataItem="@SelectedDataItem"
+        SelectedDataItemChanged="OnSelectedDataItemChanged"
+        KeyFieldName="TemplateId"
+        @ref="MyGrid"
+        PageSize="10"
+        CssClass="ch-480"
+        PagerPosition="GridPagerPosition.TopAndBottom"
+        PageSizeSelectorVisible="true"
+        PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+        PageSizeSelectorAllRowsItemVisible="false"
+        PagerSwitchToInputBoxButtonCount="10"
+        PagerVisibleNumericButtonCount="10"
+        ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+    <Columns>
+        <DxGridSelectionColumn />
+        <DxGridDataColumn FieldName="TemplateId" Caption="Template Id" />
+        <DxGridDataColumn FieldName="TemplateName" Caption="Template Name" />
+        <DxGridDataColumn FieldName="ItemExternalId" Caption="Item External ID" />
+        <DxGridDataColumn FieldName="WarehouseExternalId" Caption="Warehouse External ID" />
+        <DxGridDataColumn FieldName="RequiredQty" Caption="Required Quantity" />
+        <DxGridDataColumn FieldName="NeedDate" Caption="Need Date" /> <!-- should this be localized? -->
+        <DxGridDataColumn FieldName="RequiredPathId" Caption="Required Path ID" />
+        <DxGridDataColumn FieldName="Priority" Caption="Priority" />
+        <DxGridDataColumn FieldName="Revenue" Caption="Revenue" />
+        <DxGridDataColumn FieldName="Throughput" Caption="Throughput" />
+        <DxGridDataColumn FieldName="HotReason" Caption="Hot Reason" />
+        <DxGridDataColumn FieldName="Warehouses" Caption="Warehouses" />
+        <DxGridDataColumn FieldName="BottleneckConstraints" Caption="Bottleneck Constraints" />
+        <DxGridDataColumn FieldName="ItemsWithStockMaterialConstraints" Caption="Items with Stock Material Constraints" />
+        <DxGridDataColumn FieldName="DBRShippingBufferOverrideDays" Caption="DBR Shipping Buffer Override Days" />
+        <DxGridDataColumn FieldName="DefaultPathExternalId" Caption="Default Path External ID" />
+    </Columns>
+</DxGrid>
+
+@code {
+    [Parameter] public bool IsReadOnly { get; set; }
+
+    [Parameter] public IEnumerable<JobTemplate> GridDataSource { get; set; }
+
+    private JobTemplate selectedDataItem;
+
+    [Parameter]
+    public JobTemplate SelectedDataItem
+    {
+        get => selectedDataItem;
+        set
+        {
+            if (!EqualityComparer<JobTemplate>.Default.Equals(selectedDataItem, value))
+            {
+                selectedDataItem = value;
+                SelectedDataItemChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    [Parameter] public EventCallback<JobTemplate> SelectedDataItemChanged { get; set; }
+
+    private IGrid MyGrid { get; set; }
+
+    void OnSelectedDataItemChanged(object newSelection)
+    {
+        SelectedDataItem = (JobTemplate)newSelection;
+        SelectedDataItemChanged.InvokeAsync(SelectedDataItem);
+    }
+
+}

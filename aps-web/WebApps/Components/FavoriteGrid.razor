@@ -1,0 +1,145 @@
+﻿@page "/favorites"
+@inject IJSRuntime JSRuntime
+@using ReportsWebApp.DB.Models
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.DB.Services.SchedulerHelpers
+@using ReportsWebApp.Helpers
+@inject ICosmosDbService<GanttFavoriteData> cosmosDbService
+@inject ISchedulerFavoritesService favoritesService
+@inject IAuthorizationService m_authService
+@inject IUserService m_userService
+@inject IRoleService RoleService
+
+@if (ganttFavorites == null)
+{
+    <p>Loading...</p>
+}
+else if (!ganttFavorites.Any())
+{
+    <p>No saved Gantt charts available.</p>
+}
+else
+{
+    <DxGrid Data="@ganttFavorites" ShowFilterRow="true"
+            EditMode="GridEditMode.PopupEditForm" @ref="MyGrid"
+            PageSize="10"
+            CssClass="ch-480"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+        <Columns>
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = context.DataItem;
+                    }
+                    <ActionDropdown DataItem="dataItem as SchedulerFavorite" Actions="_actions" />
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+            <DxGridDataColumn FieldName="Name" Caption="Name" MinWidth="250" />
+            <DxGridDataColumn FieldName="PlanningArea" Caption="Planning Area" MinWidth="250" />
+            <DxGridDataColumn FieldName="ScenarioName" Caption="Scenario Name" MinWidth="250" />
+            <DxGridDataColumn FieldName="DateSaved" Caption="Date Saved" Width="150">
+                <CellDisplayTemplate>
+                    @(Shared.Utils.FormatUtcDate(((SchedulerFavorite)context.DataItem).CreationDate, User)))
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+            <DxGridDataColumn FieldName="Roles" Caption="Roles" Width="300">
+                <CellDisplayTemplate>
+                    @string.Join(", ", ((SchedulerFavorite)context.DataItem).Roles.Select(x => x.Name))
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+            <DxGridDataColumn FieldName="CreatedBy" Caption="Created By" Width="150" />
+        </Columns>
+    </DxGrid>
+    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+
+}
+
+@code {
+    IGrid? MyGrid { get; set; }
+    public List<Role> Roles { get; set; } = new List<Role>();
+    public List<User> Users { get; set; } = new List<User>();
+
+    [Parameter]
+    public EventCallback<GanttFavoriteData> LoadFavoriteFunc { get; set; }
+    [Parameter]
+    public bool CreatedByMeOnly { get; set; }
+
+    private ConfirmationDialog Dialog;
+    private IEnumerable<ActionItem<SchedulerFavorite>> _actions;
+    private List<SchedulerFavorite> ganttFavorites;
+    private User User { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        _actions = new List<ActionItem<SchedulerFavorite>>
+        {
+            new ActionItem<SchedulerFavorite> { ActionText = "View", IconCssClass = "fas fa-eye", Action = async (dataItem) => await LoadFavorite((SchedulerFavorite)dataItem) },
+            new ActionItem<SchedulerFavorite> { ActionText = "Edit", IconCssClass = "fa fa-info-circle", Action =  async (item) => await MyGrid.StartEditDataItemAsync(item) },
+            new ActionItem<SchedulerFavorite> { ActionText = "Delete", IconCssClass = "fas fa-trash", Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog) }
+        };
+        await LoadFavorites();
+    }
+
+    private async Task LoadFavorites()
+    {
+        ganttFavorites = await favoritesService.GetAllFavoritesAsync();
+        if (CreatedByMeOnly)
+        {
+            ganttFavorites = ganttFavorites.Where(g => g.CompanyId == User.CompanyId && g.CreatedBy == User.Email).ToList();
+        }
+        else
+        {
+            Roles = await RoleService.GetRoles(User.CompanyId);
+             var userRoleIds = Roles.Select(g => g.Id);
+             ganttFavorites = ganttFavorites
+            .Where(f => f.Roles.Any(g => userRoleIds.Contains(g.Id))) 
+            .ToList();
+            ganttFavorites.RemoveAll(g => g.UserId == User.Id);
+        }
+
+        StateHasChanged(); // Re-render the component to update the UI
+    }
+
+    private async Task LoadFavorite(SchedulerFavorite favorite)
+    {
+        if (favorite != null)
+        {
+            GanttFavoriteData scheduler = await cosmosDbService.GetItemAsync(favorite.CosmosDbRecordId.ToString());
+            if (scheduler == null)
+            {
+                // Throw an alert to say that the Cosmos DB service didn't find the record
+                await JSRuntime.InvokeVoidAsync("alert", "No record found in the COSMOS database for the provided ID.");
+            }
+            else
+            {
+                // Proceed with invoking the method if the scheduler is not null
+                await LoadFavoriteFunc.InvokeAsync(scheduler);
+            }
+        }
+    }
+
+    private async Task DeleteItem(object a_item)
+    {
+        var editModel = (a_item as SchedulerFavorite);
+        if (editModel != null)
+        {
+            // Delete from Cosmos DB first
+            try
+            {
+                await cosmosDbService.DeleteItemAsync(editModel.CosmosDbRecordId.ToString());
+            }
+            catch { }
+            await favoritesService.DeleteFavoriteAsync(editModel.Id);
+            ganttFavorites.Remove(editModel); // Remove from the local list temporarily
+            await LoadFavorites();
+        }
+        StateHasChanged();
+    }
+}

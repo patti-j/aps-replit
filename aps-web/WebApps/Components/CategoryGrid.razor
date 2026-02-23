@@ -1,0 +1,223 @@
+﻿@page "/components/categorygrid"
+@using Microsoft.EntityFrameworkCore
+@using ReportsWebApp.Helpers
+@inject NavMenuUpdateService NavMenuUpdateService
+@inject IUserService _userService
+@inject ICategoryService _categoryService
+
+<h3>Report Categories</h3>
+
+@if (Categories == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid ShowFilterRow="true" 
+            Data="@Categories" 
+            EditModelSaving="OnEditModelSaving" 
+            EditMode="GridEditMode.PopupEditForm"
+            CustomizeEditModel="(e) => GridHelpers.CustomizeEditorTitle(e, m_grid)"
+            @ref="m_grid"
+            UnboundColumnData="Grid_CustomUnboundColumnData"
+            EditStart="OnEditStart"
+            PageSize="10"
+            CssClass="ch-480"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+        <Columns>
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                <HeaderTemplate>
+                    <DxButton IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1" Text="Add" Click="() => m_grid.StartEditNewRowAsync()" />
+                </HeaderTemplate>
+                <CellDisplayTemplate Context="FormContext">
+                    @{
+                        var dataItem = (Category)FormContext.DataItem;
+                    }
+                    <ActionDropdown DataItem="dataItem" Actions="_actions" />
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+            <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" />
+            <DxGridDataColumn FieldName="Name" Caption="Report Category" MinWidth="200" />
+            <DxGridDataColumn FieldName="Groups selected" UnboundType="GridUnboundColumnType.String" MinWidth="200" />
+        </Columns>
+        <EditFormTemplate Context="EditFormContext">
+            @{
+                var category = (Category)EditFormContext.EditModel;
+                category.Company = _currentUser.Company;
+            }
+            <DxFormLayout CssClass="w-100">
+                <DxFormLayoutItem Caption="Report Category:" ColSpanMd="12">
+                    <DxTextBox @bind-Text="@category.Name" />
+                </DxFormLayoutItem>
+
+                <DxFormLayoutItem Caption="Permission Groups:" ColSpanMd="12">
+                    <DxTagBox Data="@Groups" @bind-Values="selectedGroups"
+                    FilteringMode="DataGridFilteringMode.Contains" TextFieldName="@nameof(Role.Name)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Row Version:" ColSpanMd="12" Visible="false">
+                    <DxTextBox @bind-Text="@RowVersion" />
+                </DxFormLayoutItem>
+            </DxFormLayout>
+        </EditFormTemplate>
+    </DxGrid>
+    <DxPopup @bind-Visible="@_popupVisible"
+             HeaderText="Concurrency Exception"
+             BodyText="This record was updated or deleted while you were editing. Please retry"
+             ShowFooter="true"
+             @ref="_popup">
+        <FooterContentTemplate>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Close" Click="CloseClick" />
+        </FooterContentTemplate>
+    </DxPopup>
+    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog>
+
+}
+
+@code {
+    private IGrid? m_grid { get; set; }
+    private DxPopup _popup;
+    private bool _popupVisible { get; set; } = false;
+    private ConfirmationDialog Dialog;
+
+    [Parameter] public Func<Task> RefreshComponent { get; set; }
+    [Parameter] public List<Category> Categories { get; set; }
+    [Parameter] public Func<Category, Task<Category>> OnSave { get; set; }
+    [Parameter] public List<Role> Groups { get; set; }
+
+    public string RowVersion { get; set; }
+    public IEnumerable<Role> selectedGroups { get; set; }
+    private User _currentUser { get; set; }
+    private IEnumerable<ActionItem<Category>> _actions { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentUser = await _userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        _actions = new List<ActionItem<Category>>
+        {
+            new ActionItem<Category>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-info-circle",
+                Action = async (item) => await m_grid.StartEditDataItemAsync(item)
+            },
+            new ActionItem<Category>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fa fa-trash",
+                Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog),
+            }
+        };
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(m_grid);
+        base.OnAfterRender(firstRender);
+    }
+
+    async Task CloseClick(MouseEventArgs args)
+    {
+        await RefreshComponent();
+        await _popup.CloseAsync();
+        //Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+    private void OnEditStart(GridEditStartEventArgs args)
+    {
+        if (args.IsNew)
+        {
+            selectedGroups = new List<Role>();
+        }
+        else
+        {
+            var category = (Category)args.DataItem;
+            RowVersion = Convert.ToBase64String(category.Version);
+            //selectedGroups = new List<Group>();
+            selectedGroups = category.Roles.ToList();
+        }
+    }
+    protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        var editModel = (e.EditModel as Category);
+        if (editModel != null)
+        {
+            var dataItem = e.IsNew ? new Category() : Categories.Find(category => category.Id == editModel.Id);
+            if (dataItem != null)
+            {
+                dataItem.Name = editModel.Name;
+                dataItem.CompanyId = _currentUser.CompanyId;
+                dataItem.UpdatedBy = _currentUser.Email;
+
+                //We save for obtaining the id
+                if (e.IsNew)
+                {
+                    Category savedCategory = await OnSave(dataItem);
+                    dataItem.Id = savedCategory.Id;
+                }
+                //we clear and add the new selected entities
+
+                dataItem.Roles.Clear();
+                dataItem.Roles.AddRange(selectedGroups.ToList());
+
+                try
+                {
+                    var savedCategoryRelationed = await OnSave(dataItem);
+
+                    if (e.IsNew)
+                    {
+                        Categories.Add(savedCategoryRelationed);
+                    }
+                    else
+                    {
+                        Categories.Replace(savedCategoryRelationed);
+                    }
+                    NavMenuUpdateService.TriggerUpdate();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    if (_popup.IsInitialized)
+                        await _popup.ShowAsync();
+                }
+            }
+        }
+    }
+
+    protected async Task DeleteItem(object a_item)
+    {
+        var editModel = (a_item as Category);
+        if (editModel != null)
+        {
+           // var dataItem = Categories.Find(group => group.Id == editModel.Id);
+            await _categoryService.DeleteAsync(editModel.Id);
+            Categories.Remove(editModel);
+            NavMenuUpdateService.TriggerUpdate();
+        }
+        StateHasChanged();
+    }
+
+    void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+        if (e.FieldName == "Groups selected")
+        {
+            var id = Convert.ToDecimal(e.GetRowValue("Id"));
+
+            var dataItem = Categories.Find(delegate (Category c)
+                {
+                    return c.Id == id;
+                });
+            if (dataItem != null)
+            {
+                if (dataItem?.Roles?.Count > 0)
+                {
+                    List<string> w = dataItem.Roles.Select(x => x.Name).ToList();
+                    e.Value = CommonUtils.ListToString(w);
+                }
+            }
+        }
+    }
+}

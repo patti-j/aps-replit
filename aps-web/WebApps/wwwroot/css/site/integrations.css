@@ -1,0 +1,29 @@
+﻿
+.integration-popup .dx-popup-content {
+    padding: 24px;
+}
+
+.integration-form .dx-field {
+    margin-bottom: 12px;
+}
+
+.integration-details {
+    font-size: 0.95rem;
+}
+
+.integration-details .label {
+    font-weight: 600;
+    padding-bottom: 4px;
+}
+
+.integration-details .value {
+    padding-bottom: 8px;
+    word-wrap: break-word;
+}
+
+.integration-notes-container
+{
+    border-radius: var(--bs-border-radius);
+    border: 1px solid;
+    border-color:  var(--dxbl-popup-border-color)
+}

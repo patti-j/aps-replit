@@ -1,0 +1,61 @@
+﻿@using DevExpress.Blazor
+
+<h1>@PA.Name</h1>
+<DxTabs ActiveTabIndexChanged="TabChanged">
+    <DxTab Text="Details"></DxTab>
+    <DxTab Text="Scopes"></DxTab>
+</DxTabs>
+@switch (m_page)
+{
+    case 0:
+    {
+        <span>This page is still under construction</span>
+        // TODO: Add once teams are associated
+        break;
+    }
+    case 1:
+    {
+        <DxGrid Data="PA.Scopes">
+            <Columns>
+                @foreach (var column in allColumns.Where(c => c.IsChecked))
+                {
+                    if (column.ColumnName == "Name")
+                    {
+                        <DxGridDataColumn FieldName="@(column.FieldName)" Caption="@column.ColumnName" Width="@column.ColumnWidth">
+                            <CellDisplayTemplate Context="context">
+                                @if (context.DataItem is PlanningAreaScope scope)
+                                {
+                                        <a href="javascript:void(0)"><span @onclick="async () => ShowItemWithBreadcrumb(scope)">@scope.Name</span></a>
+                                }
+                            </CellDisplayTemplate>
+
+                        </DxGridDataColumn>
+                    }
+                    else {
+                        <DxGridDataColumn FieldName="@(column.FieldName)" Caption="@column.ColumnName" Width="@column.ColumnWidth">
+
+                        </DxGridDataColumn>
+                    }
+                }
+            </Columns>
+        </DxGrid>
+        break;
+    }
+}
+
+@code {
+    [Parameter] public PADetails PA { get; set; }  // Object from the grid (e.g., PADetails)
+    [Parameter] public Action<BaseEntity> ShowItemWithBreadcrumb { get; set; }
+    int m_page = 0;
+
+    private List<ColumnOption> allColumns = new List<ColumnOption>
+    {
+        new ColumnOption { ColumnName = "Name", FieldName = "Name", IsChecked = true, ColumnWidth = "240"},
+        new ColumnOption { ColumnName = "Description", FieldName = "Description", IsChecked = true},
+    };
+
+    private void TabChanged(int a_tabIndex)
+    {
+        m_page = a_tabIndex;
+    }
+}

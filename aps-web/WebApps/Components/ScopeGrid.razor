@@ -1,0 +1,260 @@
+﻿@page "/components/scopegrid"
+@using Microsoft.EntityFrameworkCore
+@using ReportsWebApp.Components.InfoDisplay
+@using ReportsWebApp.Helpers
+@inject NavMenuUpdateService NavMenuUpdateService
+@inject NavigationManager Navigation
+@inject ScopeService m_scopeService
+@inject IPlanningAreaDataService m_paService
+@inject IUserService m_userService
+@inject IToastNotificationService toastService
+
+<style>
+    .wide-editor {
+        min-width: 1200px;
+    }
+</style>
+
+<h3>Planning Area Scopes</h3>
+
+@if (Scopes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid ShowFilterRow="true" Data="@Scopes"
+            EditStart="OnEditStart"
+            EditModelSaving="OnEditModelSaving"
+            CustomizeEditModel="(e) => GridHelpers.CustomizeEditorTitle(e, m_grid)"
+            EditMode="GridEditMode.PopupEditForm" @ref="m_grid" PopupEditFormCssClass="wide-editor"
+            PageSize="10"
+            CssClass="ch-480"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+        <Columns>
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                <HeaderTemplate>
+                    <DxButton IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1" Text="Add" Click="() => m_grid.StartEditNewRowAsync()" />
+                </HeaderTemplate>
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = (PlanningAreaScope)context.DataItem;
+                    }
+                    <ActionDropdown DataItem="dataItem" Actions="@(dataItem.Readonly ? new List<ActionItem<PlanningAreaScope>>() : _actions)"/>
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+            <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false"/>
+            <DxGridDataColumn FieldName="Name" Caption="Scope Name" MinWidth="100">
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = (PlanningAreaScope)context.DataItem;
+                    }
+                    @if (dataItem.Readonly)
+                    {
+                        <em><b>@dataItem.Name</b></em>
+                    }
+                    else
+                    {
+                        <b>@dataItem.Name</b>
+                    }
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+        </Columns>
+        <EditFormTemplate Context="EditFormContext">
+            @{
+                var scope = (PlanningAreaScope)EditFormContext.EditModel;
+                scope.Company = User.Company;
+            }
+            <DxFormLayout CssClass="w-100">
+                <DxFormLayoutItem Caption="Row Version:" ColSpanMd="12" Visible="false">
+                    <DxTextBox @bind-Text="@RowVersion"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Scope Name:" ColSpanMd="12">
+                    <DxTextBox @bind-Text="@scope.Name"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Description:" ColSpanMd="12">
+                    <DxTextBox @bind-Text="@scope.Description" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="PlanningAreas:" CaptionPosition="CaptionPosition.Vertical" ColSpanMd="12">
+                    <PATreeSelector PlanningAreas="AvailablePlanningAreas" Associations="scope.PlanningAreaScopeAssociationKeys" SelectedPlanningAreas="SelectedPlanningAreas" OnChange="OnSelectedPAsChange"/>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanMd="12">
+                    <ValidationSummary />
+                </DxFormLayoutItem>
+            </DxFormLayout>
+        </EditFormTemplate>
+        <CustomValidators>
+            <CustomValidator DataItemValidating="ScopeNameValidate"/>
+        </CustomValidators>
+    </DxGrid>
+    <DxPopup @bind-Visible="@PopupVisible"
+             HeaderText="Concurrency Exception"
+             BodyText="This record was updated or deleted while you were editing. Please retry"
+             ShowFooter="true"
+             @ref="ConcurrencyPopup">
+        <FooterContentTemplate>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Close" Click="CloseClick" />
+        </FooterContentTemplate>
+    </DxPopup>
+    <GeneralInfoDisplay @ref="InfoDisplay"></GeneralInfoDisplay>
+
+    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Danger"></ConfirmationDialog>
+}
+
+@code {
+    IGrid? m_grid { get; set; }
+    DxPopup ConcurrencyPopup;
+    GeneralInfoDisplay InfoDisplay;
+    ConfirmationDialog Dialog;
+    bool PopupVisible { get; set; } = false;
+    [Parameter]
+    public Func<Task> RefreshComponent { get; set; }
+    [Parameter]
+    public List<PlanningAreaScope> Scopes { get; set; }
+    [Parameter]
+    public List<PADetails> AvailablePlanningAreas { get; set; }
+    public List<PADetails> SelectedPlanningAreas { get; set; }
+    public List<string> SelectedKeyAssociations { get; set; }
+
+    private User? User { get; set; }
+    public string RowVersion { get; set; }
+    private IEnumerable<ActionItem<PlanningAreaScope>> _actions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        _actions = new List<ActionItem<PlanningAreaScope>>
+        {
+            new ActionItem<PlanningAreaScope>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-info-circle",
+                Action = async (scope) => await m_grid?.StartEditDataItemAsync(scope),
+                ShouldActionButtonBeEnabled = (scope) => !scope.Readonly
+            },
+            new ActionItem<PlanningAreaScope>
+            {
+                ActionText = "View",
+                IconCssClass = "fa fa-magnifying-glass",
+                Action = ShowItemViewer
+            },
+            new ActionItem<PlanningAreaScope>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fa fa-trash",
+                Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog),
+                ShouldActionButtonBeEnabled = (scope) => !scope.Readonly
+            }
+        };
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(m_grid);
+        base.OnAfterRender(firstRender);
+    }
+
+    async Task CloseClick(MouseEventArgs args)
+    {
+        await RefreshComponent();
+        await ConcurrencyPopup.CloseAsync();
+        //Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+
+    private void OnEditStart(GridEditStartEventArgs args)
+    {
+        var scope = (PlanningAreaScope)args.DataItem ?? new PlanningAreaScope();
+        SelectedPlanningAreas = scope.PlanningAreas;
+        SelectedKeyAssociations = scope.PlanningAreaScopeAssociationKeys.Select(x => x.ScopeAssociationKey).ToList();
+        if (!args.IsNew)
+        {
+            RowVersion = Convert.ToBase64String(scope.Version);
+        }
+    }
+
+    protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        var editModel = (e.EditModel as PlanningAreaScope);
+        if (editModel != null)
+        {
+            var dataItem = e.IsNew ? new PlanningAreaScope() { CreatedBy = User.Email} : Scopes.Find(scope => scope.Id == editModel.Id);
+            if (dataItem != null)
+            {
+                dataItem.Name = editModel.Name;
+                dataItem.Description = editModel.Description ?? "";
+                dataItem.CompanyId = User.CompanyId;
+                dataItem.UpdatedBy = User.Email;
+                dataItem.PlanningAreas = SelectedPlanningAreas;
+                dataItem.PlanningAreaScopeAssociationKeys = SelectedKeyAssociations.Select(x => new PlanningAreaScopeAssociationKey() { ScopeId = dataItem.Id, ScopeAssociationKey = x }).ToList();
+                if (dataItem.Version != null) dataItem.Version = Convert.FromBase64String(RowVersion);
+
+                try
+                {
+                    var savedScope = await m_scopeService.SaveAsync(User, dataItem);
+                    if (e.IsNew)
+                    {
+                        Scopes.Add(savedScope);
+                        Scopes = Scopes.OrderBy(x => x.Readonly).ToList();
+                    }
+                    else
+                    {
+                        Scopes.Replace(savedScope, (x1, x2) => x1.Id == x2.Id);
+                    }
+                    NavMenuUpdateService.TriggerUpdate();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    //dataItem = null;
+                    if (ConcurrencyPopup.IsInitialized)
+                        await ConcurrencyPopup.ShowAsync();
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+        }
+    }
+
+    protected async Task DeleteItem(object dataItem)
+    {
+        var editModel = (dataItem as PlanningAreaScope);
+        if (editModel != null)
+        {
+            try {
+                await m_scopeService.DeleteAsync(User, editModel.Id);
+                Scopes.Remove(editModel);
+            } catch (DataDependencyException ex)
+            {
+                toastService.ShowToast("Warning", ex.Message, ToastRenderStyle.Danger, 0);
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void ScopeNameValidate(ValidationMessageStoreEventArgs a_e)
+    {
+        PlanningAreaScope scope = (PlanningAreaScope)a_e.EditModel;
+        if (Scopes.Any(s => s.Name == scope.Name && s.Id != scope.Id))
+        {
+            a_e.AddError(nameof(scope.Name), "A scope with this name already exists.");
+        }
+    }
+
+    private async Task OnSelectedPAsChange(List<PADetails> pas, List<string> keys)
+    {
+        SelectedPlanningAreas = pas;
+        SelectedKeyAssociations = keys;
+    }
+
+    private async Task ShowItemViewer(PlanningAreaScope scope)
+    {
+        InfoDisplay.ShowNewItem(scope);
+    }
+}

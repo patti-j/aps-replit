@@ -1,0 +1,88 @@
+<PackageManager>
+  <packages>
+    <package id="Core">
+      <name>CorePackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="Legacy">
+      <name>LegacyV11</name>
+      <version>0.0</version>
+    </package>
+    <package id="Dev">
+      <name>DevPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="ExtendedVisibility">
+      <name>ExtendedVisibilityPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="Localization">
+      <name>LocalizationPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="ReportDesigner">
+      <name>ReportDesignerPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="ReportViewer">
+      <name>ReportViewerPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="TOC">
+      <name>TOCPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="Optimization">
+      <name>OptimizationPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="CapacityPlanning">
+      <name>CapacityPlanningPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="CapacityPlanning">
+      <name>CapacityPlanningPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="CapacityPlanning">
+      <name>CapacityPlanningPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="Ctp">
+      <name>CtpPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="VisualMaterials">
+      <name>VisualMaterialsPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="Forecasting">
+      <name>ForecastingPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="InventoryPlanning">
+      <name>InventoryPlanningPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="OptimizationMpsMrp">
+      <name>OptimizationMpsMrpPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="ScenarioPlanning">
+      <name>ScenarioPlanningPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="VisualScheduling">
+      <name>VisualSchedulingPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="Analytics">
+      <name>AnalyticsPackage</name>
+      <version>0.0</version>
+    </package>
+    <package id="ConformanceToSchedule">
+      <name>ConformanceToSchedulePackage</name>
+      <version>0.0</version>
+    </package>
+  </packages>
+</PackageManager>

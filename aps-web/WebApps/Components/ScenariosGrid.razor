@@ -1,0 +1,71 @@
+﻿@using ReportsWebApp.DB.Models
+@using DevExpress.Blazor
+@using ReportsWebApp.Pages
+
+<h3>Resource Gantts</h3>
+
+@if (Scenarios == null || !Scenarios.Any())
+{
+    <ErrorMessagesDisplay ErrorMessages="@(new List<string>(){ "No Analytical DB configured for Gantt" })" />
+}
+else
+{
+    <DxGrid ShowFilterRow="true"
+            Data="@Scenarios"
+            EditMode="GridEditMode.PopupEditForm"
+            @ref="MyGrid"
+            PageSize="10"
+            CssClass="ch-480"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+        <Columns>
+            @foreach (var column in AllColumns.Where(c => !string.IsNullOrWhiteSpace(c.FieldName)))
+            {
+                <DxGridDataColumn FieldName="@column.FieldName" Caption="@column.ColumnName" Width="@column.ColumnWidth" Visible="@column.IsVisible" />
+            }
+
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth" NewButtonVisible="false">
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = (Scenario)context.DataItem;
+                        <DxButton IconCssClass="fas fa-eye"
+                                  Attributes="@(new Dictionary<string, object> { ["title"] = "Show Gantt" })"
+                                  Click="@(() => OnShowScenario(dataItem))" />
+                    }
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+        </Columns>
+    </DxGrid>
+}
+@code {
+
+    IGrid? MyGrid { get; set; }
+
+    [Parameter]
+    public List<Scenario> Scenarios { get; set; } = new List<Scenario>();
+
+    [Parameter]
+    public Func<Scenario, Task>? OnShow { get; set; }
+
+    private List<ColumnOption> AllColumns = new List<ColumnOption>
+    {
+        new ColumnOption { ColumnName = "Planning Area", FieldName = "PlanningAreaName", IsChecked = true, ColumnWidth = "auto" },
+        new ColumnOption { ColumnName = "Scenario Name", FieldName = "Name", IsChecked = true, ColumnWidth = "auto" },
+        new ColumnOption { ColumnName = "Environment", FieldName = "Environment", IsChecked = true, ColumnWidth = "260px", IsVisible = false },
+        new ColumnOption { ColumnName = "Connection String", FieldName = "AnalyticalDb.ConnectionString", IsChecked = true, ColumnWidth = "200px", IsVisible = false },
+    };
+
+    // Method to handle button clicks
+    private async Task OnShowScenario(Scenario scenario)
+    {
+        if (OnShow != null)
+        {
+            await OnShow(scenario);
+        }
+    }
+}

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata>
+		<!-- Required elements-->
+		<id>PT.SDK.Packages</id>
+		<version>$version$</version>
+		<description>PlanetTogether libraries required to build packages targeting a specific PlanetTogether framework</description>
+		<authors>PlanetTogether Inc</authors>
+
+		<!-- Optional elements -->
+		<icon>images\logo_500px.png</icon>
+		<copyright>PlanetTogether Inc 2023</copyright>
+		<!-- ... -->
+
+		<dependencies>
+			<group targetFramework="net8.0-windows10.0.22000.0">
+				<!--Common-->
+				<dependency id="PT.Common" version="12.0" exclude="Build,Analyzers" />
+				<!--APSCommon-->
+				<dependency id="lz4net" version="1.0.15.93" exclude="Build,Analyzers" />
+				<dependency id="System.IO" version="4.3.0" exclude="Build,Analyzers" />
+				<dependency id="System.IO.Compression" version="4.3.0" exclude="Build,Analyzers" />
+				<dependency id="System.IO.FileSystem" version="4.3.0" exclude="Build,Analyzers" />
+				<dependency id="System.Management" version="7.0.0" exclude="Build,Analyzers" />
+			</group>
+		</dependencies>
+		<frameworkReferences>
+			<group targetFramework="net8.0-windows10.0.22000.0">
+				<frameworkReference name="Microsoft.WindowsDesktop.App.WindowsForms" />
+			</group>
+		</frameworkReferences>
+	</metadata>
+	<files>
+		<file src="..\UserInterface\PlanetTogetherClient\bin\Release\PT.ApsCommon.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\CommonProjects\APSCommon\bin\Release\PT.ApsCommon.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\UserInterface\VisualControls\ComponentLibrary\bin\Release\PT.ComponentLibrary.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\UserInterface\VisualControls\ComponentLibrary\bin\Release\PT.ComponentLibrary.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\ImportAndPublishing\ERPLibrary\bin\Release\PT.ERPLibrary.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\ImportAndPublishing\ERPLibrary\bin\Release\PT.ERPLibrary.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\TransmissionsAndBroadcasting\ERPTransmissions\bin\Release\PT.ERPTransmissions.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\TransmissionsAndBroadcasting\ERPTransmissions\bin\Release\PT.ERPTransmissions.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\Forecasting\ForecastServiceClient\bin\Release\PT.ForecastServiceClient.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\Forecasting\ForecastServiceClient\bin\Release\PT.ForecastServiceClient.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\Services\Definitions\InterfaceServiceDefinitions\bin\Release\PT.ImportDefintions.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\Services\Definitions\InterfaceServiceDefinitions\bin\Release\PT.ImportDefintions.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+		
+		<file src="..\CommonProjects\PackageDefinitions\bin\Release\PT.PackageDefinitions.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\CommonProjects\PackageDefinitions\bin\Release\PT.PackageDefinitions.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\CommonProjects\PackageDefinitionsUI\bin\Release\PT.PackageDefinitionsUI.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\CommonProjects\PackageDefinitionsUI\bin\Release\PT.PackageDefinitionsUI.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\UserInterface\VisualControls\ScenarioControls\bin\Release\PT.ScenarioControls.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\UserInterface\VisualControls\ScenarioControls\bin\Release\PT.ScenarioControls.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\UserInterface\PlanetTogetherClient\bin\Release\PT.Scheduler.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\Scheduling\Scheduler\bin\Release\PT.Scheduler.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\Scheduling\SchedulerData\bin\Release\PT.SchedulerData.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\Scheduling\SchedulerData\bin\Release\PT.SchedulerData.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\UserInterface\PlanetTogetherClient\bin\Release\PT.SchedulerDefinitions.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\Scheduling\SchedulerDefinitions\bin\Release\PT.SchedulerDefinitions.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\Scheduling\SchedulerExtentions\bin\Release\PT.SchedulerExtensions.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\Scheduling\SchedulerExtentions\bin\Release\PT.SchedulerExtensions.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\UserInterface\VisualControls\ShopViewsControls\bin\Release\PT.ShopViewsControls.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\UserInterface\VisualControls\ShopViewsControls\bin\Release\PT.ShopViewsControls.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\TransmissionsAndBroadcasting\Transmissions\bin\Release\PT.Transmissions.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\TransmissionsAndBroadcasting\Transmissions\bin\Release\PT.Transmissions.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\TransmissionsAndBroadcasting\Transmissions2\bin\Release\PT.Transmissions2.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\TransmissionsAndBroadcasting\Transmissions2\bin\Release\PT.Transmissions2.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\UserInterface\UIData\bin\Release\PT.UIData.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\UserInterface\UIData\bin\Release\PT.UIData.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="..\UserInterface\PlanetTogetherClient\bin\Release\PT.UIDefinitions.dll" target="lib\net8.0-windows10.0.22000.0" />
+		<!--<file src="..\UserInterface\UIDefinitions\bin\Release\PT.UIDefinitions.pdb" target="lib\net8.0-windows10.0.22000.0" />-->
+
+		<file src="logo_500px.png" target="images\" />
+	</files>
+</package>
+<!--Example publish command: ./nuget.exe pack pt.sdk.packages.nuspec -Version 12.0.2 -properties config=Release -->

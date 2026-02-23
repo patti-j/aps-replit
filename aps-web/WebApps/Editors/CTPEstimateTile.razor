@@ -1,0 +1,327 @@
+﻿@page "/ctp-estimate"
+@using Microsoft.EntityFrameworkCore
+@using ReportsWebApp.Editors.StepsCTP
+@using ReportsWebApp.Pages
+@inject IJSRuntime JSRuntime
+@inject ServiceContainer ServiceContainer
+@implements IDisposable
+
+<div class="sliding-panel @(IsVisible ? "visible" : "")">
+    <DxFormLayout>
+        <DxFormLayoutGroup>
+            <HeaderTemplate>
+                <ServerContextHeader Title="CTP Estimate Configuration"
+                    Subtitle=@GetPopupSubtitle()
+                                   ShowSaveButton=false
+                                   ShowSaveAsCopyButton=false
+                                   BigTitle=false
+                                   ShowSendButton=true
+                                   OnSend="SubmitAsync"
+                                   OnClose="ClosePanel" />
+            </HeaderTemplate>
+            <Items>
+                        <!-- Select Template -->
+                        <section class="spa-slide" id="tab-selectTemplate">
+                            <h5 class="mt-3">Select a Template</h5>
+                            <p>Select a template from the list below. This template will be used as the basis for your CTP Estimate configuration.</p>
+                            <JobTemplateGrid GridDataSource="TemplateDataSource" @bind-SelectedDataItem="SelectedTemplate" IsReadOnly="IsReadOnly" />
+                        </section>
+
+                        <!-- Product Settings -->
+                        <section class="spa-slide" id="tab-productSettings">
+                            <h5 class="mt-3">Product Settings</h5>
+                            <p>Configure the product-related settings for your CTP Estimate.</p>
+                            <ProductSettings Request="ctpRequest" IsReadOnly="IsReadOnly" />
+                        </section>
+
+                        <!-- Reservation Settings -->
+                        <section class="spa-slide" id="tab-reservationSettings">
+                            <h5 class="mt-3">Reservation Settings</h5>
+                            <p>Configure the reservation-related settings for your CTP Estimate.</p>
+                            <ReservationSettings Request="ctpRequest" IsReadOnly="IsReadOnly" />
+                        </section>
+
+                        <!-- Scheduling Settings -->
+                        <section class="spa-slide" id="tab-schedulingSettings">
+                            <h5 class="mt-3">Scheduling Settings</h5>
+                            <p>Configure the scheduling-related settings for your CTP Estimate.</p>
+                            <SchedulingSettings Request="ctpRequest" IsReadOnly="IsReadOnly" />
+                        </section>
+
+                        <!-- Review & Submit -->
+                        <section class="spa-slide" id="tab-reviewSubmit">
+                            <h5 class="mt-3">Review & Submit</h5>
+                            <p>Review the configuration details below to ensure everything is correct before submitting your CTP Estimate.</p>
+                            <div>
+                                <strong>Selected Template:</strong> @((SelectedTemplate?.TemplateName) ?? "(none)")<br />
+                            </div>
+                            <div class="container-fluid">
+                                <div class="row mt-3">
+                                    <!-- Request Section -->
+                                    <div class="col-md-6">
+                                        <h3>CTP Request</h3>
+                                        @if (ctpRequest != null)
+                                        {
+                                            <dl class="row">
+                                                <dt class="col-sm-3">Request ID:</dt>
+                                                <dd class="col-sm-9">@ctpRequest.RequestId</dd>
+                                                <dt class="col-sm-3">Item External ID:</dt>
+                                                <dd class="col-sm-9">@ctpRequest.ItemExternalId</dd>
+                                                <dt class="col-sm-3">Warehouse External ID:</dt>
+                                                <dd class="col-sm-9">@ctpRequest.WarehouseExternalId</dd>
+                                                <dt class="col-sm-3">Required Qty:</dt>
+                                                <dd class="col-sm-9">@ctpRequest.RequiredQty</dd>
+                                                <dt class="col-sm-3">Need Date:</dt>
+                                                <dd class="col-sm-9">@ctpRequest.NeedDate.ToString(CommonUtils.DateTimeOfficialFormat)</dd>
+                                                <dt class="col-sm-3">Priority:</dt>
+                                                <dd class="col-sm-9">@ctpRequest.Priority</dd>
+                                            </dl>
+                                        }
+                                        else
+                                        {
+                                            <p>Loading...</p>
+                                        }
+                                    </div>
+
+                                    <!-- Result Section -->
+                                    <div class="col-md-6">
+                                        <h3>CTP Result</h3>
+                                        @if (ctpResult != null)
+                                        {
+                                            <dl class="row">
+                                                <dt class="col-sm-3">Scheduled Start:</dt>
+                                                <dd class="col-sm-9">@ctpResult.ScheduledStart.ToString(CommonUtils.DateTimeOfficialFormat)</dd>
+                                                <dt class="col-sm-3">Scheduled Finish:</dt>
+                                                <dd class="col-sm-9">@ctpResult.ScheduledFinish.ToString(CommonUtils.DateTimeOfficialFormat)</dd>
+                                                <dt class="col-sm-3">Status:</dt>
+                                                <dd class="col-sm-9">@ctpResult.Status</dd>
+                                                <dt class="col-sm-3">Days Late:</dt>
+                                                <dd class="col-sm-9">@ctpResult.DaysLate</dd>
+                                                <dt class="col-sm-3">Cost:</dt>
+                                                <dd class="col-sm-9">@ctpResult.Cost</dd>
+                                                <dt class="col-sm-3">Scheduled Path:</dt>
+                                                <dd class="col-sm-9">@ctpResult.ScheduledPath</dd>
+                                            </dl>
+                                        }
+                                        else
+                                        {
+                                            <p>Loading...</p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+            </Items>
+        </DxFormLayoutGroup>
+    </DxFormLayout>
+</div>
+
+@code {
+    [Inject] IToastNotificationService ToastService { get; set; }
+
+    #region Parameters
+    public bool IsVisible { get; set; }
+    private User currentUser;
+
+    [Parameter]
+    public CtpRequest ctpRequest { get; set; } = new();
+
+    [Parameter]
+    public Func<CtpRequest, Task<bool>> OnSave { get; set; }
+
+    public CtpResult ctpResult { get; set; } = new();
+    public int ActiveTabIndex { get; set; } = 0;
+    #endregion
+
+    #region Private Fields
+    public List<JobTemplate> TemplateDataSource { get; set; } = new();
+    private List<StickyNavItem> navigationItems;
+    private IGrid? grid;
+    private JobTemplate _selectedTemplate;
+    private bool _isSubmitEnabled; 
+    private bool IsReadOnly => ctpRequest != null && ctpRequest.Id > 0;
+    public PADetails SelectedPlanningArea { get; set; } = new();
+    #endregion
+
+    #region Properties
+    public JobTemplate SelectedTemplate
+    {
+        get => _selectedTemplate;
+        set
+        {
+            if (!EqualityComparer<JobTemplate>.Default.Equals(_selectedTemplate, value))
+            {
+                _selectedTemplate = value;
+                _ = UpdateCtpRequestFromTemplateAsync(_selectedTemplate); // Run async method without waiting
+            }
+        }
+    }
+
+    public bool IsSubmitEnabled
+    {
+        get => _isSubmitEnabled;
+        private set
+        {
+            if (_isSubmitEnabled != value)
+            {
+                _isSubmitEnabled = value;
+                StateHasChanged();
+            }
+        }
+    }
+    #endregion
+
+    #region Lifecycle Methods
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckUserAuthorizationAsync();
+
+        navigationItems = new List<StickyNavItem>
+        {
+            new StickyNavItem { Id = "tab-selectTemplate", Title = "Select Template", IconClass = "fas fa-file-alt", IsActive = true },
+            new StickyNavItem { Id = "tab-productSettings", Title = "Product Settings", IconClass = "fas fa-box" },
+            new StickyNavItem { Id = "tab-reservationSettings", Title = "Reservation Settings", IconClass = "fas fa-warehouse" },
+            new StickyNavItem { Id = "tab-schedulingSettings", Title = "Scheduling Settings", IconClass = "fas fa-clock" },
+            new StickyNavItem { Id = "tab-reviewSubmit", Title = "Review", IconClass = "fas fa-check-circle" }
+        };
+
+        if (ctpRequest != null && ctpRequest.JobTemplate != null)
+        {
+            SelectedTemplate = ctpRequest.JobTemplate;
+            ctpRequest.PropertyChanged += OnCtpRequestChanged;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (ctpRequest != null)
+        {
+            ctpRequest.PropertyChanged -= OnCtpRequestChanged;
+        }
+    }
+    #endregion
+
+    #region Event Handlers
+    private void OnCtpRequestChanged(object sender, PropertyChangedEventArgs e)
+    {
+        IsSubmitEnabled = !string.IsNullOrEmpty(ctpRequest.ItemExternalId) &&
+                          !string.IsNullOrEmpty(ctpRequest.WarehouseExternalId) &&
+                          ctpRequest.RequiredQty > 0 &&
+                          ctpRequest.NeedDate > DateTime.MinValue;
+        StateHasChanged();
+    }
+
+    private async Task UpdateCtpRequestFromTemplateAsync(JobTemplate selectedTemplate)
+    {
+        if (selectedTemplate != null)
+        {
+            ctpRequest.WarehouseExternalId = selectedTemplate.WarehouseExternalId;
+            ctpRequest.ItemExternalId = selectedTemplate.ItemExternalId;
+            ctpRequest.RequiredQty = selectedTemplate.RequiredQty;
+            ctpRequest.NeedDate = selectedTemplate.NeedDate;
+            ctpRequest.RequiredPathId = selectedTemplate.RequiredPathId;
+
+            ctpRequest.JobTemplateId = selectedTemplate.Id;
+            await JSRuntime.InvokeVoidAsync("nextStickyNav");
+            StateHasChanged();
+        }
+    }
+    #endregion
+
+    #region UI Methods
+    private string GetPopupSubtitle()
+    {
+        return $"for Planning Area '{SelectedPlanningArea?.Name}' ({SelectedPlanningArea?.Version})";
+    }
+
+    public async Task ShowPanelAsync()
+    {
+        await LoadDataAsync();
+        IsVisible = true;
+        StateHasChanged();
+        // if (ctpRequest.Id > 0)
+        //     await JSRuntime.InvokeVoidAsync("lastStickyNav");
+        // else
+        //     await JSRuntime.InvokeVoidAsync("firstStickyNav");
+        StateHasChanged();
+    }
+
+    public async Task SubmitAsync()
+    {
+        ctpResult.Status = "On Time";
+        ctpResult.ScheduledStart = DateTime.Today;
+        ctpResult.ScheduledFinish = DateTime.Today;
+        ctpResult.DaysLate = 0;
+        ctpResult.Cost = 100;
+        ctpResult.ScheduledPath = "Path Resolved";
+
+        ToastService.ShowToast(new ToastOptions
+            {
+                ProviderName = "MainLayout",
+                Title = "Request sent",
+                Text = "Capable To Promise Request has been sent.",
+                IconCssClass = "fa-regular fa-envelope-circle-check",
+                ThemeMode = ToastThemeMode.Saturated,
+                RenderStyle = ToastRenderStyle.Primary,
+            });
+        ctpRequest.Status = ctpRequest.Id > 0 ? "Pending" : "New";
+        ctpRequest.Name = "New";
+        ctpRequest.PADetailsId = SelectedPlanningArea.Id;
+        ctpRequest.PADetails = null;
+        ctpRequest.JobTemplate = null;
+        bool result = await ServiceContainer.CTPRequestService.SaveCtpRequestAsync(ctpRequest);
+
+        if (!result)
+        {
+            ToastService.ShowToast(new ToastOptions
+                {
+                    ProviderName = "MainLayout",
+                    Title = "Error",
+                    Text = "There was an error saving the CTP request.",
+                    IconCssClass = "fa-regular fa-envelope-circle-exclamation",
+                    ThemeMode = ToastThemeMode.Saturated,
+                    RenderStyle = ToastRenderStyle.Danger,
+                });
+            return;
+        }
+
+        if (OnSave != null)
+            await OnSave(ctpRequest);
+        ClosePanel();
+    }
+
+
+    private void ClosePanel()
+    {
+        IsVisible = false;
+        StateHasChanged();
+    }
+
+    private string GetStatusIconClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "on time" => "fa-check-circle text-success",
+            "late" => "fa-times-circle text-danger",
+            _ => "fa-question-circle text-warning"
+        };
+    }
+    #endregion
+
+    #region Data Methods
+    public async Task LoadDataAsync()
+    {
+        SelectedPlanningArea = await ServiceContainer.PlanningAreaDataService
+            .GetSelectedPlanningAreaByCompanyIdAndUserIdAsync(currentUser.CompanyId, currentUser.Id);
+        TemplateDataSource = await ServiceContainer.CTPRequestService.GetJobTemplatesAsync(currentUser.CompanyId);
+        StateHasChanged();
+    }
+
+    private async Task<bool> CheckUserAuthorizationAsync()
+    {
+        currentUser = await ServiceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(currentUser, null, NavigationManager)) return false;
+        return true;
+    }
+    #endregion
+}

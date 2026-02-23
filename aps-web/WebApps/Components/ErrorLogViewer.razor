@@ -1,0 +1,323 @@
+﻿@using Microsoft.AspNetCore.SignalR.Client
+@using ReportsWebApp.Controllers
+
+@inject IPlanningAreaDataService paService;
+@inject IJSRuntime jsRuntime;
+@inject ServerActionsService actionsService;
+@inject IToastNotificationService toastService;
+
+<DxPopup @bind-Visible="showLogWindow"
+         HeaderText="@($"Errors for {planningArea?.Name ?? "Unknown"}")"
+         HeaderCssClass="confirmation-dialog-header"
+         ShowCloseButton="true"
+         CloseOnOutsideClick="true"
+         CloseOnEscape="true"
+         Width="1250">
+    <BodyContentTemplate>
+        @if (showLogWindow)
+        {
+
+            <DxTabs ActiveTabIndexChanged="(i) => OnSwitchTab(i)">
+                @foreach (var group in itemsMap.Keys)
+                {
+                    {
+                        <DxTabPage Text="@group">
+                            <DxLoadingPanel Visible="isLoading">
+                                @if (itemsMap.ContainsKey(group) && itemsMap[group].ContainsKey(indexMap[group]))
+                                {
+                                    <div class="error-log-page">
+                                        <div class="error-log-type">@itemsMap[group][indexMap[group]].TypeName</div>
+                                        <div class="error-log-header">@itemsMap[group][indexMap[group]].HeaderMessage</div>
+                                        <div class="error-log-stacktrace-container">
+                                            <div class="error-log-stacktrace-panel">
+                                                <DxScrollViewer CssClass="error-log-message">@itemsMap[group][indexMap[group]].Message</DxScrollViewer>
+                                                <DxScrollViewer>
+                                                    @itemsMap[group][indexMap[group]].StackTrace
+                                                </DxScrollViewer>
+                                            </div>
+                                            @if (!itemsMap[group][indexMap[group]].InnerExceptionMessage.IsNullOrEmpty())
+                                            {
+                                                <div class="error-log-stacktrace-panel">
+                                                    <DxScrollViewer CssClass="error-log-message">@itemsMap[group][indexMap[group]].InnerExceptionMessage</DxScrollViewer>
+                                                    <DxScrollViewer>
+                                                        @itemsMap[group][indexMap[group]].InnerExceptionStackTrace
+                                                    </DxScrollViewer>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="error-log-timestamp">@itemsMap[group][indexMap[group]].Timestamp</div>
+                                        <div class="error-log-controls">
+                                            @if (indexMap[group] == 1)
+                                            {
+                                                <DxButton IconCssClass="fa fa-arrows-rotate"
+                                                          Attributes="@(new Dictionary<string, object> {  ["title"] = "Refresh" })" Click="async () => LoadRows(group, 1)"></DxButton>
+                                            }
+                                            else
+                                            {
+                                                <DxButton IconCssClass="fa fa-arrow-left-to-line"
+                                                          Attributes="@(new Dictionary<string, object> {  ["title"] = "Jump to First" })" Click="async () => SetI(group, 1)"></DxButton>
+                                            }
+                                            <DxButton IconCssClass="fa fa-arrow-left"
+                                                      Attributes="@(new Dictionary<string, object> {  ["title"] = "Previous" })" Click="async () => SetI(group, Math.Max(1, indexMap[group] - 1))"></DxButton>
+                                            <DxTextBox @ref="inputMap[group]" Text="@indexMap[group].ToString()" CssClass="error-log-input">
+                                                <Buttons>
+                                                    <DxEditorButton IconCssClass="fa fa-magnifying-glass"
+                                                                    Attributes="@(new Dictionary<string, object> {  ["title"] = "Jump to Log Number" })" Click="async () => { var i = -1; if (int.TryParse(inputMap[group]?.Text, out i)) { if (i >= 0 && i < maxMap[group]) { SetI(group, i); } } }"></DxEditorButton>
+                                                </Buttons>
+                                            </DxTextBox>
+                                            <div class="error-log-max">/ @maxMap[group]</div>
+                                            <DxButton IconCssClass="fa fa-arrow-right"
+                                                      Attributes="@(new Dictionary<string, object> {  ["title"] = "Next" })" Click="async () => SetI(group, Math.Min(maxMap[group], indexMap[group] + 1))"></DxButton>
+                                            <DxButton IconCssClass="fa fa-arrow-right-to-line"
+                                                      Attributes="@(new Dictionary<string, object> {  ["title"] = "Jump to Last" })" Click="async () => SetI(group, maxMap[group])"></DxButton>
+                                            <DxButton IconCssClass="@(copied ?  "fa fa-clipboard-check" : "fa fa-clipboard")"
+                                                      Attributes="@(new Dictionary<string, object> {  ["title"] = "Copy Error Text", ["class"] = "error-log-copy-button" })" Click="async () => CopyError(itemsMap[group][indexMap[group]])"></DxButton>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="error-log-spacer"></div>
+                                }
+                                
+                            </DxLoadingPanel>
+                        </DxTabPage>
+                    }
+
+                }
+                <DxTabPage text="Event Log">
+                    <DxLoadingPanel Visible="isLoading">
+                                @if (Events != null && Events.Count > 0)
+                                {
+                                    <div class="error-log-page">
+                                        <div class="error-log-type">@Events[EventIndex - 1].Category</div>
+                                        <div class="error-log-stacktrace-container">
+                                            <div class="error-log-stacktrace-panel">
+                                                <DxScrollViewer CssClass="error-log-message">@Events[EventIndex - 1].Message</DxScrollViewer>
+                                            </div>
+                                        </div>
+                                        <div class="error-log-timestamp">@Events[EventIndex - 1].TimeGenerated</div>
+                                        <div class="error-log-controls">
+                                            @if (EventIndex == 1)
+                                            {
+                                                <DxButton IconCssClass="fa fa-arrows-rotate"
+                                                          Attributes="@(new Dictionary<string, object> {  ["title"] = "Refresh" })" Click="async () => LoadEvents()"></DxButton>
+                                            }
+                                            else
+                                            {
+                                                <DxButton IconCssClass="fa fa-arrow-left-to-line"
+                                                          Attributes="@(new Dictionary<string, object> {  ["title"] = "Jump to First" })" Click="async () => SetEvent(1)"></DxButton>
+                                            }
+                                            <DxButton IconCssClass="fa fa-arrow-left"
+                                                      Attributes="@(new Dictionary<string, object> {  ["title"] = "Previous" })" Click="async () => SetEvent(Math.Max(1, EventIndex - 1))"></DxButton>
+                                            <DxTextBox @ref="EventInput" Text="@EventIndex.ToString()" CssClass="error-log-input">
+                                                <Buttons>
+                                                    <DxEditorButton IconCssClass="fa fa-magnifying-glass"
+                                                                    Attributes="@(new Dictionary<string, object> {  ["title"] = "Jump to Log Number" })" Click="async () => { var i = -1; if (int.TryParse(EventInput?.Text, out i)) { if (i >= 1 && i <= Events.Count) { SetEvent(i); } } }"></DxEditorButton>
+                                                </Buttons>
+                                            </DxTextBox>
+                                            <div class="error-log-max">/ @Events.Count</div>
+                                            <DxButton IconCssClass="fa fa-arrow-right"
+                                                      Attributes="@(new Dictionary<string, object> {  ["title"] = "Next" })" Click="async () => SetEvent(Math.Min(Events.Count, EventIndex + 1))"></DxButton>
+                                            <DxButton IconCssClass="fa fa-arrow-right-to-line"
+                                                      Attributes="@(new Dictionary<string, object> {  ["title"] = "Jump to Last" })" Click="async () => SetEvent(Events.Count)"></DxButton>
+                                            <DxButton IconCssClass="@(copied ?  "fa fa-clipboard-check" : "fa fa-clipboard")"
+                                                      Attributes="@(new Dictionary<string, object> {  ["title"] = "Copy Error Text", ["class"] = "error-log-copy-button" })" Click="async () => CopyEvent()"></DxButton>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="error-log-spacer">No events logged</div>
+                                }
+                                
+                            </DxLoadingPanel>
+                </DxTabPage>
+
+            </DxTabs>
+        }
+    </BodyContentTemplate>
+</DxPopup>
+
+@code {
+    Dictionary<string, int> indexMap = new();
+    Dictionary<string, int> maxMap = new();
+    Dictionary<string, DxTextBox?> inputMap = new();
+    Dictionary<string, Dictionary<int, PlanningAreaDataService.ErrorRow>> itemsMap = new();
+    List<NotificationController.EventLogEntryAdapter> Events;
+    int EventIndex = 1;
+    DxTextBox EventInput { get; set; }
+    PADetails planningArea { get; set; }
+    private bool isLoading = true;
+    private bool copied = false;
+    private HubConnection? hubConnection;
+
+    [Parameter] public User user { get; set; }
+
+    private bool showLogWindow
+    {
+        get => planningArea != null;
+        set
+        {
+            if (!value) planningArea = null;
+        }
+    }
+
+    private async Task SetI (string key, int x)
+    {
+        copied = false;
+        if (!itemsMap[key].ContainsKey(x)) 
+
+        {
+            await LoadRows(key, x);
+        }
+        indexMap[key] = x;
+        if (inputMap[key] != null)
+        {
+            inputMap[key].Text = x.ToString();
+        }
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SetEvent (int x)
+    {
+        copied = false;
+
+        if (x <= Events.Count && x > 0)
+        {
+            EventIndex = x;
+        }
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadRows(string category, int start)
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var first = await paService.GetLogs(planningArea, category, 0, 1, 3);
+
+        // Check if new data has arrived; if so, refresh
+        if (first.First().Timestamp != itemsMap[category][1].Timestamp)
+        {
+            await Show(planningArea, await paService.GetTotalErrors(planningArea, 3));
+            return;
+        }
+
+        // Align start to 10's place
+        start -= start % 10;
+        var amt = 10;
+
+        if (start == 0)
+        {
+            start = 1;
+            amt = 9;
+        }
+
+        var items = await paService.GetLogs(planningArea, category, start - 1, amt, 3);
+        for (var i = start; i < start + 10 && i < start + items.Count; i++)
+        {
+            itemsMap[category].TryAdd(i, items[i - start]);
+        }
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadEvents()
+    {
+        if (hubConnection != null && hubConnection.State != HubConnectionState.Disconnected)
+        {
+            await hubConnection.DisposeAsync();
+        }
+        hubConnection = new HubConnectionBuilder()
+                        .WithUrl(NavigationManager.ToAbsoluteUri("notificationhub")).Build();
+
+        Type[] paramTypes = new Type[] { typeof(List<NotificationController.EventLogEntryAdapter>) };
+        hubConnection.On("Events", paramTypes, async (args) =>
+        {
+            if (args[0] is List<NotificationController.EventLogEntryAdapter> entries)
+            {
+                try
+                {
+                    Events = entries;
+                    isLoading = false;
+                    await InvokeAsync(StateHasChanged);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+        });
+
+        await hubConnection.StartAsync();
+        // Start watching for events
+        isLoading = true;
+        StateHasChanged();
+        var tid = await actionsService.RequestPlanningAreaLogs(planningArea.ServerId, user, new InstanceKey(planningArea));
+
+        await hubConnection.SendAsync("JoinGroup", tid);
+
+        var result = await actionsService.WaitForActionCompletion(tid);
+        isLoading = false;
+        if (!result.isSuccess)
+        {
+            toastService.ShowToast("Failed to read Event Logs", result.isTimeout ? "The Server Agent did not respond when logs were requested. Ensure the Server Agent is running and up-to-date." : "There was an error retrieving logs for the server agent: \n" + result.error, ToastRenderStyle.Danger);
+        }
+    }
+
+    public async Task Show(PADetails pa, Dictionary<string, int> categories)
+    {
+        isLoading = true;
+        EventIndex = 1;
+        Events = null;
+        indexMap = new ();
+        itemsMap = new ();
+        maxMap = new ();
+        StateHasChanged();
+        planningArea = pa;
+        foreach (var category in categories)
+        {
+            indexMap[category.Key] = 1;
+            itemsMap[category.Key] = new();
+            var items = await paService.GetLogs(pa, category.Key, 0, 10, 3);
+            for (var i = 1; i <= 10 && i < items.Count; i++)
+            {
+                itemsMap[category.Key].TryAdd(i, items[i - 1]);
+            }
+            maxMap[category.Key] = category.Value;
+        }
+
+        if (!categories.Any())
+        {
+            await LoadEvents();
+        }
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task CopyError(PlanningAreaDataService.ErrorRow error)
+    {
+        var text = $"Error of Type: {error.TypeName}\nIn log: {error.LogType}\n{error.HeaderMessage}\n\n{error.Message}\n\n{error.StackTrace}{(!error.InnerExceptionMessage.IsNullOrEmpty() ? $"{error.InnerExceptionMessage}\n\n{error.InnerExceptionStackTrace}" : "")}";
+        await jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text.Trim());
+        copied = true;
+        StateHasChanged();
+    }
+
+    private async Task CopyEvent()
+    {
+        await jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", 
+            $"Event Category: {Events[EventIndex].Category}\n\n{Events[EventIndex].Message}\n\nGenerated at: {Events[EventIndex].TimeGenerated}");
+        copied = true;
+        StateHasChanged();
+    }
+
+    private async Task OnSwitchTab(int i)
+    {
+        copied = false;
+        if (i == indexMap.Keys.Count && Events == null || Events.Count < 1)
+        {
+            await LoadEvents();
+        }
+    }
+}

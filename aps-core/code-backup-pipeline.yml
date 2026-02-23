@@ -1,0 +1,86 @@
+# .NET Desktop
+# Build and run tests for .NET Desktop or Windows classic desktop solutions.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
+
+trigger: none
+
+schedules:
+  - cron : '0 23 1 * *'
+    displayName : Monthly Code Backup
+    branches: 
+     include:
+       - dev
+
+parameters:
+  #Agent name allows us to match a capability on a local agent, effectively targeting a specific build machine
+- name: 'DeveloperName'
+  displayName: 'Specifty target dev whose agent to use, or Any'
+  type: string
+  default: 'Any'
+
+variables:
+  solution: '**/APSCore.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release' #'Debug' 'Release'
+  CoreSolutionFolderName: 'aps-core' #The relative path to the core solution when referenced by aps-packages projects
+  currentDate: $[ format('{0:yyyy}.{0:MM}.{0:dd}', pipeline.startTime) ]
+
+  Major: '12'
+  Minor: '1'
+  Patch: '4'
+
+#use We have to create a Job so we can use logic to validate the parameters
+jobs:
+- job: PullAndPushCode
+
+  pool:
+    name: 'PTBuildMachines'
+    ${{ if ne(parameters.DeveloperName, 'Any') }}:
+        demands:
+        - Developer -equals ${{ parameters.DeveloperName }}
+  # demands:
+  # - Developer -equals Cavan
+
+  steps:
+  - checkout: self #use git://APS/aps-core@branch to specify a specific branch, otherwise uses default
+  - checkout: git://APS/aps-packages@dev
+  - checkout: git://APS/aps-server-manager@main
+  - checkout: git://APS/aps-extensions
+  - checkout: git://APS/pt-integrations-rr
+  - checkout: git://APS/rr-cloud-integration
+  - checkout: git://APS/aps-api
+  - checkout: git://APS/aps-package-manager
+  - checkout: git://APS/aps-web
+  - checkout: git://APS/aps-web-import
+
+  - task: ArchiveFiles@2
+    displayName: 'Zip bundle'
+    inputs:
+      rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+      includeRootFolder: false
+      archiveFile: '$(System.ArtifactsDirectory)\PlanetTogether_$(currentDate).zip'
+
+# There is a bug with this task where it keeps trying to use KeyAuthentication even though
+#  the storage account has prevented Shared Key authentication.     
+  - task: AzureFileCopy@5
+    displayName: 'Copy to blob storage'
+    inputs:
+      SourcePath: '$(System.ArtifactsDirectory)\PlanetTogether_$(currentDate).zip'
+      azureSubscription: 'Source Code Backup Pipeline Connection'
+      Destination: AzureBlob
+      storage: ptsource
+      ContainerName: 
+  
+# # This script is meant to replicate the task above, but not use Key authentication
+#   - task: AzureCLI@2
+#     inputs:
+#       azureSubscription: 'Source Code Backup Pipeline Connection'
+#       scriptType: 'ps'
+#       scriptLocation: 'inlineScript'
+#       inlineScript: |
+#         - task: AzureCLI@2
+#           inputs:
+#             scriptType: 'ps'
+#             scriptLocation: 'inlineScript'
+#             inlineScript: 'az storage blob upload-batch -d ''sourcebaks'' -s $(System.ArtifactsDirectory)\PlanetTogether_$(currentDate)_$(Major).$(Minor).$(Patch).zip --account-name ptsource --auth-mode login in'

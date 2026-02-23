@@ -1,0 +1,407 @@
+﻿
+/*#region AdminLTE controls*/
+.info-box {
+    box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+    border-radius: 0.25rem;
+    background: #fff;
+    display: -ms-flexbox;
+    display: flex;
+    margin-bottom: 1rem;
+    min-height: 80px;
+    padding: 0.5rem;
+    position: relative;
+    width: 100%;
+    font-family: "Source Sans Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-size: 1rem;
+    font-weight: 400;
+    color: #1c2a39 !important;
+}
+
+    .info-box .info-box-icon {
+        border-radius: 0.25rem;
+        -ms-flex-align: center;
+        align-items: center;
+        display: -ms-flexbox;
+        display: flex;
+        font-size: 1.875rem;
+        -ms-flex-pack: center;
+        justify-content: center;
+        text-align: center;
+        width: 70px;
+    }
+
+    .info-box .info-box-content {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        -ms-flex-pack: center;
+        justify-content: center;
+        line-height: 125%;
+        -ms-flex: 1;
+        flex: 1;
+        padding: 0 10px;
+    }
+
+    .info-box .info-box-text, .info-box .progress-description {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .info-box .info-box-number {
+        display: block;
+        margin-top: 0.25rem;
+        font-weight: 700;
+    }
+
+    .info-box .info-box-text, .info-box .progress-description {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .info-box .progress {
+        background-color: rgba(0,0,0,.125);
+        height: 2px;
+        margin: 5px 0;
+    }
+
+.progress {
+    box-shadow: none;
+    border-radius: 1px;
+}
+
+.progress {
+    display: -ms-flexbox;
+    display: flex;
+    height: 1rem;
+    overflow: hidden;
+    font-size: .75rem;
+    background-color: #e9ecef;
+    border-radius: 0.25rem;
+    box-shadow: inset 0 0.1rem 0.1rem rgba(0,0,0,.1);
+}
+
+.info-box .progress .progress-bar {
+    background-color: #fff;
+}
+
+.small-box {
+    border-radius: 0.25rem;
+    box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+    display: block;
+    margin-bottom: 20px;
+    position: relative;
+    font-family: "Source Sans Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+    .small-box > .inner {
+        padding: 10px;
+    }
+
+    .small-box h3 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin: 0 0 10px 0;
+        padding: 0;
+        white-space: nowrap;
+    }
+
+    .small-box .icon {
+        color: rgba(0,0,0,.15);
+        z-index: 0;
+    }
+
+        .small-box .icon > i.fa, .small-box .icon > i.fab, .small-box .icon > i.far, .small-box .icon > i.fas, .small-box .icon > i.glyphicon, .small-box .icon > i.ion {
+            font-size: 70px;
+            top: 20px;
+        }
+
+        .small-box .icon > i {
+            font-size: 90px;
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            transition: all .3s linear;
+        }
+
+    .small-box > .small-box-footer {
+        background: rgba(0,0,0,.1);
+        color: rgba(255,255,255,.8);
+        display: block;
+        padding: 3px 0;
+        position: relative;
+        text-align: center;
+        text-decoration: none;
+        z-index: 10;
+        text-decoration-style: dashed;
+    }
+
+        .small-box > .small-box-footer > i {
+            display: none;
+        }
+/* Estilos del Timeline */
+.timeline {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    color: #212529;
+}
+
+    .timeline::after {
+        content: '';
+        position: absolute;
+        width: 6px;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        margin-left: -3px;
+        background-color: #00beff !important;
+    }
+
+.timeline-bucket {
+    padding: 10px 40px;
+    position: relative;
+    width: 50%;
+}
+
+    .timeline-bucket::after {
+        content: '';
+        position: absolute;
+        width: 25px;
+        height: 25px;
+        right: -13px;
+        border: 4px solid #8b8889;
+        background-color: #00beff !important;
+        top: 15px;
+        border-radius: 50%;
+        z-index: 1;
+    }
+
+.time-element-position-left {
+    left: 0;
+}
+
+.time-element-position-right {
+    left: 50%;
+}
+
+.time-element-position-left::before {
+    content: " ";
+    height: 0;
+    position: absolute;
+    top: 22px;
+    width: 0;
+    z-index: 1;
+    right: 30px;
+    border: medium solid white;
+    border-width: 10px 0 10px 10px;
+    border-color: transparent transparent transparent #c5c3c4;
+}
+
+.time-element-position-right::before {
+    content: " ";
+    height: 0;
+    position: absolute;
+    top: 22px;
+    width: 0;
+    z-index: 1;
+    left: 30px;
+    border: medium solid white;
+    border-width: 10px 10px 10px 0;
+    border-color: transparent #c5c3c4 transparent transparent;
+}
+
+.time-element-position-right::after {
+    left: -13px;
+}
+
+.timeline-content {
+    padding: 20px 30px;
+    background-color: #c5c3c4;
+    position: relative;
+    border-radius: 6px;
+    border-color: 1px solid red;
+}
+/* Media queries - Responsive timeline on screens less than 600px wide */
+@media screen and (max-width: 600px) {
+    .timeline::after {
+        left: 31px;
+    }
+
+    .timeline-bucket {
+        width: 100%;
+        padding-left: 70px;
+        padding-right: 25px;
+    }
+
+    .time-element-position-left::before, .time-element-position-right::before {
+        left: 60px;
+        border: medium solid white;
+        border-width: 10px 10px 10px 0;
+        border-color: transparent white transparent transparent;
+    }
+
+    .time-element-position-left::after, .time-element-position-right::after {
+        left: 18px;
+    }
+
+    .time-element-position-right {
+        left: 0%;
+    }
+}
+
+.bg-gradient-danger {
+    background: #dc3545 linear-gradient(180deg,#e15361,#dc3545) repeat-x !important;
+    color: #fff !important;
+}
+
+.bg-gradient-success {
+    color: #fff !important;
+}
+
+.bg- {
+    color: #212529;
+}
+
+.bg-danger {
+    color: #fff !important;
+}
+
+.bg-success {
+    color: #fff !important;
+}
+/*#endregion */
+
+.comment {
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #f8f9fa09;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.comment-voting {
+    display: flex;
+    align-items: center;
+}
+
+    .comment-voting button {
+        font-size: 14px;
+        padding: 2px 6px;
+    }
+
+.votes {
+    margin: 0 5px;
+    font-weight: bold;
+}
+
+.comment-info {
+    color: #6c757d;
+    font-size: 12px;
+}
+
+.comment-author {
+    font-weight: bold;
+    text-decoration: none;
+}
+
+
+.time-added {
+    margin-left: 10px;
+}
+
+.comment-body {
+    padding: 5px 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+    .card-footer .dx-button {
+        font-size: 12px;
+        padding: 2px 6px;
+        margin: 0 2px;
+    }
+.replies {
+    margin-left: 20px;
+}
+
+
+.bg-primary {
+    --bs-bg-opacity: 1;
+    background-color: #4396d8 !important;
+}
+/* Custom CSS for grant-header-icon */
+.grant-header-icon {
+    width: 27px; /* Adjust the width as needed */
+    height: 27px; /* Adjust the height as needed */
+    border-radius: 50%; /* Makes the icon circular */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 15px; /* Adjust the icon size as needed */
+    color:  white;
+}
+
+/* Custom CSS for card-title */
+.card-title {
+    font-size: 22px; /* Adjust the title font size as needed */
+    font-weight: bold;
+    margin-bottom: 15px; /* Add spacing between title and content */
+}
+
+/* Custom CSS for grant-card-body */
+.grant-card-body {
+    padding: 20px; /* Adjust padding as needed */
+    border-radius: 10px; /* Rounded corners for the card body */
+}
+
+/* Custom CSS for grant-card-item */
+.grant-card-item {
+    margin-bottom: 15px; /* Adjust spacing between items */
+    display: flex;
+    align-items: baseline;
+    text-align: right;
+    justify-content: space-between;
+}
+
+    /* Custom CSS for custom-icon (inside grant-card-item) */
+    .grant-card-item .custom-icon {
+        font-size: 20px; /* Adjust icon size as needed */
+        margin-right: 15px; /* Add spacing between icon and text */
+        color: #007bff; /* Icon color */
+    }
+
+    /* Custom CSS for card-value (inside grant-card-item) */
+    .grant-card-item .card-value {
+        font-size: 16px;
+        padding-left: 23px;
+        margin: 0;
+    }
+
+    /* Custom CSS for card-text (inside grant-card-item) */
+    .grant-card-item .card-text {
+        min-width: 113px;
+    }
+        .card-text > i {
+            padding-left: 10px;
+            padding-right: 10px;
+        }

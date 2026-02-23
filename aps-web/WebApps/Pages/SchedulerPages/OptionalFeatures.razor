@@ -1,0 +1,145 @@
+﻿<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 2)" Column="0" ColumnSpan="3">
+    <Template>
+        <div class="section-header">Optional Features:</div>
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 3)" Column="0">
+    <Template>
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 3)" Column="1">
+    <Template>
+        <a @onclick="@OnCustomizeLinkActivityLabels" class="segment-name-box" style="cursor: pointer">Activity Links</a>
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 3)" Column="3">
+    <Template>
+        <div class="color-meanings">
+            <CustomColorPicker Color="@Settings.LinkColor" Label="Default Line"
+                               ColorChanged="@(color => OnColorChanged.InvokeAsync((color, "LinkColor")))" />
+        </div>
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 4)" Column="0">
+    <Template>
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 4)" Column="1">
+    <Template>
+        <a @onclick="@OnCustomizeLinkMaterialLabels" class="segment-name-box" style="cursor: pointer">Materials Links</a>
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 4)" Column="3">
+    <Template>
+        <div class="color-meanings">
+            <CustomColorPicker Color="@Settings.MaterialColor" Label="Material Line"
+                               ColorChanged="@(color => OnColorChanged.InvokeAsync((color, "MaterialColor")))" />
+        </div>
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 5)" Column="0">
+    <Template>
+        <GenericToggle IsToggled="@Settings.ShowActivityTitle" OnToggle="@OnActivityTitleToggle" />
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 5)" Column="1">
+    <Template>
+        <strong class="op-feat-label">Show Activity Titles</strong>
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 5)" Column="3">
+    <Template>
+        <span></span>
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 6)" Column="0">
+    <Template>
+        <GenericToggle ToggleText="" IsToggled="@Settings.ShowEventTooltips" OnToggle="@OnEventTooltipsToggle" />
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 6)" Column="1">
+    <Template>
+        <strong class="op-feat-label">Show Block Tooltips</strong>
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 6)" Column="3">
+    <Template>
+        @if (Settings.ShowEventTooltips)
+        {
+            <DxButton RenderStyle="ButtonRenderStyle.Link" CssClass="pl-3" IconCssClass="fa fa-cog" Text="Customize Tooltips" Click="@OnCustomizeTooltips" />
+        }
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 7)" Column="0">
+    <Template>
+        <GenericToggle ToggleText="" IsToggled="@Settings.ShowCapacityLabels" OnToggle="@OnCapacityLabelsToggle" />
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 7)" Column="1">
+    <Template>
+        <strong class="op-feat-label">Show Capacity Labels</strong>
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 7)" Column="3">
+    <Template>
+        @if (Settings.ShowCapacityLabels)
+        {
+            <DxButton RenderStyle="ButtonRenderStyle.Link" CssClass="pl-3" IconCssClass="fa fa-cog" Text="Customize Label" Click="@OnCustomizeCapacityLabels" />
+        }
+        <DxButton RenderStyle="ButtonRenderStyle.Link" CssClass="pl-3" IconCssClass="fa fa-paint-brush" Click="@ViewTimeIntervalPopup" Text="Manage Capacity Intervals" />
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 8)" Column="0">
+    <Template>
+        <DxSpinEdit MaxValue="24" MinValue="1" Value="@(Settings.HourInterval)" ValueChanged="(int a) => HourIntervalChanged(a)" ValueExpression="() => Settings.HourInterval"/>
+    </Template>
+</DxGridLayoutItem>
+<DxGridLayoutItem Row="@(Settings.SegmentTypes.Count + 8)" Column="1">
+    <Template>
+        <strong class="op-feat-label" style="padding-left: 12px">Hour Display Interval</strong>
+    </Template>
+</DxGridLayoutItem>
+
+
+@if (ShowTimeIntervalPopup)
+{
+    <TimeIntervalManagement Settings="Settings" SettingsChanged="CloseTimeIntervalManagementPopup" />
+}
+
+
+@code {
+    [Parameter] public EventCallback<BryntumSettings> SettingsChanged { get; set; }
+    [Parameter] public BryntumSettings Settings { get; set; }
+    [Parameter] public EventCallback<bool> OnActivityTitleToggle { get; set; }
+    [Parameter] public EventCallback<bool> OnEventTooltipsToggle { get; set; }
+    [Parameter] public EventCallback OnCustomizeTooltips { get; set; }
+    [Parameter] public EventCallback<bool> OnCapacityLabelsToggle { get; set; }
+    [Parameter] public EventCallback OnCustomizeCapacityLabels { get; set; }
+    [Parameter] public EventCallback OnCustomizeLinkActivityLabels { get; set; }
+    [Parameter] public EventCallback OnCustomizeLinkMaterialLabels { get; set; }
+    [Parameter] public EventCallback<(string, string)> OnColorChanged { get; set; }
+    [Parameter] public EventCallback OnHourIntervalChanged { get; set; }
+
+    private bool ShowTimeIntervalPopup { get; set; }
+
+    private async Task ViewTimeIntervalPopup()
+    {
+        ShowTimeIntervalPopup = true;
+        StateHasChanged();
+    }
+
+    private async Task CloseTimeIntervalManagementPopup(BryntumSettings optionsSettings)
+    {
+        ShowTimeIntervalPopup = false;
+        Settings.IntervalColors = optionsSettings.IntervalColors;
+        StateHasChanged();
+        await SettingsChanged.InvokeAsync(Settings);
+    }
+
+    private void HourIntervalChanged(int a_obj)
+    {
+        Settings.HourInterval = a_obj;
+        OnHourIntervalChanged.InvokeAsync();
+    }
+
+}

@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+This is the .runsettings file that is used by the PTMR TFS build server. 
+-->
+<RunSettings>
+  <MSTest>
+    <Parallelize>
+      <!-- The number of worker threads to spawn can be set using the Workers parameter whose values can be as follows:
+        0 – Auto configure; use as many threads as possible based on CPU and core count, that means two threads per core on most modern processors.
+        n – The number (integer) ‘n’ of threads to spawn to executes tests. -->
+      <Workers>18</Workers>
+      <!-- There are 2 scopes of parallelization (There is a third Custom setting that is currently unavailable):
+
+					Keep in mind: A Test Class holds a collection of Test Methods. Each Test Method runs an individual recording. 
+					
+      (1) ClassLevel  – If there are multiple test classes each holding their own set of Test Methods, the 
+                        ClassLevel scope setting makes each thread execute a TestClass worth of tests. Within the TestClass, the test methods execute serially. 
+                        Example: TestCLassA has TestMethodA1 and TestMethodA2; TestClassB has TestMethodB1 and TestMethodB2. Using ClassLevel scope, one thread would run ClassA and execute TestMethodA1 
+                        and TestMethodA2 serially, the second thread would run TestClassB and execute TestMethodB1 and TestMethodB2 serially.
+                        This is the default scope – 
+                        
+      (2) MethodLevel – Since we only have one TestClass in our MassRecordingsTest project, this is the setting we want to use. With this setting each thread executes a TestMethod. So if for example, we have
+                        our Workers setting set to 0, which will automatically select as many worker threads as possible per core count (2 threads per core count in most modern processors), assuming a 4 core
+                        processor, this scope would run 8 test methods in parallel. -->
+      <Scope>MethodLevel</Scope>
+    </Parallelize>
+  </MSTest>
+</RunSettings>

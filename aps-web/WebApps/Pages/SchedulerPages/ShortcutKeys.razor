@@ -1,0 +1,54 @@
+﻿@using System.Collections.Generic
+
+<div class="shortcut-keys" style="scale: 0.7;position: relative; right: -20px; top: -5px">
+    @foreach (var key in ParsedKeys)
+    {
+        <span class="key-part" @onclick="() => OnKeyClick(key)">@key</span>
+        @if (key != ParsedKeys.Last())
+        {
+            <span class="key-separator">+</span>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Keys { get; set; }
+
+    private List<string> ParsedKeys => Keys.Split('+').Select(k => k.Trim()).ToList();
+
+    private void OnKeyClick(string key)
+    {
+        // Handle key click event, e.g., open a dialog to change the key
+        Console.WriteLine($"Key clicked: {key}");
+    }
+}
+
+<style>
+    .shortcut-keys {
+        display: flex;
+        align-items: center;
+    }
+
+    .key-part {
+        display: inline-block;
+        padding: 5px 10px;
+        margin: 0 2px;
+        background-color: #f0f0f0;
+        color: darkslategray;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .key-part:hover {
+            background-color: #e0e0e0;
+        }
+
+    .key-separator {
+        margin: 0 2px;
+        font-weight: bold;
+    }
+</style>

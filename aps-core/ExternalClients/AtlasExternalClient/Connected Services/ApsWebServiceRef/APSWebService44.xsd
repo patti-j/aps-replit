@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:tns="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions.cs" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/PlanetTogetherExtraServicesDefinitions.cs" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://desktop-kcipa6f:8788/APSWebService?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:complexType name="AdvanceClockRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="DateTime" type="xs:dateTime" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="AdvanceClockRequest" nillable="true" type="tns:AdvanceClockRequest" />
+  <xs:complexType name="ApsWebServiceScenarioRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceRequestBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ScenarioId" type="xs:long" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ApsWebServiceScenarioRequest" nillable="true" type="tns:ApsWebServiceScenarioRequest" />
+  <xs:complexType name="ApsWebServiceRequestBase">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Password" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="TimeoutDuration" type="ser:duration" />
+      <xs:element name="UserName" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ApsWebServiceRequestBase" nillable="true" type="tns:ApsWebServiceRequestBase" />
+  <xs:complexType name="AdvanceClockStringDateRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="DateTime" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="AdvanceClockStringDateRequest" nillable="true" type="tns:AdvanceClockStringDateRequest" />
+  <xs:complexType name="AdvanceClockTicksRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="DateTimeTicks" type="xs:long" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="AdvanceClockTicksRequest" nillable="true" type="tns:AdvanceClockTicksRequest" />
+  <xs:complexType name="ImportRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="CreateScenarioIfNew" type="xs:boolean" />
+          <xs:element minOccurs="0" name="ScenarioName" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ImportRequest" nillable="true" type="tns:ImportRequest" />
+  <xs:complexType name="OptimizeRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element name="MRP" type="xs:boolean" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="OptimizeRequest" nillable="true" type="tns:OptimizeRequest" />
+  <xs:complexType name="PublishRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="PublishType" type="xs:int" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="PublishRequest" nillable="true" type="tns:PublishRequest" />
+  <xs:complexType name="HoldRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceActionRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Hold" type="xs:boolean" />
+          <xs:element name="HoldDate" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="Reason" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="HoldRequest" nillable="true" type="tns:HoldRequest" />
+  <xs:complexType name="ApsWebServiceActionRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element name="PtObjects" nillable="true" type="tns:ArrayOfPtObjectId" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ApsWebServiceActionRequest" nillable="true" type="tns:ApsWebServiceActionRequest" />
+  <xs:complexType name="ArrayOfPtObjectId">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="PtObjectId" nillable="true" type="tns:PtObjectId" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfPtObjectId" nillable="true" type="tns:ArrayOfPtObjectId" />
+  <xs:complexType name="PtObjectId">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ActivityExternalId" nillable="true" type="xs:string" />
+      <xs:element name="JobExternalId" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="MoExternalId" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="OperationExternalId" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="PtObjectId" nillable="true" type="tns:PtObjectId" />
+  <xs:complexType name="LockRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceActionRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Lock" type="xs:boolean" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="LockRequest" nillable="true" type="tns:LockRequest" />
+  <xs:complexType name="AnchorRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceActionRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Anchor" type="xs:boolean" />
+          <xs:element minOccurs="0" name="AnchorDate" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="Lock" type="xs:boolean" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="AnchorRequest" nillable="true" type="tns:AnchorRequest" />
+  <xs:complexType name="UnscheduleRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceActionRequest">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="UnscheduleRequest" nillable="true" type="tns:UnscheduleRequest" />
+  <xs:complexType name="MoveRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceActionRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="AnchorMove" type="xs:boolean" />
+          <xs:element minOccurs="0" name="ExactMove" type="xs:boolean" />
+          <xs:element minOccurs="0" name="ExpediteSuccessors" type="xs:boolean" />
+          <xs:element minOccurs="0" name="LockMove" type="xs:boolean" />
+          <xs:element name="MoveDateTime" type="xs:dateTime" />
+          <xs:element name="ResourceExternalId" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="MoveRequest" nillable="true" type="tns:MoveRequest" />
+  <xs:complexType name="ChatRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element name="ChatMessage" nillable="true" type="xs:string" />
+          <xs:element name="RecipientName" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ChatRequest" nillable="true" type="tns:ChatRequest" />
+  <xs:complexType name="UndoByTransmissionNbrRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element name="TransmissionNbr" type="xs:unsignedLong" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="UndoByTransmissionNbrRequest" nillable="true" type="tns:UndoByTransmissionNbrRequest" />
+  <xs:complexType name="UndoActionsRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="NbrOfActionsToUndo" type="xs:int" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="UndoActionsRequest" nillable="true" type="tns:UndoActionsRequest" />
+  <xs:complexType name="UndoLastUserActionRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element name="InstigatorName" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="UndoLastUserActionRequest" nillable="true" type="tns:UndoLastUserActionRequest" />
+  <xs:complexType name="ActivityStatusUpdateRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element name="ActivityStatusUpdates" nillable="true" type="tns:ArrayOfActivityStatusUpdateObject" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ActivityStatusUpdateRequest" nillable="true" type="tns:ActivityStatusUpdateRequest" />
+  <xs:complexType name="ArrayOfActivityStatusUpdateObject">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ActivityStatusUpdateObject" nillable="true" type="tns:ActivityStatusUpdateObject" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfActivityStatusUpdateObject" nillable="true" type="tns:ArrayOfActivityStatusUpdateObject" />
+  <xs:complexType name="ActivityStatusUpdateObject">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:BaseActivityUpdateObject">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Comments" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="HoldReason" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="HoldUntil" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="OnHold" type="xs:boolean" />
+          <xs:element minOccurs="0" name="Paused" type="xs:boolean" />
+          <xs:element minOccurs="0" name="ProductionStatus" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ActivityStatusUpdateObject" nillable="true" type="tns:ActivityStatusUpdateObject" />
+  <xs:complexType name="BaseActivityUpdateObject">
+    <xs:sequence>
+      <xs:element name="PtObjectId" nillable="true" type="tns:PtObjectId" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="BaseActivityUpdateObject" nillable="true" type="tns:BaseActivityUpdateObject" />
+  <xs:complexType name="ActivityQuantitiesUpdateRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element name="ActivityQuantitiesUpdates" nillable="true" type="tns:ArrayOfActivityQuantitiesUpdateObject" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ActivityQuantitiesUpdateRequest" nillable="true" type="tns:ActivityQuantitiesUpdateRequest" />
+  <xs:complexType name="ArrayOfActivityQuantitiesUpdateObject">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ActivityQuantitiesUpdateObject" nillable="true" type="tns:ActivityQuantitiesUpdateObject" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfActivityQuantitiesUpdateObject" nillable="true" type="tns:ArrayOfActivityQuantitiesUpdateObject" />
+  <xs:complexType name="ActivityQuantitiesUpdateObject">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:BaseActivityUpdateObject">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ReportedGoodQty" type="xs:decimal" />
+          <xs:element minOccurs="0" name="ReportedScrapQty" type="xs:decimal" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ActivityQuantitiesUpdateObject" nillable="true" type="tns:ActivityQuantitiesUpdateObject" />
+  <xs:complexType name="ActivityDatesUpdateRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceScenarioRequest">
+        <xs:sequence>
+          <xs:element name="ActivityDatesUpdates" nillable="true" type="tns:ArrayOfActivityDatesUpdateObject" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ActivityDatesUpdateRequest" nillable="true" type="tns:ActivityDatesUpdateRequest" />
+  <xs:complexType name="ArrayOfActivityDatesUpdateObject">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ActivityDatesUpdateObject" nillable="true" type="tns:ActivityDatesUpdateObject" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfActivityDatesUpdateObject" nillable="true" type="tns:ArrayOfActivityDatesUpdateObject" />
+  <xs:complexType name="ActivityDatesUpdateObject">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:BaseActivityUpdateObject">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ReportedFinishDate" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="ReportedPostProcessingHrs" type="xs:double" />
+          <xs:element minOccurs="0" name="ReportedRunHrs" type="xs:double" />
+          <xs:element minOccurs="0" name="ReportedSetupHrs" type="xs:double" />
+          <xs:element minOccurs="0" name="ReportedStartDate" type="xs:dateTime" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ActivityDatesUpdateObject" nillable="true" type="tns:ActivityDatesUpdateObject" />
+  <xs:complexType name="KpiSnapshotOfLiveScenarioRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceRequestBase">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="KpiSnapshotOfLiveScenarioRequest" nillable="true" type="tns:KpiSnapshotOfLiveScenarioRequest" />
+  <xs:complexType name="InsertGroupUsersRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceRequestBase">
+        <xs:sequence>
+          <xs:element name="AccessLevel" nillable="true" type="xs:string" />
+          <xs:element name="AdGroup" nillable="true" type="xs:string" />
+          <xs:element name="SharedKey" nillable="true" type="xs:string" />
+          <xs:element name="users" nillable="true" type="tns:ArrayOfActiveDirectoryUser" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="InsertGroupUsersRequest" nillable="true" type="tns:InsertGroupUsersRequest" />
+  <xs:complexType name="ArrayOfActiveDirectoryUser">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ActiveDirectoryUser" nillable="true" type="tns:ActiveDirectoryUser" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfActiveDirectoryUser" nillable="true" type="tns:ArrayOfActiveDirectoryUser" />
+  <xs:complexType name="ActiveDirectoryUser">
+    <xs:sequence>
+      <xs:element name="ExternalId" nillable="true" type="xs:string" />
+      <xs:element name="FirstName" nillable="true" type="xs:string" />
+      <xs:element name="Guid" nillable="true" type="xs:string" />
+      <xs:element name="LastName" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ActiveDirectoryUser" nillable="true" type="tns:ActiveDirectoryUser" />
+  <xs:complexType name="DeleteGroupUsersRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ApsWebServiceRequestBase">
+        <xs:sequence>
+          <xs:element name="SharedKey" nillable="true" type="xs:string" />
+          <xs:element name="users" nillable="true" type="tns:ArrayOfActiveDirectoryUser" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="DeleteGroupUsersRequest" nillable="true" type="tns:DeleteGroupUsersRequest" />
+</xs:schema>

@@ -1,0 +1,60 @@
+﻿@page "/companiesViewer"
+@using ReportsWebApp.DB.Services
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@inject NavMenuUpdateService NavMenuUpdateService
+
+@if (viewPermission)
+{
+    <DxLoadingPanel @bind-Visible=loading IsContentBlocked="true" ApplyBackgroundShading="true">
+        <CompanyGrid @ref="companyGrid" WorkspaceOptions="PowerBIWorkspaces" OnSave="OnSave" Companies="Companies" RefreshComponent="RefreshComponent" FilterCompanyName="@CompanyNameFilter" />
+    </DxLoadingPanel>
+}
+
+@code {
+    public List<Company> Companies { get; set; } = new List<Company>();
+    public List<PBIWorkspaceOption> PowerBIWorkspaces { get; set; }
+    private bool viewPermission = false;
+    private bool loading { get; set; } = true;
+    private CompanyGrid companyGrid;
+
+    [SupplyParameterFromQuery(Name = "companyName")]
+    [Parameter]
+    public string? CompanyNameFilter { get; set; }
+
+    [Inject]
+    ICompanyService companyService { get; set; }
+    [Inject]
+    IUserService userService { get; set; }
+    [Inject]
+    PowerBIService PowerBIService { get; set; }
+    [Inject]
+    NavigationManager Navigation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(user, Permission.PTAdmin, NavigationManager, true)) return;
+        viewPermission = true;
+
+        Companies = await companyService.GetCompaniesAsync();
+        PowerBIWorkspaces = (await PowerBIService.GetWorkspacesAsync()).workspacesList.Select(workspace => new PBIWorkspaceOption
+            {
+                OptionName = workspace.WorkspaceName,
+                OptionValue = workspace.Id
+            }).ToList();
+        HTUtils.Utils.UpdateGridStyling(companyGrid.m_companyDbGrid);
+        HTUtils.Utils.UpdateGridStyling(companyGrid.m_companyGrid);
+        loading = false;
+    }
+
+    private async Task<Company> OnSave(Company company)
+    {
+        var saved = await companyService.SaveAsync(company);
+        //NavMenuUpdateService.TriggerUpdate();
+        return saved;
+    }
+    private async Task RefreshComponent()
+    {
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+}

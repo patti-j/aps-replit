@@ -1,0 +1,118 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\..\SolutionMiscFiles\ProjectSharedTargetsWindows.props" />
+  <PropertyGroup>
+    <AssemblyName>PT.ShopViewsControls</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\SolutionMiscFiles\AssemblyInfoShared.cs">
+      <Link>AssemblyInfoShared.cs</Link>
+    </Compile>
+    <Compile Update="ActivityStatus\ActivityDataSet.cs">
+      <DependentUpon>ActivityDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ActivityStatus\ActivityDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ActivityDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ActivityStatus\MaterialsDataSet.cs">
+      <DependentUpon>MaterialsDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ActivityStatus\MaterialsDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MaterialsDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ActivityStatus\ResourceInfoDataSet.cs">
+      <DependentUpon>ResourceInfoDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ActivityStatus\ResourceInfoDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ResourceInfoDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ActivityStatus\SubassembliesDataSet.cs">
+      <DependentUpon>SubassembliesDataSet.xsd</DependentUpon>
+    </Compile>
+    <Compile Update="ActivityStatus\ResourceInfoControl.cs" />
+    <Compile Update="ActivityStatus\SubassembliesDataSet.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SubassembliesDataSet.xsd</DependentUpon>
+    </Compile>
+    <Content Include="ActivityStatus\ActivityDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ActivityDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Update="ActivityStatus\ActivityDataSet.xsc">
+      <DependentUpon>ActivityDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ActivityStatus\ActivityDataSet.xss">
+      <DependentUpon>ActivityDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ActivityStatus\ActivityDataSet.xsx">
+      <DependentUpon>ActivityDataSet.xsd</DependentUpon>
+    </None>
+    <Content Include="ActivityStatus\MaterialsDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>MaterialsDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Update="ActivityStatus\MaterialsDataSet.xsc">
+      <DependentUpon>MaterialsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ActivityStatus\MaterialsDataSet.xss">
+      <DependentUpon>MaterialsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ActivityStatus\MaterialsDataSet.xsx">
+      <DependentUpon>MaterialsDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ActivityStatus\ResourceInfoDataSet.xsc">
+      <DependentUpon>ResourceInfoDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ActivityStatus\ResourceInfoDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ResourceInfoDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="ActivityStatus\ResourceInfoDataSet.xss">
+      <DependentUpon>ResourceInfoDataSet.xsd</DependentUpon>
+    </None>
+    <Content Include="ActivityStatus\SubassembliesDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>SubassembliesDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Update="ActivityStatus\SubassembliesDataSet.xsc">
+      <DependentUpon>SubassembliesDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ActivityStatus\SubassembliesDataSet.xss">
+      <DependentUpon>SubassembliesDataSet.xsd</DependentUpon>
+    </None>
+    <None Update="ActivityStatus\SubassembliesDataSet.xsx">
+      <DependentUpon>SubassembliesDataSet.xsd</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\..\Scheduling\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+    <ProjectReference Include="..\..\..\Scheduling\Scheduler\Scheduler.csproj" />
+    <ProjectReference Include="..\..\..\Services\Definitions\APIDefintion\APIDefinitions.csproj" />
+    <ProjectReference Include="..\..\..\Services\Definitions\ShopViewsDefinitions\ShopViewsDefinitions.csproj" />
+    <ProjectReference Include="..\..\UIDefinitions\UIDefinitions.csproj" />
+    <ProjectReference Include="..\ComponentLibrary\ComponentLibrary.csproj" />
+    <ProjectReference Include="..\ScenarioControls\ScenarioControls.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DevExpress.Win.Design" Version="25.2.3" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

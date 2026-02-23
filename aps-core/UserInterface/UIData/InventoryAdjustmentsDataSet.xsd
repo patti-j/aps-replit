@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="InventoryAdjustmentsDataSet" targetNamespace="http://tempuri.org/InventoryAdjustmentsDataSet.xsd" xmlns:mstns="http://tempuri.org/InventoryAdjustmentsDataSet.xsd" xmlns="http://tempuri.org/InventoryAdjustmentsDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="InventoryAdjustmentsDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_DataSetName="InventoryAdjustmentsDataSet" msprop:Generator_UserDSName="InventoryAdjustmentsDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Adjustments" msprop:Generator_TableClassName="AdjustmentsDataTable" msprop:Generator_RowEvArgName="AdjustmentsRowChangeEvent" msprop:Generator_TablePropName="Adjustments" msprop:Generator_TableVarName="tableAdjustments" msprop:Generator_RowEvHandlerName="AdjustmentsRowChangeEventHandler" msprop:Generator_RowDeletingName="AdjustmentsRowDeleting" msprop:Generator_RowChangingName="AdjustmentsRowChanging" msprop:Generator_RowDeletedName="AdjustmentsRowDeleted" msprop:Generator_UserTableName="Adjustments" msprop:Generator_RowChangedName="AdjustmentsRowChanged" msprop:Generator_RowClassName="AdjustmentsRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Event_x0020_Date" msprop:Generator_ColumnVarNameInTable="columnEvent_Date" msprop:Generator_ColumnPropNameInRow="Event_Date" msprop:Generator_ColumnPropNameInTable="Event_DateColumn" msprop:Generator_UserColumnName="Event Date" type="xs:dateTime" minOccurs="0" />
+              <xs:element name="Change_x0020_Qty" msprop:Generator_ColumnVarNameInTable="columnChange_Qty" msprop:Generator_ColumnPropNameInRow="Change_Qty" msprop:Generator_ColumnPropNameInTable="Change_QtyColumn" msprop:Generator_UserColumnName="Change Qty" type="xs:decimal" minOccurs="0" />
+              <xs:element name="Ending_x0020_Inventory" msprop:Generator_ColumnVarNameInTable="columnEnding_Inventory" msprop:Generator_ColumnPropNameInRow="Ending_Inventory" msprop:Generator_ColumnPropNameInTable="Ending_InventoryColumn" msprop:Generator_UserColumnName="Ending Inventory" type="xs:decimal" minOccurs="0" />
+              <xs:element name="Reason" msprop:Generator_ColumnVarNameInTable="columnReason" msprop:Generator_ColumnPropNameInRow="Reason" msprop:Generator_ColumnPropNameInTable="ReasonColumn" msprop:Generator_UserColumnName="Reason" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

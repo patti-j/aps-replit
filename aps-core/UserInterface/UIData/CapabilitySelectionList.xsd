@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema id="CapabilitySelectionList" targetNamespace="http://tempuri.org/CapabilitySelectionList.xsd"
+	elementFormDefault="qualified" attributeFormDefault="qualified" xmlns="http://tempuri.org/CapabilitySelectionList.xsd"
+	xmlns:mstns="http://tempuri.org/CapabilitySelectionList.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+	<xs:element name="CapabilitySelectionList" msdata:IsDataSet="true">
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element name="Capability">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Selected" type="xs:boolean" minOccurs="0" />
+							<xs:element name="Id" type="xs:long" minOccurs="0" />
+							<xs:element name="External_x0020_Id" type="xs:string" minOccurs="0" />
+							<xs:element name="Name" type="xs:string" minOccurs="0" />
+							<xs:element name="Description" type="xs:string" minOccurs="0" />
+							<xs:element name="Active_x0020_Resource_x0020_Count" type="xs:int" minOccurs="0" />
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+		</xs:complexType>
+		<xs:key name="CapabilitySelectionListKey1" msdata:PrimaryKey="true">
+			<xs:selector xpath=".//mstns:Capability" />
+			<xs:field xpath="mstns:Id" />
+		</xs:key>
+	</xs:element>
+</xs:schema>

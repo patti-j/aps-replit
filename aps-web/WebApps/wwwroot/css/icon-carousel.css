@@ -1,0 +1,63 @@
+﻿/* wwwroot/css/IconCarousel.css */
+.icon-carousel-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.owl-carousel .owl-item {
+    display: inline-block;
+    margin-right: 5px; /* Ajusta este valor para cambiar la separación entre ítems */
+}
+
+.icons-container .owl-carousel .owl-nav .owl-prev,
+.icons-container .owl-carousel .owl-nav .owl-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 2em;
+    padding: 5px !important;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.owl-nav .owl-prev {
+    left: 0;
+}
+
+.owl-nav .owl-next {
+    right: 0;
+}
+
+.owl-dots {
+    display: none;
+}
+
+.icon-item {
+    padding: 10px;
+    cursor: pointer !important;
+    border-radius: 5px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-align: center;
+}
+
+    .icon-item:hover {
+        transform: scale(1.1);
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .icon-item.selected {
+        box-shadow: 4px 4px 10px rgba(0, 123, 255, 0.5);
+    }
+
+    .icon-item i {
+        font-size: 24px;
+    }
+
+.owl-carousel .owl-stage-outer{
+    padding: 10px;
+    margin: 0px 30px;
+}

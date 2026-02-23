@@ -1,0 +1,33 @@
+﻿@using ReportsWebApp.DB.Services.Interfaces
+@inject IDarkModeService darkModeService
+
+<GenericToggle ToggleText="Dark Mode:" IsToggled="@isDarkMode" OnToggle="HandleDarkModeToggle" />
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    [Parameter]
+    public bool? UserIsDarkMode { get; set; }
+    private bool isDarkMode = false;
+
+    private string ToggleText = "Dark mode:";
+
+    private void HandleDarkModeToggle(bool toggled)
+    {
+        isDarkMode = toggled;
+        darkModeService.IsDarkMode = isDarkMode; //apply theme in system
+        darkModeService.SetDarkModeForUser(Id);//save change in database
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var currentMode = isDarkMode;
+        if(UserIsDarkMode.HasValue)
+            isDarkMode = UserIsDarkMode.Value;
+
+        if (isDarkMode != currentMode)
+        {
+            darkModeService.IsDarkMode = isDarkMode;
+        }
+    }
+}

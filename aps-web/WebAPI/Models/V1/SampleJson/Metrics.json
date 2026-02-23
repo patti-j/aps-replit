@@ -1,0 +1,23 @@
+[
+  {
+    "importDate": "2024-02-05T08:00:00",
+    "JobsOnTimePercent": 95.5,
+    "JobsOverduePercent": 4.5,
+    "OutputPerWeek": 3500.25,
+    "AverageLeadTime": 7,
+    "UsersWhoOptimize": 15,
+    "SalesOrderRev30": 75000.00,
+    "SalesOrderRev60": 120000.00,
+    "SalesOrderRev90": 180000.00,
+    "SalesOrderRev365": 650000.00,
+    "SalesOrders": 500,
+    "PurchaseOrders": 300,
+    "ScheduledJobs": 200,
+    "Operations": 1000,
+    "FailedToScheduleJobs": 5,
+    "JobsPastPlanningHorizon": 10,
+    "NumberOfUsers": 30,
+    "LastManualActionDate": "2024-01-15T16:30:00",
+    "LastAutomaticActionDate": "2024-01-20T10:15:00"
+  }
+]

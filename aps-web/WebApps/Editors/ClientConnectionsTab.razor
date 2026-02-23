@@ -1,0 +1,111 @@
+﻿@page "/planning-area-config"
+@using ReportsWebApp.DB.Models
+@inject NavigationManager Navigation
+
+@if (Model?.PlanningArea?.Settings?.SystemServiceSettings != null)
+{
+    <DxAccordionItem Text="Service Configuration" Expanded=false>
+        <HeaderTextTemplate>
+            <i class="fas fas fa-network-wired m-2"></i> Client Connections
+        </HeaderTextTemplate>
+        <ContentTemplate Context="accordionContext">
+            <DxFormLayout CssClass="w-100 p-3">
+                <DxFormLayoutItem Caption="Client Timeout (in seconds)" ColSpanLg="6">
+                    <DxSpinEdit @bind-Value="@ClientTimeoutSeconds" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Web API Timeout (in seconds)" ColSpanLg="6">
+                    <DxSpinEdit @bind-Value="@WebApiTimeoutSeconds" />
+                </DxFormLayoutItem>
+                <DxFormLayoutGroup Caption="Single Sign-On Overrides (leave blank to use serverwide configuration)">
+                    <DxFormLayoutItem Caption="Single Sign-On Certificate" ColSpanLg="12">
+                        <DxTextBox NullText="@(Model?.Server?.SsoThumbprint)" @bind-Text="@SingleSignOnCertificate" CssClass="form-control" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="SSO Domain" ColSpanLg="6">
+                        <DxTextBox NullText="@(Model?.Server?.SsoDomain)" @bind-Text="@SsoDomain" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="SSO Client Id" ColSpanLg="6">
+                        <DxTextBox NullText="@(Model?.Server?.SsoClientId)" @bind-Text="@SsoClientId" />
+                    </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+            </DxFormLayout>
+        </ContentTemplate>
+    </DxAccordionItem>
+}
+else
+{
+    <p><em>Loading client connections configuration...</em></p>
+}
+
+@code {
+    [Parameter]
+    public PADetails Model { get; set; }
+    
+    [Parameter]
+    public EventCallback<PADetails> ModelChanged { get; set; }
+
+    // Define properties to bind the fields
+    public int ClientTimeoutSeconds
+    {
+        get => Model?.PlanningArea?.Settings?.SystemServiceSettings?.ClientTimeoutSeconds ?? 0;
+        set
+        {
+            if (Model?.PlanningArea?.Settings?.SystemServiceSettings != null)
+            {
+                Model.PlanningArea.Settings.SystemServiceSettings.ClientTimeoutSeconds = value;
+                ModelChanged.InvokeAsync(Model);
+            }
+        }
+    }
+
+    public int WebApiTimeoutSeconds
+    {
+        get => Model?.PlanningArea?.Settings?.SystemServiceSettings?.WebApiTimeoutSeconds ?? 0;
+        set
+        {
+            if (Model?.PlanningArea?.Settings?.SystemServiceSettings != null)
+            {
+                Model.PlanningArea.Settings.SystemServiceSettings.WebApiTimeoutSeconds = value;
+                ModelChanged.InvokeAsync(Model);
+            }
+        }
+    }
+
+    public string SingleSignOnCertificate
+    {
+        get => Model?.PlanningArea?.Settings?.SsoValidationCertificateThumbprint?.ToString() ?? string.Empty;
+        set
+        {
+            if (Model?.PlanningArea?.Settings != null)
+            {
+                Model.PlanningArea.Settings.SsoValidationCertificateThumbprint = value;
+                ModelChanged.InvokeAsync(Model);
+            }
+        }
+    }
+
+    public string SsoDomain
+    {
+        get => Model?.PlanningArea?.Settings?.SystemServiceSettings?.SsoDomain ?? string.Empty;
+        set
+        {
+            if (Model?.PlanningArea?.Settings?.SystemServiceSettings != null)
+            {
+                Model.PlanningArea.Settings.SystemServiceSettings.SsoDomain = value;
+                ModelChanged.InvokeAsync(Model);
+            }
+        }
+    }
+
+    public string SsoClientId
+    {
+        get => Model?.PlanningArea?.Settings?.SystemServiceSettings?.SsoClientId ?? string.Empty;
+        set
+        {
+            if (Model?.PlanningArea?.Settings?.SystemServiceSettings != null)
+            {
+                Model.PlanningArea.Settings.SystemServiceSettings.SsoClientId = value;
+                ModelChanged.InvokeAsync(Model);
+            }
+        }
+    }
+}

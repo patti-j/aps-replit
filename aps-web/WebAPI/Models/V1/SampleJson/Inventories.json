@@ -1,0 +1,27 @@
+[
+  {
+    "importDate": "2024-02-05T10:30:00Z",
+    "ItemId": 12345,
+    "WarehouseId": 6789,
+    "InventoryId": 7890,
+    "LeadTimeDays": 7.5,
+    "BufferStock": 50.0,
+    "SafetyStock": 100.0,
+    "SafetyStockWarningLevel": 80.0,
+    "OnHandQty": 200.0,
+    "PlannerExternalId": "PLN123",
+    "StorageCapacity": 500.0,
+    "SafetyStockJobPriority": 1,
+    "ForecastConsumption": "Medium",
+    "MrpProcessing": "Automatic",
+    "MrpNotes": "Handle with care",
+    "TemplateJobId": 5678,
+    "TemplateManufacturingOrderId": 3456,
+    "HaveTemplateManufacturingOrderId": true,
+    "BufferPenetrationPercent": 90.0,
+    "AutoGenerateForecasts": true,
+    "ForecastInterval": "Monthly",
+    "NumberOfIntervalsToForecast": 12,
+    "MaterialAllocation": "Equal Distribution"
+  }
+]

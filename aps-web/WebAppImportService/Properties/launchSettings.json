@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "ImportFunction": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7243",
+      "workingDirectory": "$(TargetDir)"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "httpPort": 31892,
+      "useSSL": false
+    }
+  }
+}

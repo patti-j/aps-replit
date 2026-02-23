@@ -1,0 +1,43 @@
+﻿@page "/aibuilder"
+
+@if (viewPermission)
+{
+    <h3>AI Factory Builder</h3>
+    <div class="pt-3">
+        <p>Try our Beta AI Factory Builder!</p>
+        <p>With minimal inputs, our ChatGPT based tool will generate an Excel spreadsheet with the data needed to create a PlanetTogether scenario.</p>
+        <i>Note: this link takes you to a ChatGPT page and may require an account to use.</i>
+    </div>
+    <br />
+    <div>
+        <DxButton RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained"
+                  Text="Try Now!" Click="OpenTab" />
+    </div>
+}
+
+@code {
+    private User User { get; set; }
+    private bool hasLoaded;
+    private string Picture = string.Empty;
+    private bool viewPermission = false;
+
+    [Inject]
+    private IUserService m_userService { get; set; }
+    [Inject]
+    IAppInsightsLogger logger { get; set; }
+    [Inject]
+    IJSRuntime js { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+
+        if (Shared.Utils.BlockUsersByAuthStatus(User, null, NavigationManager)) return;
+        viewPermission = true;
+    }
+
+    private async Task OpenTab()
+    {
+        await js.InvokeVoidAsync("open", "https://chatgpt.com/g/g-40931vKxb-planettogether-ai-factory-builder", "_blank");
+    }
+}

@@ -1,0 +1,157 @@
+﻿@page "/servermanager/home"
+@using ReportsWebApp.Pages
+@using System.ComponentModel.Design
+@using ReportsWebApp.DB
+@inject             DB.Services.ServiceContainer ServiceContainer
+
+<div class="no-borders visible">
+    <DxFormLayout CssClass="no-borders">
+        <DxFormLayoutGroup>
+            <HeaderTemplate>
+                <ServerContextHeader Title="Welcome to the PlanetTogether Server Manager" ShowServerPill=true ShowSaveButton=false OnReturn="@NavigateTo"
+                                   Subtitle1=@ServiceContainer.ScopedAppStateService.Server?.Name ShowCloseButton=false />
+            </HeaderTemplate>
+            <Items>
+                @if (errorMessages.Count > 0)
+                {
+                    <ErrorMessagesDisplay ErrorMessages="@errorMessages" />
+                }
+                else if (isLoading)
+                {
+                    <DxLoadingPanel Visible="true" />
+                }
+                else
+                {
+                    <div class="flex-column w-100 mt-2">
+                        <div class="card p-2 content-block d-flex d-both-columns justify-content-between">
+                            @if (renderProduction)
+                            {
+                                <DxPieChart Data="@productionAreas" CssClass="w-100">
+                                    <DxChartTitle Text="Production Instances">
+                                    </DxChartTitle>
+                                    <DxPieChartSeries T="InstanceDistribution"
+                                                      TArgument="string"
+                                                      TValue="double"
+                                                      ArgumentField="dist => dist.Instance"
+                                                      ValueField="dist => dist.Area"
+                                                      SummaryMethod="Enumerable.Sum">
+                                    </DxPieChartSeries>
+                                    <DxChartLegend AllowToggleSeries="true" Position="RelativePosition.Inside" HorizontalAlignment="HorizontalAlignment.Right"
+                                                   Orientation="Orientation.Vertical" />
+                                </DxPieChart>
+                            }
+                            @if (renderDev)
+                            {
+                                <DxPieChart Data="@testingAreas" CssClass="w-100">
+                                    <DxChartTitle Text="Development Instances">
+                                    </DxChartTitle>
+                                    <DxPieChartSeries T="InstanceDistribution"
+                                                      TArgument="string"
+                                                      TValue="double"
+                                                      ArgumentField="dist => dist.Instance"
+                                                      ValueField="dist => dist.Area"
+                                                      SummaryMethod="Enumerable.Sum">
+                                    </DxPieChartSeries>
+                                    <DxChartLegend AllowToggleSeries="true" Position="RelativePosition.Inside" HorizontalAlignment="HorizontalAlignment.Right"
+                                                   Orientation="Orientation.Vertical" />
+                                </DxPieChart>
+                            }
+                            @if (renderQA)
+                            {
+                                <DxPieChart Data="@qaAreas" CssClass="w-100">
+                                    <DxChartTitle Text="QA Instances">
+                                    </DxChartTitle>
+                                    <DxPieChartSeries T="InstanceDistribution"
+                                                      TArgument="string"
+                                                      TValue="double"
+                                                      ArgumentField="dist => dist.Instance"
+                                                      ValueField="dist => dist.Area"
+                                                      SummaryMethod="Enumerable.Sum">
+                                    </DxPieChartSeries>
+                                    <DxChartLegend AllowToggleSeries="true" Position="RelativePosition.Outside" HorizontalAlignment="HorizontalAlignment.Right"
+                                                   Orientation="Orientation.Vertical" />
+                                </DxPieChart>
+                            }
+                        </div>
+
+
+                        @if (productionAreas != null)
+                        {
+                            <div class="card p-2 content-block dx-card mt-3" style="margin-bottom: 0;">
+                                <DxChart Data="@usersConnected.data">
+                                    <DxChartLineSeries T="InstanceUserData"
+                                                       Name="Active Users"
+                                                       TArgument="string"
+                                                       TValue="double"
+                                                       ArgumentField="d => d.InstanceName"
+                                                       ValueField="d => d.Users"
+                                                       SummaryMethod="Enumerable.Sum" />
+                                </DxChart>
+                            </div>
+                        }
+                    </div>
+                }
+            </Items>
+        </DxFormLayoutGroup>
+    </DxFormLayout>
+</div>
+@code {
+    private bool isLoading = true;
+    private List<string> errorMessages = new();
+
+    private bool renderProduction = false;
+    private bool renderDev = false;
+    private bool renderQA = false;
+
+    private List<InstanceDistribution> productionAreas;
+    private List<InstanceDistribution> testingAreas;
+    private List<InstanceDistribution> qaAreas;
+    private InstancesUsersConnectedModel usersConnected;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var currentServerState = ServiceContainer.ScopedAppStateService.Server;
+        if (currentServerState == null || currentServerState.Id < 1)
+        {
+            // Page not valid without a server to use, return to list
+            NavigateTo();
+        }
+        var User = await ServiceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, null, NavigationManager)) return;
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        //TODO: when updating SM backend, see if this data can be gotten more efficiently It's very slow right now if any instances can't report their status, and it queries every instance regardless of the environment type data being pulled
+        try
+        {
+            // ServerManagerClient serverClient = new ServerManagerClient(ServiceContainer.ScopedAppStateService.Server);
+
+            // productionAreas = (await serverClient.GetInstancesDistributionAsync(EnvironmentType.Production)).data;
+            // renderProduction = productionAreas.Any();
+
+            // testingAreas = (await serverClient.GetInstancesDistributionAsync(EnvironmentType.Dev)).data;
+            // renderDev = testingAreas.Any();
+
+            // qaAreas = (await serverClient.GetInstancesDistributionAsync(EnvironmentType.QA)).data;
+            // renderQA = qaAreas.Any();
+
+            // usersConnected = await serverClient.GetInstancesUsersConnectedAsync();
+        }
+        catch (Exception e)
+        {
+            errorMessages.Add(e.Message + " " + e.InnerException);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void NavigateTo()
+    {
+        NavigationManager.NavigateTo("servermanager/" + @ServiceContainer.ScopedAppStateService.BackPath);
+    }
+}

@@ -1,0 +1,90 @@
+﻿@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components
+@using ReportsWebApp.DB.Services.Interfaces
+@inject IGanttService GanttService
+
+<DxPopup Visible="true" Width="900px" HeaderText="@($"Label Template {SegmentType?.Name}")" Closed="HandleClose">
+    <div class="split-container">
+        <TreeViewComponent TreeNodes="treeNodes" OnNodeSelected="@(nodeName => textAreaComponent.AddText($"{{{{ {nodeName} }}}} "))" />
+        <TextAreaComponent @ref="textAreaComponent" OriginalTemplate="@Template" TemplateTextInputChanged="@(templateModified => TemplateModified = templateModified)" />
+    </div>
+    <div class="icons-container">
+        @if (fontAwesomeIcons.Count > 0)
+        {
+            <IconCarousel Icons="fontAwesomeIcons" IconClicked="@(iconClass => textAreaComponent.AddText($"{{{iconClass}}} "))" />
+        }
+        else
+        {
+            <div>Loading icons...</div>
+        }
+    </div>
+</DxPopup>
+
+@code {
+    private List<TreeNode> treeNodes = new();
+    private TextAreaComponent textAreaComponent;
+
+    public string TemplateModified { get; set; } = string.Empty;
+    [Parameter]
+    public string Template { get; set; } = string.Empty;
+    [Parameter]
+    public SegmentType SegmentType { get; set; }
+    [Parameter]
+    public TreeNodeType TreeNodeType { get; set; }
+    [Parameter]
+    public EventCallback<string> TemplateChanged { get; set; }
+
+    private List<string> fontAwesomeIcons = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        treeNodes = GanttLabelTemplateTreeNodeUtils.GenerateTreeNodes(GanttService.TemplateSegmentContext.exampleData, TreeNodeType);
+        if (SegmentType != null)
+            Template = SegmentType.Template;
+
+        TemplateModified = Template;
+        await LoadFontAwesomeIcons();
+    }
+
+    private async Task LoadFontAwesomeIcons()
+    {
+        fontAwesomeIcons = new List<string>
+        {
+            "fa-glass", 
+            "fa-music", 
+            "fa-magnifying-glass", 
+            "fa-envelope-open", 
+            "fa-heart", 
+            "fa-star", 
+            "fa-user", 
+            "fa-film", 
+            "fa-table-cells-large", 
+            "fa-table", 
+            "fa-table-list", 
+            "fa-check", 
+            "fa-close", 
+            "fa-search-plus", 
+            "fa-search-minus", 
+            "fa-power-off", 
+            "fa-signal", 
+            "fa-gear", 
+            "fa-trash-can", 
+            "fa-house", 
+            "fa-file", 
+            "fa-clock", 
+            "fa-road", 
+            "fa-download", 
+            "fa-circle-down", 
+            "fa-circle-up", 
+            "fa-inbox", 
+            "fa-circle-play", 
+            "fa-repeat" 
+        };
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleClose()
+    {
+        await TemplateChanged.InvokeAsync(TemplateModified);
+    }
+}

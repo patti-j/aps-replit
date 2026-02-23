@@ -1,0 +1,254 @@
+﻿@* @using Microsoft.EntityFrameworkCore *@
+@* @using ReportsWebApp.DB.Services.Interfaces *@
+@* @using ReportsWebApp.Helpers *@
+@* @inject NavMenuUpdateService NavMenuUpdateService *@
+@* @inject NavigationManager Navigation *@
+@* @inject IPlanningAreaDataService m_paDataService *@
+@* @inject ICategoryService m_categoryService *@
+@* @inject IUserService m_userService *@
+@* @inject IPlanningAreaLoginService m_paLoginService *@
+@* *@
+@* <h3>Planning Area Groups</h3> *@
+@* *@
+@* @if (PAGroups == null) *@
+@* { *@
+@*     <p><em>Loading...</em></p> *@
+@* } *@
+@* else *@
+@* { *@
+@*     <DxGrid ShowFilterRow="true" Data="@PAGroups"  *@
+@*             EditModelSaving="OnEditModelSaving" *@
+@*             UnboundColumnData="Grid_CustomUnboundColumnData" *@
+@*             EditStart="OnEditStart" *@
+@*             EditMode="GridEditMode.PopupEditForm" @ref="MyGrid" *@
+@*             PageSize="10" *@
+@*             CssClass="ch-480" *@
+@*             PagerPosition="GridPagerPosition.TopAndBottom" *@
+@*             PageSizeSelectorVisible="true" *@
+@*             PageSizeSelectorItems="@(new int[] { 10, 20, 100 })" *@
+@*             PageSizeSelectorAllRowsItemVisible="false" *@
+@*             PagerSwitchToInputBoxButtonCount="10" *@
+@*             PagerVisibleNumericButtonCount="10" *@
+@*             ColumnResizeMode="GridColumnResizeMode.ColumnsContainer"> *@
+@*         <Columns> *@
+@*             <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth"> *@
+@*                 <HeaderTemplate> *@
+@*                     <DxButton IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1" Text="Add" Click="() => MyGrid.StartEditNewRowAsync()" /> *@
+@*                 </HeaderTemplate> *@
+@*                 <CellDisplayTemplate> *@
+@*                     @{ *@
+@*                         var dataItem = context.DataItem; *@
+@*                     } *@
+@*                     <ActionDropdown DataItem="dataItem as PlanningAreaTag" Actions="_actions" /> *@
+@*                 </CellDisplayTemplate> *@
+@*             </DxGridCommandColumn> *@
+@*             <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" /> *@
+@*             <DxGridDataColumn FieldName="Name" Caption="Group Name" MinWidth="100" /> *@
+@*             <DxGridDataColumn FieldName="Planning Areas" UnboundType="GridUnboundColumnType.String" MinWidth="400" /> *@
+@*             <DxGridDataColumn FieldName="Users" UnboundType="GridUnboundColumnType.String" MinWidth="200" /> *@
+@*             <DxGridDataColumn FieldName="PermissionGroup.Name" Caption="PA Permission Group"/> *@
+@* *@
+@*         </Columns> *@
+@*         <EditFormTemplate Context="EditFormContext"> *@
+@*             @{ *@
+@*                 var group = (PlanningAreaTag)EditFormContext.EditModel; *@
+@*                 group.Company = User.Company; *@
+@*             } *@
+@*             <DxFormLayout CssClass="w-200"> *@
+@*                 <DxFormLayoutItem Caption="Name:" ColSpanMd="12"> *@
+@*                     <DxTextBox @bind-Text="@group.Name"/> *@
+@*                 </DxFormLayoutItem> *@
+@*                 <DxFormLayoutItem Caption="Users" ColSpanMd="12"> *@
+@*                     <DxTagBox Data="@AllUsers" @bind-Values="SelectedUsers" *@
+@*                               SearchMode="ListSearchMode.AutoSearch" *@
+@*                               TextFieldName="@(nameof(User.FullName))"/> *@
+@*                 </DxFormLayoutItem> *@
+@*                 <DxFormLayoutItem Caption="Permission Group:" ColSpanMd="12"> *@
+@*                     <DxComboBox Data="@PermissionGroups" *@
+@*                                 FilteringMode="DataGridFilteringMode.Contains" *@
+@*                                 TextFieldName="Name" AllowUserInput="true" *@
+@*                                 @bind-Value="@SelectedPermissionGroup" *@
+@*                                 DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth" *@
+@*                                 ValidateBy="ComboBoxValidateBy.Value"/> *@
+@*                 </DxFormLayoutItem> *@
+@*                 <DxFormLayoutItem Caption="Planning Areas" CaptionPosition="CaptionPosition.Vertical" ColSpanMd="12"> *@
+@*                     <PAMultiSelectBox OnChange="OnChange" SelectedData="SelectedPAs" Group="group"/> *@
+@*                 </DxFormLayoutItem> *@
+@*                 <ValidationSummary/> *@
+@*             </DxFormLayout> *@
+@*         </EditFormTemplate> *@
+@*         <CustomValidators> *@
+@*             <CustomValidator DataItemValidating="ValidateData"></CustomValidator> *@
+@*             <DataAnnotationsValidator></DataAnnotationsValidator> *@
+@*         </CustomValidators> *@
+@*     </DxGrid> *@
+@*     <DxPopup @bind-Visible="@PopupVisible" *@
+@*              HeaderText="Concurrency Exception" *@
+@*              BodyText="This record was updated or deleted while you were editing. Please retry" *@
+@*              ShowFooter="true" *@
+@*              @ref="Popup"> *@
+@*         <FooterContentTemplate> *@
+@*             <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Close" Click="CloseClick" /> *@
+@*         </FooterContentTemplate> *@
+@*     </DxPopup> *@
+@* }    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Warning"></ConfirmationDialog> *@
+@* *@
+@* *@
+@* @code { *@
+@*     IGrid? MyGrid { get; set; } *@
+@*     DxPopup Popup; *@
+@*     bool PopupVisible { get; set; } = false; *@
+@*     [Parameter] *@
+@*     public Func<Task> RefreshComponent { get; set; } *@
+@*     [Parameter] *@
+@*     public List<PlanningAreaTag> PAGroups { get; set; } *@
+@*     private User? User { get; set; } *@
+@*     private List<PADetails> SelectedPAs { get; set; } *@
+@*     private List<CustomField> SelectedCFs { get; set; } *@
+@*     public string RowVersion { get; set; } *@
+@*     private IEnumerable<ActionItem<PlanningAreaTag>> _actions; *@
+@*     private ConfirmationDialog Dialog; *@
+@*     private List<User> AllUsers { get; set; } *@
+@*     private IEnumerable<User> SelectedUsers { get; set; } *@
+@*     public List<PAPermissionGroup> PermissionGroups { get; set; } *@
+@*     public PAPermissionGroup SelectedPermissionGroup { get; set; } *@
+@* *@
+@*     protected override async Task OnInitializedAsync() *@
+@*     { *@
+@*         User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider); *@
+@*         AllUsers = await m_userService.GetUsersAsync(null, User.CompanyId); *@
+@*         PermissionGroups = await m_paLoginService.GetPermissionGroupsAsync(User.Company); *@
+@*         _actions = new List<ActionItem<PlanningAreaTag>> *@
+@*         { *@
+@*             new ActionItem<PlanningAreaTag> *@
+@*             { *@
+@*                 ActionText = "Edit", *@
+@*                 IconCssClass = "fa fa-info-circle", *@
+@*                 Action = async (item) => await StartEdit(item) *@
+@*             }, *@
+@*             new ActionItem<PlanningAreaTag> { ActionText = "Delete", IconCssClass = "fas fa-trash", Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog), } *@
+@*         }; *@
+@*     } *@
+@* *@
+@*     private async Task StartEdit(PlanningAreaTag a_item) *@
+@*     { *@
+@*         SelectedPAs = a_item.PlanningAreas ?? new List<PADetails>(); *@
+@*         SelectedPermissionGroup = (await m_paLoginService.GetPermissionGroupsAsync(User.Company)).FirstOrDefault(x => x.Id == a_item.PermissionGroupId); *@
+@*         await MyGrid.StartEditDataItemAsync(a_item); *@
+@*     } *@
+@* *@
+@*     protected override void OnAfterRender(bool firstRender) *@
+@*     { *@
+@*         HTUtils.Utils.UpdateGridStyling(MyGrid); *@
+@*         base.OnAfterRender(firstRender); *@
+@*     } *@
+@* *@
+@*     async Task CloseClick(MouseEventArgs args) *@
+@*     { *@
+@*         await RefreshComponent(); *@
+@*         await Popup.CloseAsync(); *@
+@*         //Navigation.NavigateTo(Navigation.Uri, forceLoad: true); *@
+@*     } *@
+@* *@
+@*     private async Task OnChange(List<PADetails> pas) *@
+@*     { *@
+@*         SelectedPAs = pas; *@
+@*     } *@
+@* *@
+@*     private async Task OnCFChange(List<CustomField> cfs) *@
+@*     { *@
+@*         SelectedCFs = cfs; *@
+@*     } *@
+@* *@
+@*     protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e) *@
+@*     { *@
+@*         var editModel = (e.EditModel as PlanningAreaTag); *@
+@*         if (editModel != null) *@
+@*         { *@
+@*             var dataItem = new PlanningAreaTag(); *@
+@* *@
+@*             dataItem.Id = e.IsNew ? 0 : editModel.Id; *@
+@*             dataItem.Name = editModel.Name; *@
+@*             dataItem.CreatedBy = User.Email; *@
+@*             dataItem.CreationDate = DateTime.UtcNow; *@
+@*             dataItem.CompanyId = editModel.Company.Id; *@
+@*             dataItem.PlanningAreas = SelectedPAs ?? new(); *@
+@*             dataItem.Users = SelectedUsers.ToList() ?? new List<User>(); *@
+@*             dataItem.PermissionGroupId = SelectedPermissionGroup.Id; *@
+@* *@
+@*             var savedEntity = await m_paDataService.AddOrUpdateTagAsync(dataItem); *@
+@*             if (e.IsNew) *@
+@*             { *@
+@*                 PAGroups.Add(savedEntity); *@
+@*             } *@
+@*             else *@
+@*             { *@
+@*                 PAGroups.Replace(savedEntity, (x, y) => x.Id == y.Id); *@
+@*             } *@
+@*         } *@
+@*         StateHasChanged(); *@
+@*     } *@
+@* *@
+@*     private async void OnEditStart(GridEditStartEventArgs args) *@
+@*     { *@
+@*         var group = (PlanningAreaTag)args.DataItem ?? new PlanningAreaTag(); *@
+@*         group.PlanningAreas = group.PlanningAreas ?? new(); *@
+@*         group.Users ??= new List<User>(); *@
+@*         SelectedPermissionGroup = group.PermissionGroup;  *@
+@*         SelectedPAs = group.PlanningAreas; *@
+@*         SelectedUsers = group.Users; *@
+@*     } *@
+@* *@
+@*     protected async Task DeleteItem(object a_item) *@
+@*     { *@
+@*         var editModel = (a_item as PlanningAreaTag); *@
+@*         if (editModel != null) *@
+@*         { *@
+@*             await m_paDataService.DeleteTagAsync(editModel); *@
+@*             PAGroups.Remove(editModel); *@
+@*             StateHasChanged(); *@
+@*         } *@
+@*     } *@
+@* *@
+@*     void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e) *@
+@*     { *@
+@*         if (e.FieldName == "Planning Areas") *@
+@*         { *@
+@*             var id = Convert.ToDecimal(e.GetRowValue("Id")); *@
+@* *@
+@*             var dataItem = PAGroups.Find(g => g.Id == id); *@
+@*             if (dataItem != null) *@
+@*             { *@
+@*                 if (dataItem.PlanningAreas.Count > 0) *@
+@*                 { *@
+@*                     List<string> w = dataItem.PlanningAreas.Select(x => $"{x.Name} {x.Version}").ToList(); *@
+@*                     e.Value = CommonUtils.ListToString(w, 200); *@
+@*                 } *@
+@*             } *@
+@*         } *@
+@*         else if (e.FieldName == "Users") *@
+@*         { *@
+@*             var id = Convert.ToDecimal(e.GetRowValue("Id")); *@
+@* *@
+@*             var dataItem = PAGroups.Find(g => g.Id == id); *@
+@*             if (dataItem != null && dataItem.Users != null) *@
+@*             { *@
+@*                 if (dataItem.Users.Count > 0) *@
+@*                 { *@
+@*                     List<string> w = dataItem.Users.Select(x => $"{x.FullName} ({x.Email})\n").ToList(); *@
+@*                     e.Value = CommonUtils.ListToString(w, 200); *@
+@*                 } *@
+@*             } *@
+@*         } *@
+@*     } *@
+@* *@
+@*     private void ValidateData(ValidationMessageStoreEventArgs e) *@
+@*     { *@
+@*         var tag = (PlanningAreaTag)e.EditModel; *@
+@*         if (SelectedPermissionGroup == null) *@
+@*         { *@
+@*             e.AddError("PermissionGroup", "You must specify a permission group."); *@
+@*         } *@
+@*     } *@
+@* *@
+@* } *@

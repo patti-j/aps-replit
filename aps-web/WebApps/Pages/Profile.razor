@@ -1,0 +1,164 @@
+﻿@page "/profile"
+@using TimeZoneConverter
+@inject IJSRuntime JSRuntime
+@inject IConfiguration Configuration
+@inject IUserService UserService
+
+@if (viewPermission)
+{
+    <environment include="Development">
+        <script>
+            window.copyToClipboard = function(text) {
+                navigator.clipboard.writeText(text)
+                    .then(() => console.log('Copied to clipboard!'))
+                    .catch(err => console.error('Failed to copy: ', err));
+            }
+        </script>
+    </environment>
+    <div class="d-flex flex-column justify-content-between h-100">
+        <div class="profile-container pt-3">
+            <div class="float-end">
+                <DarkModeSwitch Id=@(User?.Id) UserIsDarkMode=@(User?.DarkModeActive) />
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-6 profilesection">
+                    <div class="d-flex">
+                        <img alt="Profile Image" class="profile-image" src="@Picture">
+                        <div class="profile-info">
+                            <div class="name">@(User?.FullName)</div>
+                            <div class="role">@User?.Roles?.FirstOrDefault()?.Name</div>
+                            <div class="time">@(User?.CreationDate) local time</div>
+                            <a href="mailto:@(User?.Email)" class="email">@(User?.Email)</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div style="height: 25px">
+                    </div>
+                    <div class="mt-3 p-3">
+                        <h2>Company Details</h2>
+                        <p><strong>Assigned:</strong>  @User?.Company?.ToString()</p>
+                        <p><strong>Company Contact:</strong> @User?.Company?.Email</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-5">
+                    <div class="mt-3 p-3">
+                        <h2>Workspaces</h2>
+                        <div>
+                            @if (User?.Company?.Workspaces != null && User.Company.Workspaces.Any())
+                            {
+                                <ul>
+                                    @foreach (var workspace in User.Company.Workspaces)
+                                    {
+                                        <li>@workspace.Name</li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p>No workspaces found for the company.</p>
+                            }
+                            @if (environment == "local" || environment == "dev")
+                            {
+                                <button class="btn btn-primary" @onclick="CopyTextToClipboard">Copy AccessToken</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4" style="padding-left: 5em">
+                    <div class="mt-3 p-3">
+                        <h3>Time Zone:</h3>
+                        <DxComboBox TData="string" Data="TZConvert.KnownIanaCanonicalNames.ToList()" TValue="string" Value="User.TimeZone" SearchMode="ListSearchMode.AutoSearch" ValueChanged="TimeZoneChanged"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="footer-note">PlanetTogether Web App Version @Version</footer>
+    </div>
+}
+
+@code {
+    private User User { get; set; }
+    private bool hasLoaded;
+    private string Picture = string.Empty;
+    private bool viewPermission = false;
+    private string Version { get; set; }
+    private string? accessToken { get; set; }
+    private string environment;
+
+    [Inject]
+    private IUserService m_userService { get; set; }
+    [Inject]
+    IAppInsightsLogger logger { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userEmailClaim = AuthUtils.GetEmailFromClaim(authState.User);
+        accessToken = authState.User.Claims.FirstOrDefault(x => x.Type == "jwtToken")?.Value;
+        
+        environment = Configuration["Environment"];
+        try
+        {
+            User = m_userService.GetUserByEmail(userEmailClaim);
+
+            if (User.Exists())
+            {
+                viewPermission = true;
+                Picture = authState.User.Claims
+                    .Where(c => c.Type.Equals("picture"))
+                    .Select(c => c.Value)
+                    .FirstOrDefault() ?? string.Empty;
+            }
+
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex);
+            // Handle the exception (e.g., log it) and possibly redirect the user to an error page.
+            RedirectToError();
+        }
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Perform navigation logic after the component has rendered
+            if (!hasLoaded)
+            {
+                hasLoaded = true;
+                if (!User.Exists())
+                {
+                    RedirectToLogin();
+                }
+            }
+        }
+    }
+    private void RedirectToLogin()
+    {
+        NavigationManager.NavigateTo($"./login?redirectUri=/", true);
+    }
+
+    private void RedirectToError()
+    {
+        NavigationManager.NavigateTo($"./error");
+    }
+    private async Task CopyTextToClipboard()
+    {
+        await JSRuntime.InvokeVoidAsync("copyToClipboard", accessToken);
+    }
+
+    private void TimeZoneChanged(string? a_tz)
+    {
+        if (a_tz == null) return;
+        if (TZConvert.TryGetIanaCanonicalName(a_tz, out string tz))
+        {
+            User.TimeZone = tz;
+            UserService.UpdateUserTimeZone(User);
+        }
+    }
+
+}

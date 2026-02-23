@@ -1,0 +1,245 @@
+﻿/* =============================
+   Base Light Theme (Default)
+============================= */
+.notification-bell {
+    position: relative;
+    cursor: pointer;
+    font-size: 24px;
+    transition: color 0.3s ease;
+}
+
+.notification-details {
+    position: relative;
+}
+
+.custom-notification-list .notification-item .notification-details {
+    width: 90%;
+}
+
+.notification-detail-icon {
+    position: absolute;
+    top: 12px;
+    left: -3px;
+}
+
+.notification-detail-icon.color-red {
+    color: red;
+}
+
+.notification-detail-icon.color-green {
+    color: green;
+}
+
+.notification-detail-icon.color-yellow {
+    color: #ddcc00;
+}
+
+.notification-detail-items {
+    display: inline-block;
+    margin-left: 24px;
+    user-select: none;
+}
+
+[data-bs-theme="light"]{
+    --badge-blue: #2196F3;
+    --badge-blue-hover: #1e76a2;
+}
+
+    .notification-bell:hover {
+        color: #FFC107;
+    }
+
+    .notification-bell .fa-bell {
+        color: #555;
+        transition: color 0.3s ease;
+    }
+
+    .notification-bell:hover .fa-bell {
+        color: black;
+    }
+
+    .notification-bell .badge {
+        position: absolute;
+        right: 5px;
+        padding: 2px 6px;
+        border-radius: 50%;
+        background-color: var(--badge-blue);
+        color: white;
+        font-size: 12px;
+        transition: background-color 0.3s ease;
+    }
+
+.notification-bell .badge.new {
+    background-color: red;
+}
+
+.notification-bell:hover .badge.new {
+    background-color: #d00;
+}
+
+.notification-bell:hover .badge {
+    background-color: var(--badge-blue-hover);
+}
+
+.notifications-viewer {
+    position: absolute;
+    right: 10px;
+    top: 100%;
+    width: 400px;
+    height: 480px;
+    z-index: 1000;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    user-select: none;
+}
+
+.custom-notification-list {
+    height: 420px;
+}
+
+.custom-notification-list .notification-item {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    padding: 8px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.custom-notification-clear {
+    margin-top: 10px;
+}
+
+/* Status Colors */
+.color-red-main {
+    color: #e53935;
+}
+
+.color-yellow-main {
+    color: #fbc02d;
+}
+
+.color-green-main {
+    color: #43a047;
+}
+
+.color-blue-main {
+    color: #1e88e5;
+}
+
+.notification-detail-icon.fa-group {
+    font-size: 20px;
+}
+
+.notification-status-indicator {
+    width: 8px;
+    height: 8px;
+    box-shadow: 0 0px 3px red;
+    border-radius: 50%;
+    background-color: #f00;
+    display: inline-block;
+    position: absolute;
+    top: -3px;
+    left: -13px;
+}
+
+.notification-delete-indicator {
+    display: inline-block;
+    margin-right: 10px;
+    border-radius: 50%;
+    color: #f00;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    padding: 5px 6px 4px 7px;
+    font-size: 20px;
+}
+
+    .notification-delete-indicator:hover {
+        background-color: #ddd;
+        color: #d00;
+    }
+
+.custom-notification-list .notification-item .notification-icon {
+    margin-right: 10px;
+    font-size: 24px; /* Adjust as needed */
+}
+
+.notification-icon.dx-icon-read {
+    color: #cccccc;
+}
+
+.notification-icon.dx-icon-unread {
+    color: #007bff;
+}
+
+/* =============================
+   Dark Theme Override
+============================= */
+[data-bs-theme="dark"] {
+    --background-surface: #2c2c2c;
+    --surface-hover: #383838;
+    --text-primary: #e0e0e0;
+    --text-secondary: #aaaaaa;
+    --badge-blue: #64b5f6;
+    --badge-blue-hover: #42a5f5;
+    .notification-bell .fa-bell
+
+{
+    color: var(--text-secondary);
+}
+
+.notification-bell:hover .fa-bell {
+    color: var(--text-primary);
+}
+
+.notification-bell:hover .badge {
+    background-color: var(--badge-blue-hover);
+}
+
+    .notification-bell:hover .badge.new {
+        background-color: #d00;
+    }
+
+.notifications-viewer {
+    background-color: var(--background-surface);
+    color: var(--text-primary);
+    border-color: #444;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.custom-notification-list .notification-item {
+    background-color: #3a3a3a;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.notification-delete-indicator {
+    color: #ef5350;
+}
+
+    .notification-delete-indicator:hover {
+        background-color: #555;
+        color: #f44336;
+    }
+
+.notification-icon.dx-icon-read {
+    color: #777;
+}
+
+.notification-icon.dx-icon-unread {
+    color: #90caf9;
+}
+
+.notification-detail-items {
+    color: var(--text-primary);
+}
+
+.notification-date {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+}

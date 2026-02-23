@@ -1,0 +1,509 @@
+﻿@page "/reportsViewer/{PBIWorkspaceId}/{PBIReportId}/{CategoryId}/{ReportId}"
+@inject IJSRuntime JSRuntime
+@inject INavigationStateService NavigationStateService
+@inject IPlanningAreaDataService PlanningAreaDataService
+@using Microsoft.PowerBI.Api;
+@using Microsoft.PowerBI.Api.Models;
+@using Microsoft.Rest;
+@using ReportsWebApp.DB.Services.Interfaces
+@using System.Text.Json
+@using System.Net.Http.Headers
+@using Newtonsoft.Json.Linq
+@using Report = Microsoft.PowerBI.Api.Models.Report
+
+<div class="container mw-100" style="height: 100%">
+    @if (viewPermission)
+    {
+        <div class="header-container">
+            <div> @reportRefreshStatus </div>
+            <DxPopup @bind-Visible="@showPopup"
+            HeaderText="Error Loading Report"
+            ShowFooter="true"
+            HorizontalAlignment="HorizontalAlignment.Center">
+                <BodyContentTemplate>
+                    <div class="popup-spaced">
+                        <span class="fa fa-times-circle color-red-main alert-icon" /><p>@ErrorFound</p>
+                    </div>
+                </BodyContentTemplate>
+                <FooterContentTemplate>
+                    <DxButton Text="OK" Click="@context.CloseCallback"></DxButton>
+                </FooterContentTemplate>
+            </DxPopup>
+            <DxPopup @bind-Visible="@showPopupDatasetSuccess"
+            HeaderText="Refresh DataSet"
+            ShowFooter="true"
+            HorizontalAlignment="HorizontalAlignment.Center">
+                <BodyContentTemplate>
+                    <div class="popup-spaced">
+                        <p>Report Dataset refresh triggered. Please refresh the report page after some time</p>
+                    </div>
+                </BodyContentTemplate>
+                <FooterContentTemplate>
+                    <DxButton Text="OK" Click="@context.CloseCallback"></DxButton>
+                </FooterContentTemplate>
+            </DxPopup>
+            <DxPopup @bind-Visible="@showPopupDatasetFailure"
+            HeaderText="Error Refreshing Dataset"
+            ShowFooter="true"
+            HorizontalAlignment="HorizontalAlignment.Center">
+                <BodyContentTemplate>
+                    <div class="popup-spaced">
+                        <span class="fa fa-times-circle color-red-main alert-icon"/>
+                        <p>@datasetRefreshErrorFound</p>
+                    </div>
+                </BodyContentTemplate>
+                <FooterContentTemplate>
+                    <DxButton Text="OK" Click="@context.CloseCallback"></DxButton>
+                </FooterContentTemplate>
+            </DxPopup>
+            <div class="card w-auto">
+
+                <DxMenu Title="Menu"
+                DisplayMode="MenuDisplayMode.Mobile"
+                CollapseItemToIconMode="MenuCollapseItemToIconMode.None"
+                HamburgerButtonPosition="MenuHamburgerButtonPosition.Right"
+                HamburgerIconCssClass="fa-solid fa-bars"
+                SizeMode="SizeMode.Small">
+                    <Items>
+                        @if (UserIsAuthorizedToEdit())
+                        {
+                            <DxMenuItem Text="Edit" IconCssClass="oi oi-pencil" Click="OnEditClick" Visible="!editMode" Enabled="!PaginatedReport"/>
+                            <DxMenuItem Text="End Edit" IconCssClass="oi oi-check" Click="OnEditEndClick" Visible="editMode" Enabled="!PaginatedReport"/>
+                        }
+                        <DxMenuItem Text="Print" IconCssClass="oi oi-print" Click="() => PrintReport(PBIReportId)" Enabled="!PaginatedReport"/>
+                        <DxMenuItem Text="Full Screen" IconCssClass="oi oi-monitor" Click="() => FullScreenReport(PBIReportId)" />
+                        <DxMenuItem Text="Reset Filters" IconCssClass="oi oi-reload" Click="() => ReloadReport(PBIReportId)" Enabled="!PaginatedReport"/>
+                        <DxMenuItem Text="Refresh Report" IconCssClass="oi oi-reload" Click="() => RefreshReport(PBIReportId)" Enabled="!PaginatedReport"/>
+                        <DxMenuItem Enabled="@dataRefreshNeeded" Text="Refresh Dataset" IconCssClass="oi oi-reload" Click="() => RefreshDatasetAsync(PBIWorkspaceId, accessToken, PBIReportId)" />
+                    </Items>
+                </DxMenu>
+            </div>
+        </div>
+    }
+
+
+    @if (editMode)
+    {
+        <ReportEditor WorkspaceId="@PBIWorkspaceId" ReportId="@PBIReportId" />
+        <ConfirmationDialog DefaultConfirmButtonStyle="ButtonRenderStyle.Warning" @ref="ConfirmDialog"/>
+    }
+    <div class="@(editMode ? "d-none": "") report-div" @ref="@PowerBIElement"></div>
+    @if (ReportDisplay != null && ReportDisplay.PageDisplayNames.Any() && !ReportDisplay.CurrentPage.IsNullOrEmpty())
+    {
+        <div class="bottom-tabs">
+            <DxTabs ActiveTabIndex="ReportDisplay.CurrentIndex" ActiveTabIndexChanged="PageChanged">
+                @for (int i = 0; i < ReportDisplay.PageDisplayNames.Count; i++)
+                {
+                    <DxTab Text="@ReportDisplay.PageDisplayNames[i]"></DxTab>
+                }
+            </DxTabs>
+        </div>
+    }
+</div>
+
+@code {
+    [ParameterAttribute]
+    public String PBIWorkspaceId { get; set; }
+    [ParameterAttribute]
+    public String PBIReportId { get; set; }
+    [ParameterAttribute]
+    public String CategoryId { get; set; }
+    [ParameterAttribute]
+    public string ReportId { get; set; }
+
+    public ReportDisplay ReportDisplay { get; set; }
+
+    private ElementReference PowerBIElement;
+    private DB.Models.User User { get; set; }
+    //private string ReportName { get; set; }
+    private string ErrorFound { get; set; } = "";
+    private string datasetRefreshErrorFound { get; set; } = "";
+    private string ReportName { get; set; }
+    private bool editMode = false;
+    private bool showPopup = false;
+    private bool showPopupDatasetSuccess = false;
+    private bool showPopupDatasetFailure = false;
+    private bool viewPermission = false;
+    private string accessToken { get; set; }
+    private bool newReport = false;
+    private string reportRefreshStatus { get; set; } = "";
+    private Report report { get; set; }
+    private bool dataRefreshNeeded = false;
+    private string datasetId { get; set; }
+
+    bool ShowProgressBar = false;
+    [Inject]
+    PowerBIService PowerBIService { get; set; }
+    [Inject]
+    ICategoryService categoryService { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    IReportService m_reportsService { get; set; }
+    [Inject]
+    IAppInsightsLogger logger { get; set; }
+
+    private ConfirmationDialog ConfirmDialog { get; set; }
+    public bool PaginatedReport { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.ViewReports, NavigationManager)) return;
+        viewPermission = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender || newReport)
+        {
+            newReport = false;
+            await ShowReport();
+        }
+    }
+
+    /// <summary>
+    /// Shows the PowerBi report using JS interop
+    /// </summary>
+    /// <returns></returns>
+    private async Task ShowReport()
+    {
+        ShowProgressBar = true;
+        StateHasChanged();
+
+        ReportName = (await m_reportsService.GetReportByIdAsync(Int32.Parse(ReportId))).Name;
+
+        accessToken = await PowerBIService.GetPowerBIAccessTokenAsync();
+        var tokenCredentials = new TokenCredentials(accessToken, "Bearer");
+
+        using (var client = new PowerBIClient(
+            new Uri("https://api.powerbi.com/"), tokenCredentials))
+        {
+            try
+            {
+                report = await client.Reports.GetReportInGroupAsync(new Guid(PBIWorkspaceId), new Guid(PBIReportId));
+                EmbedToken tokenResponse;
+                bool paginated = false;
+                //to whomever at microsoft created these apis: I just wanna talk.
+                if (report.ReportType == "PaginatedReport")
+                {
+                    PaginatedReport = true;
+                    paginated = true;
+                    var datasetIds = new List<string>();
+                    var otherWorkspaces = new List<Guid>();
+                    if (string.IsNullOrEmpty(report.DatasetId))
+                    {
+                        Datasources datasources = await client.Reports.GetDatasourcesAsync(new Guid(PBIWorkspaceId), report.Id);
+                        foreach (Datasource datasource in datasources.Value)
+                        {
+                            var datasetId = "";
+                            switch (datasource.DatasourceType)
+                            {
+                                case "AnalysisServices":
+                                    if (datasource.ConnectionDetails.Server.StartsWith("powerbi:"))
+                                    {
+                                        datasetId = datasource.ConnectionDetails.Database;
+                                        int lastIndexOf = datasource.ConnectionDetails.Server.LastIndexOf("myorg/", StringComparison.Ordinal);
+                                        if (lastIndexOf != -1 && datasource.ConnectionDetails.Server.Length > lastIndexOf + 7)
+                                        {
+                                            string workspaceId = datasource.ConnectionDetails.Server[(lastIndexOf + 6)..].Split('/')[0];
+                                            otherWorkspaces.Add(new Guid(workspaceId));
+                                        }
+                                    }
+                                    else if (datasource.ConnectionDetails.Server.StartsWith("pbiazure:"))
+                                    {
+                                        int lastIndexOf = datasource.ConnectionDetails.Server.LastIndexOf("myorg/", StringComparison.Ordinal);
+                                        string? workspaceId = null;
+                                        if (lastIndexOf != -1 && datasource.ConnectionDetails.Server.Length > lastIndexOf + 7)
+                                        {
+                                            workspaceId = datasource.ConnectionDetails.Server[(lastIndexOf + 6)..].Split('/')[0];
+                                            otherWorkspaces.Add(new Guid(workspaceId));
+                                        }
+
+                                        int firstHyphen = datasource.ConnectionDetails.Database.IndexOf('-');
+                                        if (firstHyphen != -1) //should always be true
+                                        {
+                                            datasetId = datasource.ConnectionDetails.Database[(firstHyphen + 1)..]!;
+                                        }
+                                    }
+                                    break;
+
+                                    default:
+                                    //i dont think any other datasource type can be a valid dataset
+                                    break;
+                            }
+                            
+                            if (!string.IsNullOrEmpty(datasetId))
+                                datasetIds.Add(datasetId);
+                        }
+                    }
+                    else
+                    {
+                        datasetIds.Add(report.DatasetId);
+                    }
+                    var generateTokenRequestReport = new GenerateTokenRequestV2Report(new Guid(PBIReportId), false);
+                    var generateTokenRequest = new GenerateTokenRequestV2
+                    (
+                        reports: [generateTokenRequestReport], 
+                        datasets: datasetIds.Select(x => new GenerateTokenRequestV2Dataset(x, XmlaPermissions.ReadOnly)).ToList(),
+                        targetWorkspaces: otherWorkspaces.Select(x => new GenerateTokenRequestV2TargetWorkspace(x))
+                                                         .Concat([new GenerateTokenRequestV2TargetWorkspace(new Guid(PBIWorkspaceId))])
+                                                         .Distinct().ToList()
+                    );
+
+                    tokenResponse = await client.EmbedToken.GenerateTokenAsync(generateTokenRequest);
+                }
+                else
+                {
+                    PaginatedReport = false;
+                    var generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: "view");
+
+                    tokenResponse = await client.Reports.GenerateTokenAsync(
+                        new Guid(PBIWorkspaceId),
+                        new Guid(PBIReportId),
+                        generateTokenRequestParameters);
+                }
+                
+
+                ReportDisplay = new ReportDisplay();
+                ReportDisplay.ReportId = report.Id.ToString();
+                ReportDisplay.OnPageChanged += OnReportPageUpdate;
+
+                var dotNetReference = DotNetObjectReference.Create(ReportDisplay);
+                //for auditlog, we don't have to refresh dataset.
+                bool isItAuditReport = await FindIfReportIsAuditLogReport(report);
+                if (isItAuditReport)
+                {
+                    reportRefreshStatus = "";
+                    dataRefreshNeeded = true;
+                }
+                else
+                    await FindIfReportNeedsDatasetRefresh(report);
+
+                await Interop.ShowReport(JSRuntime, PowerBIElement, tokenResponse.Token, report.EmbedUrl,
+                    report.Id.ToString(), "", dotNetReference, paginated);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                logger.LogError(ex);
+                if (ex.Message.Contains("NotFound"))
+                {
+                    ErrorFound = ($"Error loading report: The report was not found");
+                }
+                else
+                {
+                    ErrorFound = ($"An error occurred: {ex.Source} {ex.Message}");
+                }
+
+                showPopup = true;
+            }
+        }
+
+        ShowProgressBar = false;
+        StateHasChanged();
+    }
+    /// <summary>
+    /// Finds if a report is auditlog report.
+    /// For AuditLogs, we don't refresh the dataset.
+    /// </summary>
+    /// <param name="a_report"></param>
+    /// <returns></returns>
+    private async Task<bool> FindIfReportIsAuditLogReport(Report a_report)
+    {
+        string getDataSeturl = $"https://api.powerbi.com/v1.0/myorg/groups/{PBIWorkspaceId}/reports/{PBIReportId}";
+        using HttpClient client = new HttpClient();
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
+
+        HttpResponseMessage response = await client.GetAsync(getDataSeturl);
+        GetDatasetsResults dataSets = await PowerBIService.GetDatasetsAsync(PBIWorkspaceId);
+        //string result = await response.Content.ReadAsStringAsync();
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            datasetId = ExtractDatasetId(json);
+            var datasetName = dataSets.datasetsList.Where(d => d.Id == datasetId).FirstOrDefault()?.Datasetname;
+            if (datasetName != null && datasetName.ToLower() == "auditlog")
+            return true;
+        }
+        return false;
+    }
+
+    private async Task FindIfReportNeedsDatasetRefresh(Report report)
+    {
+        using (var httpClient = new HttpClient())
+        {
+            // Add Bearer token
+            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
+            var url = $"https://api.powerbi.com/v1.0/myorg/groups/{PBIWorkspaceId}/datasets/{report.DatasetId}/refreshes?$top=1";
+            try
+            {
+                var response = await httpClient.GetAsync(url);
+                DateTime? powerBiRefreshDate ;
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var obj = JObject.Parse(json);
+                    powerBiRefreshDate = DateTime.Parse((string)obj["value"]?[0]?["endTime"]);
+                }
+                else
+                {
+                    powerBiRefreshDate = null;
+                    var error = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine("PowerBi api call failed" + error);
+                }
+                var publishDate = await PlanningAreaDataService.GetPublishDate(User.CompanyId);
+                reportRefreshStatus = publishDate > powerBiRefreshDate ? "⚠️ Report is outdated. Use 'Refresh Dataset' from the menu to load the latest data." : "✅ Report is up to date. No dataset refresh is needed.";
+                dataRefreshNeeded = publishDate > powerBiRefreshDate;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception occurred: {ex.Message}");
+            }
+        }
+    }
+
+    private void OnReportPageUpdate()
+    {
+        StateHasChanged();
+    }
+
+    private void PageChanged(int index)
+    {
+        ReportDisplay.SetIndex(index);
+        Interop.SwitchReportPage(JSRuntime, ReportDisplay.ReportId, ReportDisplay.CurrentPage);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Category category = categoryService.GetCategory(int.Parse(CategoryId));
+
+        if (category == null)
+        {
+            throw new Exception("Report not found");
+        }
+
+        bool isUserInCategoryRole = category.Roles.Any(role => User.Roles.Contains(role));
+        bool isReportInCategory = category.Reports.Any(report => report.PBIReportId == PBIReportId);
+        bool isUserAuthorized = User.IsAuthorizedFor(Permission.ManageReports);
+        bool isSameCompany = User.CompanyId == category.CompanyId;
+
+        if (isSameCompany && ((isUserInCategoryRole && isReportInCategory) || (isUserAuthorized && isReportInCategory)))
+        {
+            newReport = true;
+            StateHasChanged();
+        }
+        else
+        {
+            throw new Exception("Report not found.");
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private bool UserIsAuthorizedToEdit()
+    {
+        return User.IsAuthorizedFor(Permission.ManageReports);
+    }
+
+    private void PrintReport(string PBIReportId)
+    {
+        Interop.PrintReport(JSRuntime, PowerBIElement, PBIReportId);
+    }
+    private void FullScreenReport(string PBIReportId)
+    {
+        Interop.FullScreenReport(JSRuntime, PowerBIElement, PBIReportId);
+    }
+    private void ReloadReport(string PBIReportId)
+    {
+        Interop.ReloadReport(JSRuntime, PowerBIElement, PBIReportId);
+    }
+    private void RefreshReport(string PBIReportId)
+    {
+        Interop.RefreshReport(JSRuntime, PowerBIElement, PBIReportId);
+        FindIfReportNeedsDatasetRefresh(report);
+    }
+
+    /// <summary>
+    /// this method gets DataSetId of the current report and then refreshes it.
+    /// </summary>
+    /// <param name="groupId"></param>
+    /// <param name="accessToken"></param>
+    /// <param name="reportId"></param>
+    /// <returns></returns>
+    public async Task<bool> RefreshDatasetAsync(string groupId, string accessToken, string reportId)
+    {
+        using HttpClient client = new HttpClient();
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
+
+        string refreshDataseturl = $"https://api.powerbi.com/v1.0/myorg/groups/{groupId}/datasets/{datasetId}/refreshes";
+
+        HttpResponseMessage response = await client.PostAsync(refreshDataseturl, new StringContent(""));
+
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Dataset refresh triggered successfully.");
+            showPopupDatasetSuccess = true;
+            return true;
+        }
+        else
+        {
+            datasetRefreshErrorFound = ExtractErrorMessage (await response.Content.ReadAsStringAsync());
+            showPopupDatasetFailure = true;
+            return false;
+        }
+    }
+
+    private string ExtractErrorMessage(string jsonString)
+    {
+        using JsonDocument doc = JsonDocument.Parse(jsonString);
+        JsonElement root = doc.RootElement;
+
+        if (root.TryGetProperty("error", out JsonElement errorElement) &&
+            errorElement.TryGetProperty("message", out JsonElement messageElement))
+        {
+            return messageElement.GetString();
+        }
+
+        return "Unknow Error";
+    }
+
+    private static string ExtractDatasetId(string jsonString)
+    {
+        using JsonDocument doc = JsonDocument.Parse(jsonString);
+        JsonElement root = doc.RootElement;
+
+        if (root.TryGetProperty("datasetId", out JsonElement datasetIdElement))
+        {
+            return datasetIdElement.GetString();
+        }
+
+        return "Dataset ID not found";
+    }
+
+    private void OnEditClick(MenuItemClickEventArgs e)
+    {
+        editMode = true;
+        NavigationStateService.PreemptNavigation(this, PreemptionCallback);
+    }
+
+    private bool PreemptionCallback(string a_url, bool a_forceLoad)
+    {
+        Task<bool> confirmOperation = ConfirmDialog.ConfirmOperation("Edit in progress", "You are currently editing a report", 
+            ["Navigating away from this page may cause any pending unsaved changes to be lost.", "Are you sure you wish to continue?"], 
+            true, "Leave", "Stay");
+        confirmOperation.Wait();
+        bool iWantToleave = confirmOperation.Result;
+        if (iWantToleave)
+        {
+            OnEditEndClick(null);
+        }
+        return !iWantToleave;
+    }
+
+    private void OnEditEndClick(MenuItemClickEventArgs e)
+    {
+        NavigationStateService.ClearPreemption(this);
+        editMode = false;
+    }
+}

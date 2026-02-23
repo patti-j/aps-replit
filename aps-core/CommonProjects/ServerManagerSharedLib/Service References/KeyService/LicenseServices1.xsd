@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/LicenseServices" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/LicenseServices" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" />
+  <xs:complexType name="GetLastKeyUpdateDateTimeRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:KeyRequestBase">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="GetLastKeyUpdateDateTimeRequest" nillable="true" type="tns:GetLastKeyUpdateDateTimeRequest" />
+  <xs:complexType name="KeyRequestBase">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q1="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" base="q1:RequestBase">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="KeyRequestBase" nillable="true" type="tns:KeyRequestBase" />
+  <xs:complexType name="GetLastKeyUpdateTimeResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:KeyResponseBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="LastUpdatedDateTimeUTC" type="xs:dateTime" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="GetLastKeyUpdateTimeResponse" nillable="true" type="tns:GetLastKeyUpdateTimeResponse" />
+  <xs:complexType name="KeyResponseBase">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q2="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" base="q2:ResponseBase">
+        <xs:sequence>
+          <xs:element name="ResultKey" nillable="true" type="q2:KeyResultBase" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="KeyResponseBase" nillable="true" type="tns:KeyResponseBase" />
+  <xs:complexType name="GetLatestKeyRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension xmlns:q3="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" base="q3:GetKeyRequest">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="GetLatestKeyRequest" nillable="true" type="tns:GetLatestKeyRequest" />
+  <xs:complexType name="GetLatestKeyResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:KeyResponseBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="KeyStream" nillable="true" type="xs:base64Binary" />
+          <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" minOccurs="0" name="FileTypeResponse" nillable="true" type="q4:KeyFileType" />
+          <xs:element minOccurs="0" name="KeyFile" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="GetLatestKeyResponse" nillable="true" type="tns:GetLatestKeyResponse" />
+  <xs:complexType name="ConvertKeyRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:KeyRequestBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="SystemId" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ConvertKeyRequest" nillable="true" type="tns:ConvertKeyRequest" />
+  <xs:complexType name="ConvertKeyResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:KeyResponseBase">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ConvertKeyResponse" nillable="true" type="tns:ConvertKeyResponse" />
+  <xs:complexType name="UpdateLicenseIdRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:KeyRequestBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="NewLicenseId" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="UpdateLicenseIdRequest" nillable="true" type="tns:UpdateLicenseIdRequest" />
+  <xs:complexType name="UpdateLicenseIdResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:KeyResponseBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="CompanyLicensesList" nillable="true" type="tns:ArrayOfLicense" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="UpdateLicenseIdResponse" nillable="true" type="tns:UpdateLicenseIdResponse" />
+  <xs:complexType name="ArrayOfLicense">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="License" nillable="true" type="tns:License" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfLicense" nillable="true" type="tns:ArrayOfLicense" />
+  <xs:complexType name="License">
+    <xs:sequence>
+      <xs:element name="CompanyId" type="xs:long" />
+      <xs:element name="SerialCode" nillable="true" type="xs:string" />
+      <xs:element name="LicenseId" nillable="true" type="xs:string" />
+      <xs:element name="LicenseTypeId" type="xs:long" />
+      <xs:element name="LengthOfInitialMaintenanceTerm" type="xs:long" />
+      <xs:element name="ExpirationDate" type="xs:dateTime" />
+      <xs:element name="SystemId" nillable="true" type="xs:string" />
+      <xs:element name="IncludeFiniteOption" type="xs:boolean" />
+      <xs:element name="IncludeOptimization" type="xs:boolean" />
+      <xs:element name="IncludeAdvancedPlanning" type="xs:boolean" />
+      <xs:element name="MaintenanceExpirationDate" type="xs:dateTime" />
+      <xs:element name="EditionId" type="xs:long" />
+      <xs:element name="Unlimited" type="xs:boolean" />
+      <xs:element name="AllowJobEdits" type="xs:boolean" />
+      <xs:element name="MaxNbrPlants" type="xs:long" />
+      <xs:element name="MaxNbrMasterSchedulers" type="xs:long" />
+      <xs:element name="MaxNbrWhatIfUsers" type="xs:long" />
+      <xs:element name="MaxNbrViewOnlyUsers" type="xs:long" />
+      <xs:element name="MaxNbrShopViewUsers" type="xs:long" />
+      <xs:element name="MaxNbrFlexUsers" type="xs:long" />
+      <xs:element name="Optimizer" type="xs:boolean" />
+      <xs:element name="MaterialRequirements" type="xs:boolean" />
+      <xs:element name="MultipleResourceRequirements" type="xs:boolean" />
+      <xs:element name="ProcessManufacturing" type="xs:boolean" />
+      <xs:element name="WhatIfScenarios" type="xs:boolean" />
+      <xs:element name="SalesAndOperationsPlanning" type="xs:boolean" />
+      <xs:element name="BrandId" type="xs:long" />
+      <xs:element name="MultipleOperations" type="xs:boolean" />
+      <xs:element name="Import" type="xs:boolean" />
+      <xs:element name="ExportToDatabase" type="xs:boolean" />
+      <xs:element name="LastKeyFieldModificationUTC" type="xs:dateTime" />
+      <xs:element name="Notes1" nillable="true" type="xs:string" />
+      <xs:element name="Notes2" nillable="true" type="xs:string" />
+      <xs:element name="Notes3" nillable="true" type="xs:string" />
+      <xs:element name="UpdateCount" type="xs:long" />
+      <xs:element name="Expirable" type="xs:boolean" />
+      <xs:element name="SystemIdTypeId" type="xs:long" />
+      <xs:element name="LicenseExpirationGracePeriodDays" type="xs:int" />
+      <xs:element name="MaintenanceGracePeriodDays" type="xs:int" />
+      <xs:element name="IncludeBufferManagement" type="xs:boolean" />
+      <xs:element name="IncludeBottleneckScheduling" type="xs:boolean" />
+      <xs:element name="IncludeExpressMRP" type="xs:boolean" />
+      <xs:element name="IncludeCoPilot" type="xs:boolean" />
+      <xs:element name="IncludeAddins" type="xs:boolean" />
+      <xs:element name="IncludeKPIs" type="xs:boolean" />
+      <xs:element name="IncludeProductivityOptimization" type="xs:boolean" />
+      <xs:element name="IncludeFinancialOptimization" type="xs:boolean" />
+      <xs:element name="IncludeCrossWarehousePlanning" type="xs:boolean" />
+      <xs:element name="IncludeCrossPlantPlanning" type="xs:boolean" />
+      <xs:element name="IncludeLotControlledPlanning" type="xs:boolean" />
+      <xs:element name="IncludeProcessFlow" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="License" nillable="true" type="tns:License" />
+  <xs:complexType name="GetCompanyLicenseDataRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:KeyRequestBase">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="GetCompanyLicenseDataRequest" nillable="true" type="tns:GetCompanyLicenseDataRequest" />
+  <xs:complexType name="GetCompanyLicenseDataResponse">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:KeyResponseBase">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="CompanyLicensesList" nillable="true" type="tns:ArrayOfLicense" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="GetCompanyLicenseDataResponse" nillable="true" type="tns:GetCompanyLicenseDataResponse" />
+</xs:schema>

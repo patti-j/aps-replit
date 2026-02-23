@@ -1,0 +1,18 @@
+﻿@page "/serviceUserNotAllowedHere"
+@inject NavigationManager NavigationManager
+    <h3>Service Users Not Permitted</h3>
+    <div>Interactive Sessions are not enabled for Service Users. Please login as a Web App User to use the Web App.</div>
+    <br />
+    <div>
+        <DxButton RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained"
+                  Text="Change User" Click="Logoff" />
+    </div>
+    
+@code {
+
+    private void Logoff()
+    {
+         // Redirect to the logout page
+        NavigationManager.NavigateTo($"/logout", true);
+    }
+}

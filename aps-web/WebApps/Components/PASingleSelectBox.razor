@@ -1,0 +1,132 @@
+﻿@using ReportsWebApp.DB.Services.Interfaces
+@if (viewPermission && Data.Any())
+{
+    <DxGrid Data="@Data"
+            @ref="Grid"
+            AllowSelectRowByClick="true"
+            SelectionMode="GridSelectionMode.Single"
+            SelectAllCheckboxMode="GridSelectAllCheckboxMode.Mixed"
+            SelectedDataItem="SelectedItem"
+            ShowFilterRow=true
+            PageSize="1000"
+            CssClass="bulk-grid" 
+            UnboundColumnData="Grid_CustomUnboundColumnData"
+            SelectedDataItemChanged="(object x) => OnSelectedItemChange((PADetails)x)">
+        <Columns>
+            <DxGridSelectionColumn Width="50px"></DxGridSelectionColumn>
+            <DxGridDataColumn FieldName="@nameof(PADetails.Name)"
+                                Caption="Name"/>
+            <DxGridDataColumn FieldName="@nameof(PADetails.Version)"
+                                Caption="Version"/>
+            <DxGridDataColumn FieldName="@nameof(PADetails.Environment)"
+                                Caption="Environment"/>
+            <DxGridDataColumn FieldName="Tags" UnboundType="GridUnboundColumnType.String"
+                              Caption="Tags" />
+            <DxGridCommandColumn>
+                <HeaderTemplate>
+                    Custom Fields
+                </HeaderTemplate>
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = (PADetails)context.DataItem;
+                        <span>@(dataItem?.CFGroup?.CustomFields?.Count() ?? 0) Fields </span>
+                        <span @onclick:stopPropagation="true">
+                            <DxButton IconCssClass="fa fa-arrow-up-right-from-square" CssClass="btn-icon" Click="() => ShowCfPopup(dataItem)" />
+                        </span>
+                    }
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+        </Columns>
+    </DxGrid>
+}
+<DxPopup @bind-Visible="ShowCFPopup" HeaderText="@($"Fields Assinged to {InspectedPA?.Name}")">
+    <CFGroupSelector Data="InspectedPA?.CFGroup?.CustomFields ?? new()" IsReadonly="true"></CFGroupSelector>
+</DxPopup>
+
+@code {
+
+    private User User { get; set; }
+    DxGrid Grid { get; set; }
+    public List<User> Users { get; set; } = new List<User>();
+    private bool viewPermission = false;
+    private bool ShowCFPopup { get; set; } = false;
+    private PADetails? InspectedPA { get; set; } = new();
+    private bool selectedDataApplied = false;
+
+    [Parameter]
+    public List<PADetails> Data { get; set; }
+    [Parameter]
+    public PADetails? SelectedItem { get; set; }
+
+    [Parameter]
+    public Func<PADetails, Task> OnChange { get; set; }
+    [Parameter]
+    public PlanningAreaTag Group { get; set; }
+
+
+    [Inject]
+    IUserService userService { get; set; }
+    [Inject]
+    IPlanningAreaLoginService paService { get; set; }
+    [Inject]
+    IPlanningAreaDataService paDataService { get; set; }
+    [Inject] IAuthorizationService m_authService { get; set; }
+
+    private void OnSelectedItemChange(PADetails pa)
+    {
+        OnChange(pa);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, Permission.EditUsers, NavigationManager)) return;
+        viewPermission = true;
+
+        if (User.Exists())
+        {
+            if (Data == null)
+            {
+                Data = await paDataService.GetPlanningAreasByCompanyIdAsync(User.CompanyId);
+            }
+            if (Group == null)
+            {
+                SelectedItem = Data.FirstOrDefault(x => SelectedItem?.Id == x.Id);
+            } else
+            {
+                SelectedItem = Data.FirstOrDefault(x => Group.PlanningAreas.Any(y => x.Id == y.Id));
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (viewPermission && Grid != null && !selectedDataApplied)
+        {
+            Grid.BeginUpdate();
+            //Grid.SelectedDataItems = SelectedData;
+            selectedDataApplied = true;
+            Grid.EndUpdate();
+        }
+        
+        HTUtils.Utils.UpdateGridStyling(Grid);
+    }
+
+    private void ShowCfPopup(PADetails? pa)
+    {
+        ShowCFPopup = true;
+        InspectedPA = pa;
+    }
+
+    void Grid_CustomUnboundColumnData(GridUnboundColumnDataEventArgs e)
+    {
+        if (e.FieldName == "Tags")
+        {
+            var id = Convert.ToDecimal(e.GetRowValue("Id"));
+
+            var dataItem = Data.Find(x => x.Id == id);
+
+            e.Value = string.Join(", ", dataItem?.Tags.Select(x => x.Name).ToList() ?? new());
+        }
+    }
+}

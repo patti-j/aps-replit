@@ -1,0 +1,81 @@
+﻿
+
+.tree-container dxbl-tree-list {
+    width: 100%;
+}
+
+.tree-container {
+    width: 100%;
+    margin: 12px;
+    height: 500px;
+    overflow-y: auto;
+}
+
+.tree-container dxbl-tree-list {
+    height: 100%;
+}
+
+.menu-item {
+    display: flex;
+    align-content: baseline;
+    justify-content: space-between;
+    margin: 2px 3px;
+    padding: 3px 5px 2px 5px;
+    align-items: baseline;
+    width: 225px;
+    border-radius: 0 20px 20px 0;
+    user-select: none;
+}
+
+.menu-item.selected {
+    background: var(--bs-primary);
+    color: #fafafa;
+}
+
+.menu-item:hover.selected {
+    background: var(--bs-info);
+    transition: .3s;
+}
+
+.menu-item:hover {
+    background: var(--bs-dark-bg-subtle);
+    transition: .3s;
+}
+
+[data-bs-theme=dark] .menu-item:hover {
+    background: var(--bs-light-bg-subtle);
+    transition: .3s;
+}
+
+.menu-item-details {
+    align-items: baseline;
+    cursor: pointer;
+    display: flex;
+}
+
+.menu-item-details .menu-title {
+    display: inline-block;
+    width: 150px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.menu-item-details .menu-title.long {
+    width: 180px;
+}
+
+.menu-item-details i {
+    padding: 0 6px;
+    width: 32px;
+}
+
+.menu-item span.fa {
+    line-height: 0;
+    border-radius: 20px;
+    text-align: center;
+    padding: 12px;
+    width: 40px;
+    height: 16px;
+    font-size: 8pt;
+}

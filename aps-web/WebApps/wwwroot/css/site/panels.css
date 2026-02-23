@@ -1,0 +1,92 @@
+﻿
+.sliding-panel {
+    position: fixed;
+    right: 0;
+    top: 60px;
+    width: 100%;
+    height: calc(100vh - 60px);
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    transform: translateX(100%);
+    transition: transform 0.54s ease;
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.sliding-panel.visible {
+    transform: translateX(0);
+}
+
+.pbi-container.dashboard {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: stretch;
+}
+
+.report-div {
+    height: calc(100% - 30px);
+}
+
+.pbi-overview {
+    height: calc(100% - 30px);
+    overflow: hidden;
+}
+.pbi-tab {
+    flex-grow: 1;
+    display: flex;
+    height: calc(100% - 30px);
+    position: relative;
+}
+
+.pbi-report {
+    flex-grow: 1;
+    margin-bottom: 10px;
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.pbi-report.show {
+    opacity: 1;
+    transition: .2s;
+}
+
+.pbi-report.hide {
+    opacity: 0;
+    z-index: -999;
+}
+
+.pbi-container.dashboard {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: stretch;
+}
+
+.pbi-container div {
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+/* Style for Blazor error UI */
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    /* Dismiss button within Blazor error UI */
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }

@@ -1,0 +1,16 @@
+[
+  {
+    "importDate": "2024-02-05T08:00:00Z",
+    "JobId": 12345,
+    "ManufacturingOrderId": 67890,
+    "OperationId": 45678,
+    "MaterialRequirementId": 98765,
+    "ActivityId": 54321,
+    "SupplyingJobId": 56789,
+    "SupplyingManufacturingOrderId": 23456,
+    "SupplyingOperationId": 78901,
+    "SupplyingActivityId": 12345,
+    "SuppliedQty": 100.5,
+    "SupplyBomLevel": 2
+  }
+]

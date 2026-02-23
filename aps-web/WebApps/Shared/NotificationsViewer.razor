@@ -1,0 +1,97 @@
+﻿@using DevExpress.Blazor
+@using ReportsWebApp.Common
+@using ReportsWebApp.DB.Services.Interfaces
+
+<div class="notifications-viewer dxbl-theme">
+    <DxListBox TData="Notification" TValue="Notification" Data="@Notifications"
+               CssClass="custom-notification-list"
+               SelectionMode="ListBoxSelectionMode.None">
+        <ItemDisplayTemplate>
+            @{
+                var notification = context.DataItem;
+                @if (!notification.Deleted)
+                {
+                    <div class="@($"notification-item {(notification.Read ? "read" : "unread")}")"
+                         @onclick="() => MarkNotificationAsRead(notification)">
+                        <i class="@($"notification-icon {(notification.Read ? "dx-icon-read" : "dx-icon-unread")}")"></i>
+                        <div class="notification-details">
+                            <span class="notification-detail-icon @GetIconClass(notification.Type)"></span>
+                            <span class="notification-detail-items">
+                                @foreach (var line in notification.Text.Split('\n'))
+                                {
+                                    <div class="notification-message">
+                                        @line
+                                    </div>
+                                }
+                                <div class="notification-date">
+                                    @notification.CreationDate.ToString()
+                                </div>
+                            </span>
+                            <!-- Red dot for unread notifications, blue dot for read notifications -->
+                            @if (!notification.Read)
+                            {
+                                <span class="notification-status-indicator"></span>
+                            }
+                        </div>
+
+                        <span class="notification-delete-indicator fa fa-times" @onclick="() => DeleteNotification(notification)" @onclick:stopPropagation="true" @onclick:preventDefault="true"></span>
+                    </div>
+                }
+            }
+        </ItemDisplayTemplate>
+    </DxListBox>
+    <DxButton Text="Clear All" Click="ClearAll" CssClass="custom-notification-clear"></DxButton>
+</div>
+
+@code {
+    [Parameter]
+    public List<Notification> Notifications { get; set; }
+    [Parameter]
+    public EventCallback<Notification> OnNotificationRead { get; set; }
+    [Parameter]
+    public EventCallback<Notification> OnNotificationDeleted { get; set; }
+    [Inject]
+    INotificationService NotificationService { get; set; }
+
+
+    private async Task MarkNotificationAsRead(Notification notification)
+    {
+        await OnNotificationRead.InvokeAsync(notification);
+        StateHasChanged();
+    }
+
+    private async Task DeleteNotification(Notification notification)
+    {
+        await InvokeAsync(async () => await NotificationService.DeleteAsync(notification));
+        await OnNotificationDeleted.InvokeAsync(notification);
+        StateHasChanged();
+    }
+
+    private string GetIconClass(ENotificationType type)
+    {
+        switch (type)
+        {
+            case ENotificationType.XlsImportComplete:
+                return "fa fa-check-circle color-green-main";
+            case ENotificationType.XlsImportFailed:
+                return "fa fa-times-circle color-red-main";
+            case ENotificationType.NewUser:
+            case ENotificationType.NewRole:
+                return "fa fa-plus color-green-main";
+            case ENotificationType.UserRolesChanged:
+                return "fa fa-group color-blue-main";
+            default:
+                return "fa fa-exclamation-triangle color-yellow-main";
+        }
+    }
+
+    private async Task ClearAll()
+    {
+        foreach (var notification in Notifications.ToList())
+        {
+            await OnNotificationDeleted.InvokeAsync(notification);
+            StateHasChanged();
+        }
+    }
+
+}

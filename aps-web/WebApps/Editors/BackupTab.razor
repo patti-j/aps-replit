@@ -1,0 +1,114 @@
+﻿@using ReportsWebApp.DB.Models
+@inject IJSRuntime JSRuntime
+
+<DxAccordionItem Text="Service Configuration" Expanded=false>
+    <HeaderTextTemplate>
+        <i class="fas fas fa-cloud-upload-alt m-2"></i>Backup Settings
+    </HeaderTextTemplate>
+    <ContentTemplate Context="accordionContext">
+        <DxFormLayout CssClass="w-100 p-3">
+            <DxFormLayoutItem Caption="System Folder" ColSpanMd="10">
+                <DxTextBox @bind-Text="StartUpFolder" ReadOnly="true" CssClass="form-control" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem ColSpanMd="2">
+                <DxButton Text="Copy Path" Click="CopyPath" RenderStyle="ButtonRenderStyle.Secondary" IconCssClass="fa fa-solid fa-copy"/>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Record System Activity" ColSpanMd="12" >
+                <DxCheckBox @bind-Checked="RecordSystem">
+                    <div>
+                        Enable this option to record system activities and store them for troubleshooting and audit purposes.
+                    </div>
+                </DxCheckBox>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Max Session Recordings" ColSpanLg="4">
+                <DxSpinEdit @bind-Value="MaxSessionRecordings"/>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Max System Backups Per Session" ColSpanLg="4">
+                <DxSpinEdit @bind-Value="MaxSystemBackups"/>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Minutes Between Backups" ColSpanLg="4">
+                <DxSpinEdit @bind-Value="MinutesBetweenBackups"/>
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </ContentTemplate>
+</DxAccordionItem>
+
+@code {
+    [Parameter]
+    public PADetails Model { get; set; }
+    
+    [Parameter]
+    public EventCallback<PADetails> ModelChanged { get; set; }
+
+    public bool RecordSystem
+    {
+        get => Model?.PlanningArea?.Settings?.SystemServiceSettings?.RecordSystem ?? false;
+        set
+        {
+            if (Model?.PlanningArea?.Settings?.SystemServiceSettings != null)
+            {
+                Model.PlanningArea.Settings.SystemServiceSettings.RecordSystem = value;
+                ModelChanged.InvokeAsync(Model);
+            }
+        }
+    }
+
+    public int MaxSessionRecordings
+    {
+        get => Model?.PlanningArea?.Settings?.SystemServiceSettings?.MaxNbrSessionRecordingsToStore ?? 10;
+        set
+        {
+            if (Model?.PlanningArea?.Settings?.SystemServiceSettings != null)
+            {
+                Model.PlanningArea.Settings.SystemServiceSettings.MaxNbrSessionRecordingsToStore = value;
+                ModelChanged.InvokeAsync(Model);
+            }
+        }
+    }
+
+    public int MaxSystemBackups
+    {
+        get => Model?.PlanningArea?.Settings?.SystemServiceSettings?.MaxNbrSystemBackupsToStorePerSession ?? 100;
+        set
+        {
+            if (Model?.PlanningArea?.Settings?.SystemServiceSettings != null)
+            {
+                Model.PlanningArea.Settings.SystemServiceSettings.MaxNbrSystemBackupsToStorePerSession = value;
+                ModelChanged.InvokeAsync(Model);
+            }
+        }
+    }
+
+    public int MinutesBetweenBackups
+    {
+        get => Model?.PlanningArea?.Settings?.SystemServiceSettings?.MinutesBetweenSystemBackups ?? 15;
+        set
+        {
+            if (Model?.PlanningArea?.Settings?.SystemServiceSettings != null)
+            {
+                Model.PlanningArea.Settings.SystemServiceSettings.MinutesBetweenSystemBackups = value;
+                ModelChanged.InvokeAsync(Model);
+            }
+        }
+    }
+
+    public string StartUpFolder
+    {
+        get => Model.PlanningArea.ServicePaths.SystemServiceWorkingDirectory;
+        set
+        {
+            Model.PlanningArea.ServicePaths.SystemServiceWorkingDirectory = value;
+            ModelChanged.InvokeAsync(Model);
+        }
+        // Read-only field in UI, but @bind-text expects a setter
+    }
+
+    private async Task CopyPath()
+    {
+        if (!string.IsNullOrEmpty(StartUpFolder))
+        {
+            await JSRuntime.InvokeVoidAsync("copyToClipboard", StartUpFolder);
+        }
+    }
+
+}

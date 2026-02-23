@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/APSLicenseServicesCommon.Contracts" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="RequestBase">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="SerialCode" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="RequestBase" nillable="true" type="tns:RequestBase" />
+  <xs:complexType name="ResponseBase">
+    <xs:sequence>
+      <xs:element name="Version" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ResponseBase" nillable="true" type="tns:ResponseBase" />
+  <xs:complexType name="KeyResultBase">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:BaseResultType">
+        <xs:sequence>
+          <xs:element name="InvalidSystemIdFormat" type="xs:boolean" />
+          <xs:element name="LicenseIsSystemIdType" type="xs:boolean" />
+          <xs:element name="LicenseIsWindowsProductIdType" type="xs:boolean" />
+          <xs:element name="InvalidUpdateData" type="xs:boolean" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="KeyResultBase" nillable="true" type="tns:KeyResultBase" />
+  <xs:complexType name="BaseResultType">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Success" type="xs:boolean" />
+      <xs:element minOccurs="0" name="InvalidSerialCode" type="xs:boolean" />
+      <xs:element minOccurs="0" name="Exception" type="xs:boolean" />
+      <xs:element minOccurs="0" name="FailedToUpdateDatabase" type="xs:boolean" />
+      <xs:element minOccurs="0" name="IPAddressNotAllowed" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="BaseResultType" nillable="true" type="tns:BaseResultType" />
+  <xs:complexType name="GetKeyRequest">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:RequestBase">
+        <xs:sequence>
+          <xs:element name="ReturnZipFile" type="xs:boolean" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="GetKeyRequest" nillable="true" type="tns:GetKeyRequest" />
+  <xs:complexType name="KeyFileType">
+    <xs:sequence />
+  </xs:complexType>
+  <xs:element name="KeyFileType" nillable="true" type="tns:KeyFileType" />
+</xs:schema>

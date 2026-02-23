@@ -1,0 +1,15 @@
+[
+  {
+    "importDate": "2024-02-05T12:00:00Z",
+    "TransferOrderId": 12345,
+    "Name": "SampleTransferOrder",
+    "Description": "This is a sample transfer order",
+    "Notes": "Some notes about the order",
+    "ExternalId": "ABC123",
+    "AttributesSummary": "Summary of attributes",
+    "Firm": true,
+    "Priority": 1,
+    "Closed": false,
+    "MaintenanceMethod": "Regular"
+  }
+]

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="6e622023-2502-45df-b2e8-b3dae3b84398" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost:45455/app/KeyService.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="KeyService.xsd" MetadataType="Schema" ID="b3813d62-4175-4e9e-8f8e-5319334d80e5" SourceId="1" SourceUrl="https://localhost:45456/app/KeyService.svc?xsd=xsd4" />
+    <MetadataFile FileName="KeyService1.xsd" MetadataType="Schema" ID="ca8e4267-2a5d-4416-a82d-4f924afb8894" SourceId="1" SourceUrl="https://localhost:45456/app/KeyService.svc?xsd=xsd2" />
+    <MetadataFile FileName="KeyService.wsdl" MetadataType="Wsdl" ID="c8fddada-7690-4f28-bc37-c06a4f7028ef" SourceId="1" SourceUrl="https://localhost:45456/app/KeyService.svc?wsdl" />
+    <MetadataFile FileName="KeyService2.xsd" MetadataType="Schema" ID="0e1f6232-34b8-4833-a8cb-1ff1aaa64ab8" SourceId="1" SourceUrl="https://localhost:45456/app/KeyService.svc?xsd=xsd1" />
+    <MetadataFile FileName="KeyService3.xsd" MetadataType="Schema" ID="bd9e8ce1-fa02-457d-8dc2-4ac666b626bf" SourceId="1" SourceUrl="https://localhost:45456/app/KeyService.svc?xsd=xsd3" />
+    <MetadataFile FileName="KeyService4.xsd" MetadataType="Schema" ID="76260169-ea01-46e1-a236-a175ec4834b6" SourceId="1" SourceUrl="https://localhost:45456/app/KeyService.svc?xsd=xsd0" />
+    <MetadataFile FileName="KeyService5.xsd" MetadataType="Schema" ID="3ffc9938-2c8d-4fc1-95a4-eb74754ca1fe" SourceId="1" SourceUrl="https://localhost:45456/app/KeyService.svc?xsd=xsd5" />
+    <MetadataFile FileName="KeyService.disco" MetadataType="Disco" ID="ed5e47db-b52f-4f24-984c-fd5bf2407863" SourceId="1" SourceUrl="https://localhost:45456/app/KeyService.svc?disco" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

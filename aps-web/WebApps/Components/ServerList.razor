@@ -1,0 +1,129 @@
+﻿<!-- ServerList.razor -->
+@page "/servermanager/servers"
+@inject ServiceContainer ServiceContainer
+@using ReportsWebApp.DB.Models
+@using CompanyServer = ReportsWebApp.DB.Models.CompanyServer
+
+@* NOTE: This page is deprecated an no longer shown in the UI. It is kept here for reference 
+    
+<h3>Server List
+    <div class="install-server-manager">
+        <DxButton Text="Install New Server Manager" Click="ShowServerInstall" IconCssClass="fa fa-plus"></DxButton>
+    </div>
+</h3>
+
+<!-- Search Bar and Filter Section -->
+<div class="mb-3">
+    <input @bind="searchTerm" placeholder="Search by server name..." class="form-control mb-3" />
+    <select @bind="selectedCompany" class="form-select mb-3">
+        <option value="">All Companies</option>
+        @foreach (var company in Companies)
+        {
+            <option value="@company.Name">@company.Name</option>
+        }
+    </select>
+</div>
+
+<!-- Server List -->
+<div class="d-flex flex-wrap pt-3">
+    @foreach (var server in FilteredServers)
+    {
+        <ServerCard Server=server OnDelete="OnDelete"/>
+    }
+</div>
+
+
+
+<DxPopup @bind-Visible="@PopupVisible"
+         HeaderText="Install Instructions"
+         ShowFooter="true"
+         @ref="Popup">
+         <BodyContentTemplate>
+             <div>
+                @($"Please download and run the Server Manager Installer now. When prompted, enter this code to continue:")
+             </div>
+             <div class="code-display">
+                @($"{code}")
+             </div>
+         </BodyContentTemplate>
+    <FooterContentTemplate>
+        <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="@(codeCopied ? "Copied!" : "Copy Code")" Click="CopyCode" />
+        <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Download Installer" Click="StartDownload" />
+    </FooterContentTemplate>
+</DxPopup> *@
+
+
+@code {
+    // private string searchTerm = string.Empty;
+    // private string selectedCompany = string.Empty;
+
+    // private DxPopup Popup { get; set; }
+
+    // private User User { get; set; }
+    // private List<CompanyServer> Servers = new();
+    // private List<Company> Companies = new();
+    // private IEnumerable<CompanyServer> FilteredServers => FilterServers();
+    // private bool PopupVisible = false;
+    // private string code = "";
+    // private bool codeCopied = false;
+
+    // [Inject]
+    // ICompanyService companyService { get; set; }
+    // [Inject]
+    // IJSRuntime jsRuntime { get; set; }
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     User = await ServiceContainer.UserService.GetCurrentUserAsync(AuthenticationStateProvider);
+    //     await LoadDataAsync();
+    // }
+
+    // private async Task LoadDataAsync()
+    // {
+    //     // Load servers and companies from ServerManagerService
+    //     Servers = await ServiceContainer.ServerManagerService.GetServersByManagingCompanyAsync(User.CompanyId, true);
+    //     Companies = await ServiceContainer.CompanyService.GetManagedCompaniesAsync(User.CompanyId);
+    // }
+
+    // private IEnumerable<CompanyServer> FilterServers()
+    // {
+    //     var filtered = Servers.AsEnumerable();
+
+    //     if (!string.IsNullOrWhiteSpace(searchTerm))
+    //     {
+    //         filtered = filtered.Where(server => server.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+    //     }
+
+    //     if (!string.IsNullOrWhiteSpace(selectedCompany))
+    //     {
+    //         filtered = filtered.Where(server => server.ManagingCompany.Name == selectedCompany);
+    //     }
+
+    //     return filtered;
+    // }
+
+    // protected void OnDelete(CompanyServer server)
+    // {
+    //     Servers.Remove(server);
+    //     FilterServers();
+    //     StateHasChanged();
+    // }
+
+    // protected async Task ShowServerInstall()
+    // {
+    //     code = await companyService.GetCurrentInstallCode(User);
+    //     codeCopied = false;
+    //     PopupVisible = true;
+    // }
+
+    // protected async Task CopyCode()
+    // {
+    //     await jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", code);
+    //     codeCopied = true;
+    // }
+
+    // private async Task StartDownload(MouseEventArgs a_arg)
+    // {
+    //     NavigationManager.NavigateTo("https://deployment.planettogether.com/$web/software/AgentInstaller/PlanetTogetherFull12.exe");
+    // }
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "importDate": "2024-02-05T10:30:00",
+    "PurchaseToStockId": 12345,
+    "ForecastShipmentId": 67890,
+    "RequiredDate": "2024-02-10T15:45:00",
+    "RequiredQty": 100.5,
+    "Notes": "Sample notes for the forecast demand."
+  }
+]

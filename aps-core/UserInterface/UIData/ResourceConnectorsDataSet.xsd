@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ResourceConnectorsDataSet" targetNamespace="http://tempuri.org/ResourceConnectorsDataSet.xsd" xmlns:mstns="http://tempuri.org/ResourceConnectorsDataSet.xsd" xmlns="http://tempuri.org/ResourceConnectorsDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="ResourceConnectorsDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="ResourceConnectorsDataSet" msprop:Generator_UserDSName="ResourceConnectorsDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Connectors" msprop:Generator_UserTableName="Connectors" msprop:Generator_RowEvArgName="ConnectorsRowChangeEvent" msprop:Generator_TableVarName="tableConnectors" msprop:Generator_TablePropName="Connectors" msprop:Generator_RowDeletingName="ConnectorsRowDeleting" msprop:Generator_RowChangingName="ConnectorsRowChanging" msprop:Generator_RowDeletedName="ConnectorsRowDeleted" msprop:Generator_RowEvHandlerName="ConnectorsRowChangeEventHandler" msprop:Generator_TableClassName="ConnectorsDataTable" msprop:Generator_RowChangedName="ConnectorsRowChanged" msprop:Generator_RowClassName="ConnectorsRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="From_x0020_Resource" msprop:Generator_ColumnVarNameInTable="columnFrom_Resource" msprop:Generator_ColumnPropNameInRow="From_Resource" msprop:Generator_ColumnPropNameInTable="From_ResourceColumn" msprop:Generator_UserColumnName="From Resource" type="xs:long" />
+              <xs:element name="To_x0020_Resource" msprop:Generator_ColumnVarNameInTable="columnTo_Resource" msprop:Generator_ColumnPropNameInRow="To_Resource" msprop:Generator_ColumnPropNameInTable="To_ResourceColumn" msprop:Generator_UserColumnName="To Resource" type="xs:long" />
+              <xs:element name="Fixed_x0020_Transit_x0020_Hrs" msprop:Generator_ColumnVarNameInTable="columnFixed_Transit_Hrs" msprop:Generator_ColumnPropNameInRow="Fixed_Transit_Hrs" msprop:Generator_ColumnPropNameInTable="Fixed_Transit_HrsColumn" msprop:Generator_UserColumnName="Fixed Transit Hrs" type="xs:double" default="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Resources" msprop:Generator_UserTableName="Resources" msprop:Generator_RowEvArgName="ResourcesRowChangeEvent" msprop:Generator_TableVarName="tableResources" msprop:Generator_TablePropName="Resources" msprop:Generator_RowDeletingName="ResourcesRowDeleting" msprop:Generator_RowChangingName="ResourcesRowChanging" msprop:Generator_RowDeletedName="ResourcesRowDeleted" msprop:Generator_RowEvHandlerName="ResourcesRowChangeEventHandler" msprop:Generator_TableClassName="ResourcesDataTable" msprop:Generator_RowChangedName="ResourcesRowChanged" msprop:Generator_RowClassName="ResourcesRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Id" msprop:Generator_ColumnVarNameInTable="columnId" msprop:Generator_ColumnPropNameInRow="Id" msprop:Generator_ColumnPropNameInTable="IdColumn" msprop:Generator_UserColumnName="Id" type="xs:long" minOccurs="0" />
+              <xs:element name="Resource" msprop:Generator_ColumnVarNameInTable="columnResource" msprop:Generator_ColumnPropNameInRow="Resource" msprop:Generator_ColumnPropNameInTable="ResourceColumn" msprop:Generator_UserColumnName="Resource" type="xs:string" minOccurs="0" />
+              <xs:element name="Department" msprop:Generator_ColumnVarNameInTable="columnDepartment" msprop:Generator_ColumnPropNameInRow="Department" msprop:Generator_ColumnPropNameInTable="DepartmentColumn" msprop:Generator_UserColumnName="Department" type="xs:string" minOccurs="0" />
+              <xs:element name="Plant" msprop:Generator_ColumnVarNameInTable="columnPlant" msprop:Generator_ColumnPropNameInRow="Plant" msprop:Generator_ColumnPropNameInTable="PlantColumn" msprop:Generator_UserColumnName="Plant" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:Connectors" />
+      <xs:field xpath="mstns:From_x0020_Resource" />
+      <xs:field xpath="mstns:To_x0020_Resource" />
+    </xs:unique>
+  </xs:element>
+</xs:schema>

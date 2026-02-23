@@ -1,0 +1,19 @@
+[
+  {
+    "importDate": "2024-02-05T08:30:00Z",
+    "JobId": 12345,
+    "ManufacturingOrderId": 67890,
+    "PathId": 1,
+    "PredecessorOperationId": 54321,
+    "SuccessorOperationId": 98765,
+    "UsageQtyPerCycle": 2.5,
+    "MaxDelayHrs": 1.5,
+    "TransferHrs": 0.75,
+    "OverlapType": "Partial",
+    "OverlapTransferHrs": 0.25,
+    "OverlapPercentComplete": 50.0,
+    "OverlapSetups": true,
+    "AllowManualConnectorViolation": false,
+    "TransferDuringPredeccessorOnlineTime": true
+  }
+]

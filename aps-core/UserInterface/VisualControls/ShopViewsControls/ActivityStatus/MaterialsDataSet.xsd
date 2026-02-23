@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="MaterialsDataSet" targetNamespace="http://tempuri.org/MaterialsDataSet.xsd" xmlns:mstns="http://tempuri.org/MaterialsDataSet.xsd" xmlns="http://tempuri.org/MaterialsDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="MaterialsDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_DataSetName="MaterialsDataSet" msprop:Generator_UserDSName="MaterialsDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Materials" msprop:Generator_UserTableName="Materials" msprop:Generator_RowEvArgName="MaterialsRowChangeEvent" msprop:Generator_TableVarName="tableMaterials" msprop:Generator_TablePropName="Materials" msprop:Generator_RowDeletingName="MaterialsRowDeleting" msprop:Generator_RowChangingName="MaterialsRowChanging" msprop:Generator_RowDeletedName="MaterialsRowDeleted" msprop:Generator_RowEvHandlerName="MaterialsRowChangeEventHandler" msprop:Generator_TableClassName="MaterialsDataTable" msprop:Generator_RowChangedName="MaterialsRowChanged" msprop:Generator_RowClassName="MaterialsRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="MRID" msprop:Generator_ColumnVarNameInTable="columnMRID" msprop:Generator_ColumnPropNameInRow="MRID" msprop:Generator_ColumnPropNameInTable="MRIDColumn" msprop:Generator_UserColumnName="MRID" type="xs:long" minOccurs="0" />
+              <xs:element name="MaterialName" msprop:Generator_ColumnVarNameInTable="columnMaterialName" msprop:Generator_ColumnPropNameInRow="MaterialName" msprop:Generator_ColumnPropNameInTable="MaterialNameColumn" msprop:Generator_UserColumnName="MaterialName" type="xs:string" minOccurs="0" />
+              <xs:element name="MaterialDescription" msprop:Generator_ColumnVarNameInTable="columnMaterialDescription" msprop:Generator_ColumnPropNameInRow="MaterialDescription" msprop:Generator_ColumnPropNameInTable="MaterialDescriptionColumn" msprop:Generator_UserColumnName="MaterialDescription" type="xs:string" minOccurs="0" />
+              <xs:element name="MaterialQtyToIssue" msprop:Generator_ColumnVarNameInTable="columnMaterialQtyToIssue" msprop:Generator_ColumnPropNameInRow="MaterialQtyToIssue" msprop:Generator_ColumnPropNameInTable="MaterialQtyToIssueColumn" msprop:Generator_UserColumnName="MaterialQtyToIssue" type="xs:decimal" minOccurs="0" />
+              <xs:element name="MaterialUOM" msprop:Generator_ColumnVarNameInTable="columnMaterialUOM" msprop:Generator_ColumnPropNameInRow="MaterialUOM" msprop:Generator_ColumnPropNameInTable="MaterialUOMColumn" msprop:Generator_UserColumnName="MaterialUOM" type="xs:string" minOccurs="0" />
+              <xs:element name="MaterialAvailable" msprop:Generator_ColumnVarNameInTable="columnMaterialAvailable" msprop:Generator_ColumnPropNameInRow="MaterialAvailable" msprop:Generator_ColumnPropNameInTable="MaterialAvailableColumn" msprop:Generator_UserColumnName="MaterialAvailable" type="xs:boolean" minOccurs="0" />
+              <xs:element name="MaterialAvailableDate" msprop:Generator_ColumnVarNameInTable="columnMaterialAvailableDate" msprop:Generator_ColumnPropNameInRow="MaterialAvailableDate" msprop:Generator_ColumnPropNameInTable="MaterialAvailableDateColumn" msprop:Generator_UserColumnName="MaterialAvailableDate" type="xs:dateTime" minOccurs="0" />
+              <xs:element name="MaterialIssuedQty" msprop:Generator_ColumnVarNameInTable="columnMaterialIssuedQty" msprop:Generator_ColumnPropNameInRow="MaterialIssuedQty" msprop:Generator_ColumnPropNameInTable="MaterialIssuedQtyColumn" msprop:Generator_UserColumnName="MaterialIssuedQty" type="xs:decimal" minOccurs="0" />
+              <xs:element name="MaterialIssued" msprop:Generator_ColumnVarNameInTable="columnMaterialIssued" msprop:Generator_ColumnPropNameInRow="MaterialIssued" msprop:Generator_ColumnPropNameInTable="MaterialIssuedColumn" msprop:Generator_UserColumnName="MaterialIssued" type="xs:boolean" minOccurs="0" />
+              <xs:element name="MaterialTotalRequiredQty" msprop:Generator_ColumnVarNameInTable="columnMaterialTotalRequiredQty" msprop:Generator_ColumnPropNameInRow="MaterialTotalRequiredQty" msprop:Generator_ColumnPropNameInTable="MaterialTotalRequiredQtyColumn" msprop:Generator_UserColumnName="MaterialTotalRequiredQty" type="xs:decimal" minOccurs="0" />
+              <xs:element name="MaterialIssueFromWarehouse" msprop:Generator_ColumnVarNameInTable="columnMaterialIssueFromWarehouse" msprop:Generator_ColumnPropNameInRow="MaterialIssueFromWarehouse" msprop:Generator_ColumnPropNameInTable="MaterialIssueFromWarehouseColumn" msprop:Generator_UserColumnName="MaterialIssueFromWarehouse" type="xs:long" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

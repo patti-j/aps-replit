@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="CleanoutTriggerTablesDataSet" targetNamespace="http://tempuri.org/OperationCountTableDataSet.xsd" xmlns:mstns="http://tempuri.org/OperationCountTableDataSet.xsd" xmlns="http://tempuri.org/OperationCountTableDataSet.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="CleanoutTriggerTablesDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="CleanoutTriggerTablesDataSet" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="CleanoutTriggerTablesDataSet">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="AssignedResources" msprop:Generator_RowEvHandlerName="AssignedResourcesRowChangeEventHandler" msprop:Generator_RowDeletedName="AssignedResourcesRowDeleted" msprop:Generator_RowDeletingName="AssignedResourcesRowDeleting" msprop:Generator_RowEvArgName="AssignedResourcesRowChangeEvent" msprop:Generator_TablePropName="AssignedResources" msprop:Generator_RowChangedName="AssignedResourcesRowChanged" msprop:Generator_UserTableName="AssignedResources" msprop:Generator_RowChangingName="AssignedResourcesRowChanging" msprop:Generator_RowClassName="AssignedResourcesRow" msprop:Generator_TableClassName="AssignedResourcesDataTable" msprop:Generator_TableVarName="tableAssignedResources">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="PlantExternalId" msprop:Generator_ColumnPropNameInTable="PlantExternalIdColumn" msprop:Generator_ColumnPropNameInRow="PlantExternalId" msprop:Generator_UserColumnName="PlantExternalId" msprop:Generator_ColumnVarNameInTable="columnPlantExternalId" type="xs:string" />
+              <xs:element name="DepartmentExternalId" msprop:Generator_ColumnPropNameInTable="DepartmentExternalIdColumn" msprop:Generator_ColumnPropNameInRow="DepartmentExternalId" msprop:Generator_UserColumnName="DepartmentExternalId" msprop:Generator_ColumnVarNameInTable="columnDepartmentExternalId" type="xs:string" />
+              <xs:element name="ResourceExternalId" msprop:Generator_ColumnPropNameInTable="ResourceExternalIdColumn" msprop:Generator_ColumnPropNameInRow="ResourceExternalId" msprop:Generator_UserColumnName="ResourceExternalId" msprop:Generator_ColumnVarNameInTable="columnResourceExternalId" type="xs:string" />
+              <xs:element name="TableName" msprop:Generator_ColumnPropNameInTable="TableNameColumn" msprop:Generator_ColumnPropNameInRow="TableName" msprop:Generator_UserColumnName="TableName" msprop:Generator_ColumnVarNameInTable="columnTableName" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="TableList" msprop:Generator_RowEvHandlerName="TableListRowChangeEventHandler" msprop:Generator_RowDeletedName="TableListRowDeleted" msprop:Generator_RowDeletingName="TableListRowDeleting" msprop:Generator_RowEvArgName="TableListRowChangeEvent" msprop:Generator_TablePropName="TableList" msprop:Generator_RowChangedName="TableListRowChanged" msprop:Generator_UserTableName="TableList" msprop:Generator_RowChangingName="TableListRowChanging" msprop:Generator_RowClassName="TableListRow" msprop:Generator_TableClassName="TableListDataTable" msprop:Generator_TableVarName="tableTableList">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="TableName" msprop:Generator_ColumnPropNameInTable="TableNameColumn" msprop:Generator_ColumnPropNameInRow="TableName" msprop:Generator_UserColumnName="TableName" msprop:Generator_ColumnVarNameInTable="columnTableName" type="xs:string" />
+              <xs:element name="Description" msprop:Generator_ColumnPropNameInTable="DescriptionColumn" msprop:Generator_ColumnPropNameInRow="Description" msprop:Generator_UserColumnName="Description" msprop:Generator_ColumnVarNameInTable="columnDescription" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="OperationCountCleanoutTriggers" msprop:Generator_RowEvHandlerName="OperationCountCleanoutTriggersRowChangeEventHandler" msprop:Generator_RowDeletedName="OperationCountCleanoutTriggersRowDeleted" msprop:Generator_RowDeletingName="OperationCountCleanoutTriggersRowDeleting" msprop:Generator_RowEvArgName="OperationCountCleanoutTriggersRowChangeEvent" msprop:Generator_TablePropName="OperationCountCleanoutTriggers" msprop:Generator_RowChangedName="OperationCountCleanoutTriggersRowChanged" msprop:Generator_UserTableName="OperationCountCleanoutTriggers" msprop:Generator_RowChangingName="OperationCountCleanoutTriggersRowChanging" msprop:Generator_RowClassName="OperationCountCleanoutTriggersRow" msprop:Generator_TableClassName="OperationCountCleanoutTriggersDataTable" msprop:Generator_TableVarName="tableOperationCountCleanoutTriggers">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="TableName" msprop:Generator_ColumnPropNameInTable="TableNameColumn" msprop:Generator_ColumnPropNameInRow="TableName" msprop:Generator_UserColumnName="TableName" msprop:Generator_ColumnVarNameInTable="columnTableName" type="xs:string" />
+              <xs:element name="DurationHours" msdata:Caption="SetupTime" msprop:Generator_ColumnPropNameInTable="DurationHoursColumn" msprop:Generator_ColumnPropNameInRow="DurationHours" msprop:Generator_UserColumnName="DurationHours" msprop:Generator_ColumnVarNameInTable="columnDurationHours" type="xs:double" />
+              <xs:element name="CleanoutGrade" msprop:Generator_ColumnPropNameInTable="CleanoutGradeColumn" msprop:Generator_ColumnPropNameInRow="CleanoutGrade" msprop:Generator_UserColumnName="CleanoutGrade" msprop:Generator_ColumnVarNameInTable="columnCleanoutGrade" type="xs:int" minOccurs="0" />
+              <xs:element name="CleanCost" msprop:Generator_ColumnPropNameInTable="CleanCostColumn" msprop:Generator_ColumnPropNameInRow="CleanCost" msprop:Generator_UserColumnName="CleanCost" msprop:Generator_ColumnVarNameInTable="columnCleanCost" type="xs:decimal" />
+              <xs:element name="TriggerValue" msprop:Generator_ColumnPropNameInTable="TriggerValueColumn" msprop:Generator_ColumnPropNameInRow="TriggerValue" msprop:Generator_UserColumnName="TriggerValue" msprop:Generator_ColumnVarNameInTable="columnTriggerValue" type="xs:int" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="ProductionUnitsCleanoutTriggers" msprop:Generator_RowEvHandlerName="ProductionUnitsCleanoutTriggersRowChangeEventHandler" msprop:Generator_RowDeletedName="ProductionUnitsCleanoutTriggersRowDeleted" msprop:Generator_RowDeletingName="ProductionUnitsCleanoutTriggersRowDeleting" msprop:Generator_RowEvArgName="ProductionUnitsCleanoutTriggersRowChangeEvent" msprop:Generator_TablePropName="ProductionUnitsCleanoutTriggers" msprop:Generator_RowChangedName="ProductionUnitsCleanoutTriggersRowChanged" msprop:Generator_UserTableName="ProductionUnitsCleanoutTriggers" msprop:Generator_RowChangingName="ProductionUnitsCleanoutTriggersRowChanging" msprop:Generator_RowClassName="ProductionUnitsCleanoutTriggersRow" msprop:Generator_TableClassName="ProductionUnitsCleanoutTriggersDataTable" msprop:Generator_TableVarName="tableProductionUnitsCleanoutTriggers">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="TableName" msprop:Generator_ColumnPropNameInTable="TableNameColumn" msprop:Generator_ColumnPropNameInRow="TableName" msprop:Generator_UserColumnName="TableName" msprop:Generator_ColumnVarNameInTable="columnTableName" type="xs:string" />
+              <xs:element name="DurationHours" msdata:Caption="SetupTime" msprop:Generator_ColumnPropNameInTable="DurationHoursColumn" msprop:Generator_ColumnPropNameInRow="DurationHours" msprop:Generator_UserColumnName="DurationHours" msprop:Generator_ColumnVarNameInTable="columnDurationHours" type="xs:double" />
+              <xs:element name="CleanoutGrade" msprop:Generator_ColumnPropNameInTable="CleanoutGradeColumn" msprop:Generator_ColumnPropNameInRow="CleanoutGrade" msprop:Generator_UserColumnName="CleanoutGrade" msprop:Generator_ColumnVarNameInTable="columnCleanoutGrade" type="xs:int" minOccurs="0" />
+              <xs:element name="CleanCost" msprop:Generator_ColumnPropNameInTable="CleanCostColumn" msprop:Generator_ColumnPropNameInRow="CleanCost" msprop:Generator_UserColumnName="CleanCost" msprop:Generator_ColumnVarNameInTable="columnCleanCost" type="xs:decimal" minOccurs="0" />
+              <xs:element name="TriggerValue" msprop:Generator_ColumnPropNameInTable="TriggerValueColumn" msprop:Generator_ColumnPropNameInRow="TriggerValue" msprop:Generator_UserColumnName="TriggerValue" msprop:Generator_ColumnVarNameInTable="columnTriggerValue" type="xs:decimal" />
+              <xs:element name="ProductionUnit" msprop:Generator_ColumnPropNameInTable="ProductionUnitColumn" msprop:Generator_ColumnPropNameInRow="ProductionUnit" msprop:Generator_UserColumnName="ProductionUnit" msprop:Generator_ColumnVarNameInTable="columnProductionUnit" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="TimeCleanoutTriggers" msprop:Generator_RowEvHandlerName="TimeCleanoutTriggersRowChangeEventHandler" msprop:Generator_RowDeletedName="TimeCleanoutTriggersRowDeleted" msprop:Generator_RowDeletingName="TimeCleanoutTriggersRowDeleting" msprop:Generator_RowEvArgName="TimeCleanoutTriggersRowChangeEvent" msprop:Generator_TablePropName="TimeCleanoutTriggers" msprop:Generator_RowChangedName="TimeCleanoutTriggersRowChanged" msprop:Generator_UserTableName="TimeCleanoutTriggers" msprop:Generator_RowChangingName="TimeCleanoutTriggersRowChanging" msprop:Generator_RowClassName="TimeCleanoutTriggersRow" msprop:Generator_TableClassName="TimeCleanoutTriggersDataTable" msprop:Generator_TableVarName="tableTimeCleanoutTriggers">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="TableName" msprop:Generator_ColumnPropNameInTable="TableNameColumn" msprop:Generator_ColumnPropNameInRow="TableName" msprop:Generator_UserColumnName="TableName" msprop:Generator_ColumnVarNameInTable="columnTableName" type="xs:string" />
+              <xs:element name="DurationHours" msdata:Caption="SetupTime" msprop:Generator_ColumnPropNameInTable="DurationHoursColumn" msprop:Generator_ColumnPropNameInRow="DurationHours" msprop:Generator_UserColumnName="DurationHours" msprop:Generator_ColumnVarNameInTable="columnDurationHours" type="xs:double" />
+              <xs:element name="CleanoutGrade" msprop:Generator_ColumnPropNameInTable="CleanoutGradeColumn" msprop:Generator_ColumnPropNameInRow="CleanoutGrade" msprop:Generator_UserColumnName="CleanoutGrade" msprop:Generator_ColumnVarNameInTable="columnCleanoutGrade" type="xs:int" minOccurs="0" />
+              <xs:element name="CleanCost" msprop:Generator_ColumnPropNameInTable="CleanCostColumn" msprop:Generator_ColumnPropNameInRow="CleanCost" msprop:Generator_UserColumnName="CleanCost" msprop:Generator_ColumnVarNameInTable="columnCleanCost" type="xs:decimal" minOccurs="0" />
+              <xs:element name="TriggerValueHours" msprop:Generator_ColumnPropNameInTable="TriggerValueHoursColumn" msprop:Generator_ColumnPropNameInRow="TriggerValueHours" msprop:Generator_UserColumnName="TriggerValueHours" msprop:Generator_ColumnVarNameInTable="columnTriggerValueHours" type="xs:double" />
+              <xs:element name="UseProcessingTime" msprop:Generator_ColumnPropNameInTable="UseProcessingTimeColumn" msprop:Generator_ColumnPropNameInRow="UseProcessingTime" msprop:Generator_UserColumnName="UseProcessingTime" msprop:Generator_ColumnVarNameInTable="columnUseProcessingTime" type="xs:boolean" minOccurs="0" />
+              <xs:element name="UsePostProcessingTime" msprop:Generator_ColumnPropNameInTable="UsePostProcessingTimeColumn" msprop:Generator_ColumnPropNameInRow="UsePostProcessingTime" msprop:Generator_UserColumnName="UsePostProcessingTime" msprop:Generator_ColumnVarNameInTable="columnUsePostProcessingTime" type="xs:boolean" minOccurs="0" />
+              <xs:element name="TriggerAtEnd" msprop:Generator_ColumnPropNameInTable="TriggerAtEndColumn" msprop:Generator_ColumnPropNameInRow="TriggerAtEnd" msprop:Generator_UserColumnName="TriggerAtEnd" msprop:Generator_ColumnVarNameInTable="columnTriggerAtEnd" type="xs:boolean" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:AssignedResources" />
+      <xs:field xpath="mstns:PlantExternalId" />
+      <xs:field xpath="mstns:DepartmentExternalId" />
+      <xs:field xpath="mstns:ResourceExternalId" />
+    </xs:unique>
+    <xs:unique name="TableListKey1">
+      <xs:selector xpath=".//mstns:TableList" />
+      <xs:field xpath="mstns:TableName" />
+    </xs:unique>
+  </xs:element>
+  <xs:annotation>
+    <xs:appinfo>
+      <msdata:Relationship name="TableList_AssignedResources" msdata:parent="TableList" msdata:child="AssignedResources" msdata:parentkey="TableName" msdata:childkey="TableName" msprop:Generator_UserParentTable="TableList" msprop:Generator_UserChildTable="AssignedResources" msprop:Generator_RelationVarName="relationTableList_AssignedResources" msprop:Generator_ChildPropName="GetAssignedResourcesRows" msprop:Generator_UserRelationName="TableList_AssignedResources" msprop:Generator_ParentPropName="TableListRow" />
+      <msdata:Relationship name="TableList_SetupCodes" msdata:parent="TableList" msdata:child="OperationCountCleanoutTriggers" msdata:parentkey="TableName" msdata:childkey="TableName" msprop:Generator_UserParentTable="TableList" msprop:Generator_UserChildTable="OperationCountCleanoutTriggers" msprop:Generator_RelationVarName="relationTableList_SetupCodes" msprop:Generator_ChildPropName="GetOperationCountCleanoutTriggersRows" msprop:Generator_UserRelationName="TableList_SetupCodes" msprop:Generator_ParentPropName="TableListRow" />
+      <msdata:Relationship name="TableList_ProductionUnitsCleanoutTriggers" msdata:parent="TableList" msdata:child="ProductionUnitsCleanoutTriggers" msdata:parentkey="TableName" msdata:childkey="TableName" msprop:Generator_UserParentTable="TableList" msprop:Generator_UserChildTable="ProductionUnitsCleanoutTriggers" msprop:Generator_RelationVarName="relationTableList_ProductionUnitsCleanoutTriggers" msprop:Generator_ChildPropName="GetProductionUnitsCleanoutTriggersRows" msprop:Generator_ParentPropName="TableListRow" msprop:Generator_UserRelationName="TableList_ProductionUnitsCleanoutTriggers" />
+      <msdata:Relationship name="TableList_TimeCleanoutTriggers" msdata:parent="TableList" msdata:child="TimeCleanoutTriggers" msdata:parentkey="TableName" msdata:childkey="TableName" msprop:Generator_UserParentTable="TableList" msprop:Generator_UserChildTable="TimeCleanoutTriggers" msprop:Generator_RelationVarName="relationTableList_TimeCleanoutTriggers" msprop:Generator_ChildPropName="GetTimeCleanoutTriggersRows" msprop:Generator_ParentPropName="TableListRow" msprop:Generator_UserRelationName="TableList_TimeCleanoutTriggers" />
+    </xs:appinfo>
+  </xs:annotation>
+</xs:schema>

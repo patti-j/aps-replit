@@ -1,0 +1,160 @@
+﻿@using System.Linq.Expressions
+@using ReportsWebApp.DB.Services
+@using ReportsWebApp.DB.Services.Interfaces
+@inject IGanttService GanttService
+
+<div class="row mt-2">
+    <div class="col-2">
+        <div class="border rounded p-2 mb-2">
+            <div class="text-secondary small mb-1">
+                <i class="fas fa-play-circle me-1"></i><strong>Active</strong>
+            </div>
+            <div class="text-muted small">
+                <i class="far fa-clock me-1"></i>Start: @m_startValue.ToString(CommonUtils.DateTimeOfficialFormat)<br />
+                <i class="far fa-clock me-1"></i>End: @m_endValue.ToString(CommonUtils.DateTimeOfficialFormat)
+            </div>
+        </div>
+        <div class="border rounded p-2">
+            <div class="text-info small mb-1">
+                <i class="fas fa-calendar-check me-1"></i><strong>Requested</strong>
+            </div>
+            <div class="text-muted small">
+                <i class="far fa-clock me-1"></i>Start: @m_requestedStart.ToString(CommonUtils.DateTimeOfficialFormat)<br />
+                <i class="far fa-clock me-1"></i>End: @m_requestedEnd.ToString(CommonUtils.DateTimeOfficialFormat)
+            </div>
+        </div>
+    </div>
+
+    <div class="col-2 d-flex flex-column align-items-start">
+        <button class="btn btn-outline-primary btn-sm mb-2" @onclick="ApplyZoomManually">
+            <i class="fas fa-search-plus me-1"></i>Apply
+        </button>
+        <small class="text-muted mb-3">Apply the requested time range</small>
+
+        <button class="btn btn-outline-success btn-sm mb-2" @onclick="ForceSyncSnapshot">
+            <i class="fas fa-sync-alt me-1"></i>Sync Snapshot
+        </button>
+        <small class="text-muted">Reloads zoom from backend</small>
+    </div>
+
+    <div class="col-8">
+        @if (!m_data.IsNullOrEmpty())
+        {
+            <DxRangeSelector Width="100%"
+                             Height="150px"
+                             Data="@m_data"
+                             SelectedRangeStartValue="@m_startValue"
+                             SelectedRangeEndValue="@m_endValue"
+                             ValueChanged="@OnRequestedRangeChanged">
+                <DxRangeSelectorScale StartValue="@m_data.Min(d => d.Arg)"
+                                      EndValue="@m_data.Max(d => d.Arg)"
+                                      TickInterval="ChartAxisInterval.Week"
+                                      MinorTickInterval="ChartAxisInterval.Day"
+                                      MinRange="ChartAxisInterval.Second"
+                                      MaxRange="ChartAxisInterval.Year"
+                                      ValueType="ChartAxisDataType.DateTime">
+                    <DxRangeSelectorScaleMarker>
+                        <DxRangeSelectorScaleMarkerLabel>
+                            <DxTextFormatSettings Type="TextFormat.MonthAndYear"/>
+                        </DxRangeSelectorScaleMarkerLabel>
+                    </DxRangeSelectorScaleMarker>
+                </DxRangeSelectorScale>
+                <DxRangeSelectorChart>
+                    <DxRangeSelectorChartValueAxis ValueType="ChartAxisDataType.DateTime"/>
+                    @CreateChartAreaSeries(s => s.Y1)
+                    @CreateChartAreaSeries(s => s.Y2)
+                    @CreateChartAreaSeries(s => s.Y3)
+                </DxRangeSelectorChart>
+                <DxRangeSelectorSliderMarker>
+                    <DxTextFormatSettings Type="TextFormat.Day"/>
+                </DxRangeSelectorSliderMarker>
+            </DxRangeSelector>
+        }
+    </div>
+
+</div>
+
+@code {
+    [Parameter]
+    public SchedulerInterop SchedulerInterop { get; set; }
+
+    [Parameter]
+    public Scenario Scenario { get; set; }
+
+    [Inject]
+    private ServiceContainer _serviceContainer { get; set; }
+
+    private DateTime m_startValue;
+    private DateTime m_endValue;
+    private DateTime m_requestedStart;
+    private DateTime m_requestedEnd;
+    private List<ZoomingData> m_data;
+    private RangeSelectorZoomingDataProvider m_provider;
+
+    protected override void OnInitialized()
+    {
+        InitializeZoomControl();
+    }
+
+    public void InitializeZoomControl()
+    {
+        if (GanttService == null)
+        {
+            m_data = new();
+            return;
+        }
+
+        if (_serviceContainer.PopupManager.ShowZoomPanel)
+        {
+            m_provider = new RangeSelectorZoomingDataProvider(GanttService);
+            m_data = m_provider.GetData();
+            if (!m_data.IsNullOrEmpty())
+            {
+                m_startValue = m_data.Min(d => d.Arg);
+                m_endValue = m_data.Max(d => d.Arg);
+            }
+            
+            ForceSyncSnapshot();
+        }
+    }
+
+    private void ApplyZoomManually()
+    {
+        m_startValue = m_requestedStart;
+        m_endValue = m_requestedEnd;
+        SchedulerInterop?.ZoomToTimeSpan(m_startValue, m_endValue);
+    }
+
+    private void OnRequestedRangeChanged(RangeSelectorValueChangedEventArgs e)
+    {
+        if (e.CurrentRange?.Count >= 2 &&
+    e.CurrentRange[0] is DateTime newStart &&
+    e.CurrentRange[1] is DateTime newEnd)
+        {
+            m_requestedStart = newStart;
+            m_requestedEnd = newEnd;
+        }
+    }
+
+    private async Task ForceSyncSnapshot()
+    {
+        if (SchedulerInterop == null)
+        {
+            return;
+        }
+        var s = await SchedulerInterop.GetCurrentZoomSnapshot();
+        if (s == null || m_data?.Count <= 1) return;
+        var min = m_data.Min(d => d.Arg); var max = m_data.Max(d => d.Arg);
+        (m_startValue, m_endValue) = s.StartDate > max && s.EndDate > max ? (max, max) :
+                             s.StartDate < min && s.EndDate < min ? (min, min) :
+                             s.StartDate > s.EndDate ? (min, max) :
+                             ((s.StartDate < min ? min : s.StartDate > max ? max : s.StartDate),
+                              (s.EndDate > max ? max : s.EndDate < min ? min : s.EndDate));
+        m_requestedStart = m_startValue;
+        m_requestedEnd = m_endValue;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private RenderFragment CreateChartAreaSeries(Expression<Func<ZoomingData, double>> a_valueField) =>
+        @<DxChartAreaSeries ArgumentField="@(s => s.Arg)" ValueField="@(a_valueField)" />;
+}

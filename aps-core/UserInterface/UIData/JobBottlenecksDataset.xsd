@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="JobBottlenecksDataset" targetNamespace="http://tempuri.org/JobBottlenecksDataset.xsd" xmlns:mstns="http://tempuri.org/JobBottlenecksDataset.xsd" xmlns="http://tempuri.org/JobBottlenecksDataset.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="JobBottlenecksDataset" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_UserDSName="JobBottlenecksDataset" msprop:Generator_DataSetName="JobBottlenecksDataset">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Bottlenecks" msprop:Generator_RowClassName="BottlenecksRow" msprop:Generator_RowEvHandlerName="BottlenecksRowChangeEventHandler" msprop:Generator_RowDeletedName="BottlenecksRowDeleted" msprop:Generator_RowDeletingName="BottlenecksRowDeleting" msprop:Generator_RowEvArgName="BottlenecksRowChangeEvent" msprop:Generator_TablePropName="Bottlenecks" msprop:Generator_RowChangedName="BottlenecksRowChanged" msprop:Generator_UserTableName="Bottlenecks" msprop:Generator_RowChangingName="BottlenecksRowChanging" msprop:Generator_TableClassName="BottlenecksDataTable" msprop:Generator_TableVarName="tableBottlenecks">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Latest_x0020_Constraint" msprop:Generator_ColumnPropNameInRow="Latest_Constraint" msprop:Generator_ColumnPropNameInTable="Latest_ConstraintColumn" msprop:Generator_ColumnVarNameInTable="columnLatest_Constraint" msprop:Generator_UserColumnName="Latest Constraint" type="xs:string" minOccurs="0" />
+              <xs:element name="Constraint" msprop:Generator_ColumnPropNameInRow="Constraint" msprop:Generator_ColumnPropNameInTable="ConstraintColumn" msprop:Generator_ColumnVarNameInTable="columnConstraint" msprop:Generator_UserColumnName="Constraint" type="xs:string" minOccurs="0" />
+              <xs:element name="Need_x0020_Date" msprop:Generator_ColumnPropNameInRow="Need_Date" msprop:Generator_ColumnPropNameInTable="Need_DateColumn" msprop:Generator_ColumnVarNameInTable="columnNeed_Date" msprop:Generator_UserColumnName="Need Date" type="xs:dateTime" minOccurs="0" />
+              <xs:element name="Days_x0020_Late" msprop:Generator_ColumnPropNameInRow="Days_Late" msprop:Generator_ColumnPropNameInTable="Days_LateColumn" msprop:Generator_ColumnVarNameInTable="columnDays_Late" msprop:Generator_UserColumnName="Days Late" type="xs:double" minOccurs="0" />
+              <xs:element name="MOId" msprop:Generator_ColumnPropNameInRow="MOId" msprop:Generator_ColumnPropNameInTable="MOIdColumn" msprop:Generator_ColumnVarNameInTable="columnMOId" msprop:Generator_UserColumnName="MOId" type="xs:long" minOccurs="0" />
+              <xs:element name="OperationId" msprop:Generator_ColumnPropNameInRow="OperationId" msprop:Generator_ColumnPropNameInTable="OperationIdColumn" msprop:Generator_ColumnVarNameInTable="columnOperationId" msprop:Generator_UserColumnName="OperationId" type="xs:long" minOccurs="0" />
+              <xs:element name="MO" msprop:Generator_ColumnPropNameInRow="MO" msprop:Generator_ColumnPropNameInTable="MOColumn" msprop:Generator_ColumnVarNameInTable="columnMO" msprop:Generator_UserColumnName="MO" type="xs:string" minOccurs="0" />
+              <xs:element name="Operation" msprop:Generator_ColumnPropNameInRow="Operation" msprop:Generator_ColumnPropNameInTable="OperationColumn" msprop:Generator_ColumnVarNameInTable="columnOperation" msprop:Generator_UserColumnName="Operation" type="xs:string" minOccurs="0" />
+              <xs:element name="Operation_x0020_Description" msprop:Generator_ColumnPropNameInRow="Operation_Description" msprop:Generator_ColumnPropNameInTable="Operation_DescriptionColumn" msprop:Generator_ColumnVarNameInTable="columnOperation_Description" msprop:Generator_UserColumnName="Operation Description" type="xs:string" minOccurs="0" />
+              <xs:element name="Required_x0020_Capabilities" msprop:Generator_ColumnPropNameInRow="Required_Capabilities" msprop:Generator_ColumnPropNameInTable="Required_CapabilitiesColumn" msprop:Generator_ColumnVarNameInTable="columnRequired_Capabilities" msprop:Generator_UserColumnName="Required Capabilities" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Causes" msprop:Generator_RowClassName="CausesRow" msprop:Generator_RowEvHandlerName="CausesRowChangeEventHandler" msprop:Generator_RowDeletedName="CausesRowDeleted" msprop:Generator_RowDeletingName="CausesRowDeleting" msprop:Generator_RowEvArgName="CausesRowChangeEvent" msprop:Generator_TablePropName="Causes" msprop:Generator_RowChangedName="CausesRowChanged" msprop:Generator_UserTableName="Causes" msprop:Generator_RowChangingName="CausesRowChanging" msprop:Generator_TableClassName="CausesDataTable" msprop:Generator_TableVarName="tableCauses">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Level" msprop:Generator_ColumnPropNameInRow="Level" msprop:Generator_ColumnPropNameInTable="LevelColumn" msprop:Generator_ColumnVarNameInTable="columnLevel" msprop:Generator_UserColumnName="Level" type="xs:int" minOccurs="0" />
+              <xs:element name="Constraint" msprop:Generator_ColumnPropNameInRow="Constraint" msprop:Generator_ColumnPropNameInTable="ConstraintColumn" msprop:Generator_ColumnVarNameInTable="columnConstraint" msprop:Generator_UserColumnName="Constraint" type="xs:string" minOccurs="0" />
+              <xs:element name="Need_x0020_Date" msprop:Generator_ColumnPropNameInRow="Need_Date" msprop:Generator_ColumnPropNameInTable="Need_DateColumn" msprop:Generator_ColumnVarNameInTable="columnNeed_Date" msprop:Generator_UserColumnName="Need Date" type="xs:dateTime" minOccurs="0" />
+              <xs:element name="Days_x0020_Late" msprop:Generator_ColumnPropNameInRow="Days_Late" msprop:Generator_ColumnPropNameInTable="Days_LateColumn" msprop:Generator_ColumnVarNameInTable="columnDays_Late" msprop:Generator_UserColumnName="Days Late" type="xs:double" minOccurs="0" />
+              <xs:element name="Job" msprop:Generator_ColumnPropNameInRow="Job" msprop:Generator_ColumnPropNameInTable="JobColumn" msprop:Generator_ColumnVarNameInTable="columnJob" msprop:Generator_UserColumnName="Job" type="xs:string" minOccurs="0" />
+              <xs:element name="MO" msprop:Generator_ColumnPropNameInRow="MO" msprop:Generator_ColumnPropNameInTable="MOColumn" msprop:Generator_ColumnVarNameInTable="columnMO" msprop:Generator_UserColumnName="MO" type="xs:string" minOccurs="0" />
+              <xs:element name="Operation" msprop:Generator_ColumnPropNameInRow="Operation" msprop:Generator_ColumnPropNameInTable="OperationColumn" msprop:Generator_ColumnVarNameInTable="columnOperation" msprop:Generator_UserColumnName="Operation" type="xs:string" minOccurs="0" />
+              <xs:element name="Operation_x0020_Description" msprop:Generator_ColumnPropNameInRow="Operation_Description" msprop:Generator_ColumnPropNameInTable="Operation_DescriptionColumn" msprop:Generator_ColumnVarNameInTable="columnOperation_Description" msprop:Generator_UserColumnName="Operation Description" type="xs:string" minOccurs="0" />
+              <xs:element name="ParentMOId" msprop:Generator_ColumnPropNameInRow="ParentMOId" msprop:Generator_ColumnPropNameInTable="ParentMOIdColumn" msprop:Generator_ColumnVarNameInTable="columnParentMOId" msprop:Generator_UserColumnName="ParentMOId" type="xs:long" minOccurs="0" />
+              <xs:element name="ParentOperationId" msprop:Generator_ColumnPropNameInRow="ParentOperationId" msprop:Generator_ColumnPropNameInTable="ParentOperationIdColumn" msprop:Generator_ColumnVarNameInTable="columnParentOperationId" msprop:Generator_UserColumnName="ParentOperationId" type="xs:long" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint1">
+      <xs:selector xpath=".//mstns:Bottlenecks" />
+      <xs:field xpath="mstns:MOId" />
+      <xs:field xpath="mstns:OperationId" />
+    </xs:unique>
+  </xs:element>
+  <xs:annotation>
+    <xs:appinfo>
+      <msdata:Relationship name="Bottlenecks_Causes" msdata:parent="Bottlenecks" msdata:child="Causes" msdata:parentkey="MOId OperationId" msdata:childkey="ParentMOId ParentOperationId" msprop:Generator_ChildPropName="GetCausesRows" msprop:Generator_UserChildTable="Causes" msprop:Generator_RelationVarName="relationBottlenecks_Causes" msprop:Generator_UserRelationName="Bottlenecks_Causes" msprop:Generator_UserParentTable="Bottlenecks" msprop:Generator_ParentPropName="BottlenecksRowParent" />
+    </xs:appinfo>
+  </xs:annotation>
+</xs:schema>

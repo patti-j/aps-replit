@@ -1,0 +1,415 @@
+﻿@page "/components/teamgrid"
+@using System.Collections.ObjectModel
+@using Microsoft.EntityFrameworkCore
+@using ReportsWebApp.Helpers
+@using ReportsWebApp.Components.InfoDisplay
+@inject NavMenuUpdateService NavMenuUpdateService
+@inject NavigationManager Navigation
+@inject TeamService m_teamService
+@inject ICategoryService m_categoryService
+@inject IUserService m_userService
+@inject IToastNotificationService toastService
+
+<style>
+    .wide-editor {
+        min-width: 1200px;
+    }
+</style>
+
+<h3>Teams</h3>
+
+@if (Teams == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <DxGrid ShowFilterRow="true" Data="@Teams"
+            EditStart="OnEditStart"
+            EditModelSaving="OnEditModelSaving"
+            CustomizeEditModel="(e) => GridHelpers.CustomizeEditorTitle(e, m_grid)"
+            EditMode="GridEditMode.PopupEditForm" @ref="m_grid" PopupEditFormCssClass="wide-editor"
+            PageSize="10"
+            CssClass="ch-480"
+            PagerPosition="GridPagerPosition.TopAndBottom"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorItems="@(new int[] { 10, 20, 100 })"
+            PageSizeSelectorAllRowsItemVisible="false"
+            PagerSwitchToInputBoxButtonCount="10"
+            PagerVisibleNumericButtonCount="10"
+            ColumnResizeMode="GridColumnResizeMode.ColumnsContainer">
+        <Columns>
+            <DxGridCommandColumn Width="@CommonUtils.DxGridCommandToolbarStyleColumnWidth">
+                <HeaderTemplate>
+                    <DxButton IconCssClass="fa fa-plus px-2" CssClass="p-2 m-1" Text="Add" Click="() => m_grid.StartEditNewRowAsync()" />
+                </HeaderTemplate>
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = (Team)context.DataItem;
+                    }
+                    <ActionDropdown DataItem="dataItem" Actions="@(dataItem.Readonly ? new List<ActionItem<Team>>() : _actions)"/>
+                </CellDisplayTemplate>
+            </DxGridCommandColumn>
+            <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false"/>
+            <DxGridDataColumn FieldName="Name" Caption="Team Name" MinWidth="100">
+                <CellDisplayTemplate>
+                    @{
+                        var dataItem = (Team)context.DataItem;
+                    }
+                    @if (dataItem.Readonly)
+                    {
+                        <em><b>@dataItem.Name</b></em>
+                    }
+                    else
+                    {
+                        <b>@dataItem.Name</b>
+                    }
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+        </Columns>
+        <EditFormTemplate Context="EditFormContext">
+            @{
+                var team = (Team)EditFormContext.EditModel;
+                team.Company = User.Company;
+            }
+            <DxFormLayout CssClass="w-100">
+                <DxFormLayoutItem Caption="Row Version:" ColSpanMd="12" Visible="false">
+                    <DxTextBox @bind-Text="@RowVersion"/>
+                </DxFormLayoutItem>
+                <DxTabs @bind-ActiveTabIndex="EditTabIndex">
+                    <DxTab Text="Information"/>
+                    <DxTab Text="Permissions"/>
+                    <DxTab Text="Users"/>
+                </DxTabs>
+                @switch (EditTabIndex)
+                {
+                    case 0:
+                    {
+                        <DxFormLayoutItem Caption="Team Name:" ColSpanMd="12">
+                            <DxTextBox @bind-Text="@team.Name"/>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Description:" ColSpanMd="12">
+                            <DxTextBox @bind-Text="@team.Description" />
+                        </DxFormLayoutItem>
+                        break;
+                    }
+                    case 1:
+                    {
+                        <DxFormLayoutGroup Caption="Permissions:">
+                            @foreach (var map in Mappings)
+                            {
+                                <DxFormLayoutGroup>
+                                    <DxFormLayoutItem Caption="Scope">
+                                        <DxComboBox Data="@Scopes"
+                                                    Value="map.ScopeId"
+                                                    Text="@(Scopes.FirstOrDefault(s => s.Id == map.ScopeId)?.Name ?? "None")"
+                                                    TValue="int"
+                                                    TData="PlanningAreaScope"
+                                                    ValueChanged="(i) => UpdateMappingScopeId(map.Id, i)"
+                                                    TextFieldName="Name" ValidationEnabled="false"
+                                                    ValueFieldName="Id"/>
+                                    </DxFormLayoutItem>
+
+                                    <DxFormLayoutItem Caption="Role">
+                                        <DxComboBox Data="@Roles"
+                                                    Value="map.RoleId"
+                                                    Text="@(Roles.FirstOrDefault(s => s.Id == map.RoleId)?.Name ?? "None")"
+                                                    TData="Role"
+                                                    TValue="int"
+                                                    ValueChanged="(i) => UpdateMappingRoleId(map.Id, i)"
+                                                    TextFieldName="Name" ValidationEnabled="false"
+                                                    ValueFieldName="Id"/>
+                                    </DxFormLayoutItem>
+
+                                    <DxButton Text="Remove"
+                                              Click="@(() => Mappings.Remove(map))" CssClass="m-2"/>
+                                </DxFormLayoutGroup>
+                            }
+                            <DxButton Text="Add"
+                                      Click="@(() => Mappings.Add(new ScopedRole() {RoleId = 0, ScopeId = 0, TeamId = EditingTeamId, Id = UniqueId++}))" CssClass="m-2"/>
+                        </DxFormLayoutGroup>
+                        break;
+                    }
+                    case 2:
+                    {
+                        <div class="d-flex justify-content-between">
+                            <DxGrid @ref="m_addedGrid"
+                                    Data="@m_addedUsers"
+                                    AllowSort="false"
+                                    ShowAllRows="true"
+                                    AllowDragRows="true"
+                                    AllowSelectRowByClick="true"
+                                    AllowedDropTarget="GridAllowedDropTarget.All"
+                                    ItemsDropped="OnItemsDropped"
+                                    CssClass="mr-3"
+                                    SelectionMode="GridSelectionMode.Multiple">
+                                <Columns>
+                                    <DxGridDataColumn FieldName="Name"
+                                                      Caption="Name"/>
+                                </Columns>
+                                <ToolbarTemplate Context="templateContext">
+                                    <DxToolbar Title="Users on this Team" />
+                                </ToolbarTemplate>
+                            </DxGrid>
+                
+                            <DxGrid @ref="m_notAddedGrid"
+                                    Data="@m_notAddedUsers"
+                                    AllowSort="false"
+                                    ShowAllRows="true"
+                                    AllowDragRows="true"
+                                    AllowedDropTarget="GridAllowedDropTarget.All"
+                                    ItemsDropped="OnItemsDropped"
+                                    SelectionMode="GridSelectionMode.Multiple">
+                                <Columns>
+                                    <DxGridDataColumn FieldName="Name" Caption="Name" />
+                                    
+                                </Columns>
+                                <ToolbarTemplate Context="toolbarContext">
+                                    <DxToolbar Title="Users not on this Team" />
+                                </ToolbarTemplate>
+                            </DxGrid>
+                        </div>
+                        break;
+                    }
+                }
+                
+                <DxFormLayoutItem ColSpanMd="12">
+                    <ValidationSummary />
+                </DxFormLayoutItem>
+            </DxFormLayout>
+        </EditFormTemplate>
+        <CustomValidators>
+            <CustomValidator DataItemValidating="TeamNameValidate"/>
+        </CustomValidators>
+    </DxGrid>
+    <DxPopup @bind-Visible="@PopupVisible"
+             HeaderText="Concurrency Exception"
+             BodyText="This record was updated or deleted while you were editing. Please retry"
+             ShowFooter="true"
+             @ref="Popup">
+        <FooterContentTemplate>
+            <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="Close" Click="CloseClick" />
+        </FooterContentTemplate>
+    </DxPopup>
+    <ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Danger"></ConfirmationDialog>
+    <GeneralInfoDisplay @ref="InfoDisplay"></GeneralInfoDisplay>
+}
+
+@code {
+    IGrid? m_grid { get; set; }
+    DxPopup Popup;
+    ConfirmationDialog Dialog;
+    bool PopupVisible { get; set; } = false;
+    [Parameter]
+    public Func<Task> RefreshComponent { get; set; }
+    [Parameter]
+    public List<Team> Teams { get; set; }
+    [Parameter]
+    public List<PlanningAreaScope> Scopes { get; set; }
+    [Parameter]
+    public List<Role> Roles { get; set; }
+    GeneralInfoDisplay InfoDisplay;
+    private List<ScopedRole> Mappings { get; set; }
+
+    private User? User { get; set; }
+    public string RowVersion { get; set; }
+    public int EditTabIndex { get; set; }
+    private int EditingTeamId { get; set; }
+    public int UniqueId { get; set; } = 0;
+
+    private IEnumerable<ActionItem<Team>> _actions;
+    private DxGrid m_addedGrid;
+    private List<User> m_addedUsers;
+    private DxGrid m_notAddedGrid;
+    private List<User> m_notAddedUsers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        _actions = new List<ActionItem<Team>>
+        {
+            new ActionItem<Team>()
+            {
+              ActionText  = "View",
+              IconCssClass = "fa fa-eye",
+              Action = async (item) =>
+              {
+                  InfoDisplay.ShowNewItem(item);
+                  StateHasChanged();
+              },
+              ShouldActionButtonBeEnabled = (group) => true,
+            },
+            new ActionItem<Team>
+            {
+                ActionText = "Edit",
+                IconCssClass = "fa fa-info-circle",
+                Action = async (group) => await m_grid?.StartEditDataItemAsync(group),
+                ShouldActionButtonBeEnabled = (group) => !group.Readonly || User.IsPTAdmin()
+            },
+            new ActionItem<Team>
+            {
+                ActionText = "Delete",
+                IconCssClass = "fa fa-trash",
+                Action = async (item) => await GridHelpers.ConfirmBeforeCalling(item, DeleteItem, Dialog),
+                ShouldActionButtonBeEnabled = (group) => !group.Readonly
+            }
+        };
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(m_grid);
+        base.OnAfterRender(firstRender);
+    }
+
+    async Task CloseClick(MouseEventArgs args)
+    {
+        await RefreshComponent();
+        await Popup.CloseAsync();
+        //Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+
+    private async Task OnEditStart(GridEditStartEventArgs args)
+    {
+        var team = (Team)args.DataItem ?? new Team();
+        if (!args.IsNew)
+        {
+            RowVersion = Convert.ToBase64String(team.Version);
+            Mappings = team.RolesAndScopes;
+            EditingTeamId = team.Id;
+            m_addedUsers = team.Users;
+            m_notAddedUsers = (await m_userService.GetUsersAsync(null, User.CompanyId)).Where(x => !m_addedUsers.Any(e => e.Id == x.Id)).ToList();
+        }
+        else
+        {
+            Mappings = new ();
+            EditingTeamId = 0;
+            m_notAddedUsers = (await m_userService.GetUsersAsync(null, User.CompanyId));
+            m_addedUsers = new ();
+        }
+    }
+
+    protected async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        var editModel = (e.EditModel as Team);
+        if (editModel != null)
+        {
+            var dataItem = e.IsNew ? new Team() { CreatedBy = User.Email} : Teams.Find(group => group.Id == editModel.Id);
+            if (dataItem != null)
+            {
+                dataItem.Name = editModel.Name;
+                dataItem.Description = editModel.Description ?? "";
+                dataItem.CompanyId = User.CompanyId;
+                dataItem.UpdatedBy = User.Email;
+                var computed = Mappings.Where(x => x.ScopeId < 0 || x.TeamId < 0);
+                var db = Mappings.Where(x => x.ScopeId > 0 && x.TeamId > 0);
+                dataItem.DBRolesAndScopes = db.ToList();
+                dataItem.ComputedRolesAndScopes = computed.Select(x => new ComputedScopedRole() {RoleId = x.RoleId, ScopeId = x.ScopeId, TeamId = x.TeamId}).ToList();
+                dataItem.Users = m_addedUsers;
+                if (dataItem.Version != null) dataItem.Version = Convert.FromBase64String(RowVersion);
+
+                try
+                {
+                    var savedTeam = await m_teamService.SaveAsync(User, dataItem);
+                    if (e.IsNew)
+                    {
+                        Teams.Add(savedTeam);
+                        Teams = Teams.OrderBy(x => x.Readonly).ToList();
+                    }
+                    else
+                    {
+                        Teams.Replace(savedTeam, (x1, x2) => x1.Id == x2.Id);
+                    }
+                    NavMenuUpdateService.TriggerUpdate();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    //dataItem = null;
+                    if (Popup.IsInitialized)
+                        await Popup.ShowAsync();
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+        }
+    }
+
+    protected async Task DeleteItem(object dataItem)
+    {
+        var editModel = (dataItem as Team);
+        if (editModel != null)
+        {
+            try {
+                await m_teamService.DeleteAsync(User, editModel.Id);
+                Teams.Remove(editModel);
+            } catch (DataDependencyException ex)
+            {
+                toastService.ShowToast("Warning", ex.Message, ToastRenderStyle.Danger, 0);
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void TeamNameValidate(ValidationMessageStoreEventArgs a_e)
+    {
+        Team team = (Team)a_e.EditModel;
+        if (Teams.Any(s => s.Name == team.Name && s.Id != team.Id))
+        {
+            a_e.AddError(nameof(team.Name), "A team with this name already exists.");
+        }
+    }
+
+    private Task UpdateMappingScopeId(int a_map, int a_i)
+    {
+        ScopedRole? firstOrDefault = Mappings.FirstOrDefault(x => x.Id == a_map);
+        if (firstOrDefault != null)
+        {
+            firstOrDefault.ScopeId = a_i;    
+        }
+        
+        return Task.CompletedTask;
+    }
+    
+    private Task UpdateMappingRoleId(int a_map, int a_i)
+    {
+        ScopedRole? firstOrDefault = Mappings.FirstOrDefault(x => x.Id == a_map);
+        if (firstOrDefault != null)
+        {
+            firstOrDefault.RoleId = a_i;    
+        }
+        
+        return Task.CompletedTask;
+    }
+
+    private async Task OnItemsDropped(GridItemsDroppedEventArgs args)
+    {
+        List<User> dropped = args.DroppedItems.OfType<User>().ToList();
+        if (!dropped.Any() || 
+            (args.SourceComponent != m_addedGrid && args.Grid != m_addedGrid)) 
+            return;
+
+        List<User> sourceCollection = GetCollectionForGrid(args.SourceComponent);
+        List<User> targetCollection = GetCollectionForGrid(args.Grid);
+
+        foreach (var item in dropped)
+            sourceCollection.Remove(item);
+        
+        int insertIndex = await args.GetTargetDataSourceIndexAsync();
+
+        foreach (var item in dropped.Reverse<User>())
+            targetCollection.Insert(insertIndex, item);
+        
+        StateHasChanged();
+    }
+   
+    
+    private List<User> GetCollectionForGrid(object a_grid)
+    {
+        return a_grid == m_addedGrid ? 
+            m_addedUsers :
+            m_notAddedUsers;
+    }
+
+}

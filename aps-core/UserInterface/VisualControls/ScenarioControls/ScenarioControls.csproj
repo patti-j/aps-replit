@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Import shared properties and targets. Including framework version -->
+  <Import Project="..\..\..\SolutionMiscFiles\ProjectSharedTargetsWindows.props" />
+  <PropertyGroup>
+    <RootNamespace>PT.ScenarioControls</RootNamespace>
+    <AssemblyName>PT.ScenarioControls</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="DataSources\**" />
+    <EmbeddedResource Remove="DataSources\**" />
+    <None Remove="DataSources\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\CommonProjects\APSCommon\APSCommon.csproj" />
+    <ProjectReference Include="..\..\..\CommonProjects\Common\Common.csproj" />
+    <ProjectReference Include="..\..\..\CommonProjects\PackageDefinitionsUI\PackageDefinitionsUI.csproj" />
+    <ProjectReference Include="..\..\..\CommonProjects\PackageDefinitions\PackageDefinitions.csproj" />
+    <ProjectReference Include="..\..\..\ImportAndPublishing\CustomInterface\CustomInterface.csproj" />
+    <ProjectReference Include="..\..\..\ImportAndPublishing\ERPLibrary\ERPLibrary.csproj" />
+    <ProjectReference Include="..\..\..\Scheduling\SchedulerData\SchedulerData.csproj" />
+    <ProjectReference Include="..\..\..\Scheduling\SchedulerDefinitions\SchedulerDefinitions.csproj" />
+    <ProjectReference Include="..\..\..\Scheduling\SchedulerExtentions\SchedulerExtensions.csproj" />
+    <ProjectReference Include="..\..\..\Scheduling\Scheduler\Scheduler.csproj" />
+    <ProjectReference Include="..\..\..\TransmissionsAndBroadcasting\ERPTransmissions\ERPTransmissions.csproj" />
+    <ProjectReference Include="..\..\..\TransmissionsAndBroadcasting\Transmissions2\Transmissions2.csproj" />
+    <ProjectReference Include="..\..\..\TransmissionsAndBroadcasting\Transmissions\Transmissions.csproj" />
+    <ProjectReference Include="..\..\UIData\UIData.csproj" />
+    <ProjectReference Include="..\..\UIDefinitions\UIDefinitions.csproj" />
+    <ProjectReference Include="..\ComponentLibrary\ComponentLibrary.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DevExpress.Win.Design" Version="25.2.3" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="System.Windows.Forms.DataVisualization" Version="1.0.0-prerelease.20110.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\SolutionMiscFiles\AssemblyInfoShared.cs" Link="Properties\AssemblyInfoShared.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Tiles\BoardControlBase.cs" />
+    <Compile Update="Tiles\TileBoardLayoutControl.cs" />
+    <Compile Update="Tiles\TileDocumentManager.cs" />
+  </ItemGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+	  <DotfuscatorIncludeAsInput>false</DotfuscatorIncludeAsInput>
+  </PropertyGroup>
+</Project>

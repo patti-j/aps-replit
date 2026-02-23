@@ -1,0 +1,85 @@
+﻿namespace PT.PackageDefinitions;
+
+public class UserPermissionKeys
+{
+    public static readonly string Scheduling = "Scheduling";
+    public static readonly string Planning = "Planning";
+    public static readonly string Publish = "Publish";
+    public static readonly string AdvanceClock = "Advance Clock";
+    public static readonly string ImportData = "Import Data";
+    public static readonly string ImportDataToAllScenarios = "Import Data to All Scenarios";
+    public static readonly string UndoRedo = "Undo/Redo";
+    public static readonly string SchedulePlant = "Schedule Plant";
+    public static readonly string ViewJobsInPlant = "View Jobs In Plant";
+    public static readonly string ViewInventoryInPlant = "View Inventory In Plant";
+    public static readonly string ControlAddIns = "Manage Add-Ins";
+    public static readonly string UndoErpActions = "Undo ERP Actions";
+    public static readonly string CreateNewScenarios = "Create Scenarios";
+    public static readonly string RefreshMultipleScenarios = "Refresh Multiple Scenarios";
+    public static readonly string MaintainCapacity = "Maintain Capacity";
+    public static readonly string MaintainJobs = "Maintain Jobs";
+    public static readonly string MaintainCustomers = "Maintain Customers";
+    public static readonly string MaintainInventory = "Maintain Inventory";
+    public static readonly string MaintainPurchaseOrders = "Maintain Purchase Orders";
+    public static readonly string MaintainSalesOrders = "Maintain Sales Orders";
+    public static readonly string MaintainManufacturingOrders = "Maintain Manufacturing Orders";
+    public static readonly string MaintainResources = "Maintain Resources";
+    public static readonly string MaintainForecasts = "Maintain Forecasts";
+    public static readonly string MaintainOvertime = "Maintain Overtime";
+    public static readonly string MrpOptimizeMainBarButton = "MRP Optimize";
+    public static readonly string OptimizeScheduleMainBarButton = "Optimize Schedule";
+    public static readonly string CompressMainBarButton = "Compress";
+    public static readonly string RunReports = "Run Reports";
+    public static readonly string ShowUnavailableUndoActions = "Show Unavailable Undo Actions";
+    public static readonly string ReserveCTP = "Reserve CTP";
+    public static readonly string ViewErrorLog = "View Error Log";
+    public static readonly string DownloadScenarios = "Download Scenarios";
+    public static readonly string SplitOp = "Split Operation";
+    public static readonly string SplitJob = "Split Job";
+    public static readonly string SplitMO = "Split MO";
+    public static readonly string SplitJoin = "Join Job or Manufacturing Order";
+    public static readonly string CancelSimulation = "Cancel Simulation actions";
+    public static readonly string QuickAction = "QuickActionOption";
+    public static readonly string MapIntegrationConfigs = "Map Integration Configs";
+    public static readonly string ViewLastPublishDate = "View Last Publish Date";
+    public static readonly string PublishToAnalytics = "PublishToAnalyticsBoard";
+    public static readonly string KnowledgeBaseChatBot = "KnowledgeBaseChatBot";
+    public static readonly string ViewDepartmentsInPlant = "View Department In Plant";
+    public static readonly string ViewResourcesInPlant = "View Resources In Plant";
+    public static readonly string ImportSequencePlan = "Import Sequence Plan";
+    public static readonly string ExportSequencePlan = "Export Sequence Plan";
+
+
+    //Board Level
+    public static readonly string BoardJobs = "JobsBoard";
+    public static readonly string BoardCustomers = "CustomersBoard";
+    public static readonly string BoardInventoryPlan = "InventoryPlanBoard";
+    public static readonly string BoardStorageArea = "StorageAreaBoard";
+    public static readonly string BoardTemplates = "RoutingTemplatesBoard";
+    public static readonly string BoardActivities = "ActivitiesBoard";
+    public static readonly string BoardDatabaseManager = "DatabaseManagerBoard";
+    public static readonly string BoardUsers = "UsersBoard";
+    public static readonly string BoardKPIs = "KPIBoard";
+    public static readonly string BoardSystemOptions = "SystemOptionsBoard";
+    public static readonly string BoardMappingWizard = "MappingWizardBoard";
+    public static readonly string BoardWorkspaceManagement = "WorkspaceManagementBoard";
+    public static readonly string LocalBoardWorkspaceManagement = "WorkspacesLocalManagement";
+    public static readonly string SharedBoardWorkspaceManagement = "WorkspacesSharedManagement";
+    public static readonly string BoardScenarioData = "ScenarioDataBoard";
+    public static readonly string BoardScenarioHistory = "ScenarioHistoryBoard";
+    public static readonly string BoardProcessFlow = "ProcessFlowBoard";
+    public static readonly string BoardMetrics = "MetricsBoard";
+    public static readonly string BoardForecast = "ForecastBoard";
+    public static readonly string BoardMaterials = "MaterialsBoard";
+    public static readonly string BoardSalesOrders = "SalesOrdersBoard";
+    public static readonly string BoardPurchaseOrders = "PurchaseOrdersBoard";
+    public static readonly string BoardGantt = "GanttBoard";
+    public static readonly string BoardImportMapping = "ImportMappingBoard";
+    public static readonly string BoardScenarioManagement = "ScenarioManagementBoard";
+    public static readonly string BoardBufferManagement = "BufferManagementBoard";
+    public static readonly string BoardReportDesigner = "ReportDesignerBoard";
+    public static readonly string BoardSequencePlanning = "SequencePlanningBoard";
+    public static readonly string BoardDataModelingAndTesting = "DataModelingAndTestingBoard";
+    public static readonly string BoardCapacityPlanning = "CapacityPlanningBoard";
+    public static readonly string BoardUserFields = "UserFieldsBoard";
+}

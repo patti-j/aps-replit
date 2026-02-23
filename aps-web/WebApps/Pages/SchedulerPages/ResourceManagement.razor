@@ -1,0 +1,256 @@
+﻿@using DevExpress.Blazor
+@using System.Collections.ObjectModel
+@using ReportsWebApp.DB.Services.Interfaces
+@inject IJSRuntime JSRuntime
+@inject IGanttService GanttService
+
+<DxPopup @bind-Visible="@ShowPopup"
+         Width="1000px"
+         Height="auto"
+         CloseOnOutsideClick="false"
+         CloseOnEscape="false">
+    <HeaderTemplate>
+        <ServerContextHeader BigTitle="false"
+                             ShowSaveButton="@m_isModified"
+                             ShowRevertButton="@m_isModified"
+                             Title="Manage Resources"
+                             OnSave="SaveResourceOrder"
+                             OnRevert="TryRevert"
+                             OnClose="TryCancel" />
+    </HeaderTemplate>
+    <BodyTemplate>
+        <div class="d-flex justify-content-between">
+            <DxGrid @ref="m_visibleGrid"
+                    Data="@m_visibleResources"
+                    AllowSort="true"
+                    ShowAllRows="true"
+                    AllowDragRows="true"
+                    AllowSelectRowByClick="true"
+                    AllowedDropTarget="GridAllowedDropTarget.All"
+                    ItemsDropped="OnItemsDropped"
+                    CssClass="mr-3"
+                    SelectionMode="GridSelectionMode.Multiple">
+                <Columns>
+                    <DxGridDataColumn FieldName="Name"
+                                      Caption="Resource"
+                                      SortOrderChanged="OnSortByName" />
+                    <DxGridDataColumn FieldName="Department"
+                                      SortOrderChanged="OnSortByDepartment" />
+                    <DxGridDataColumn FieldName="Workcenter"
+                                      SortOrderChanged="OnSortByWorkcenter" />
+                </Columns>
+                <ToolbarTemplate Context="templateContext">
+                    <DxToolbar Title="Visible Resources" />
+                </ToolbarTemplate>
+            </DxGrid>
+
+            <DxGrid @ref="m_hiddenGrid"
+                    Data="@m_hiddenResources"
+                    AllowSort="false"
+                    ShowAllRows="true"
+                    AllowDragRows="true"
+                    AllowedDropTarget="GridAllowedDropTarget.All"
+                    ItemsDropped="OnItemsDropped"
+                    SelectionMode="GridSelectionMode.Multiple">
+                <Columns>
+                    <DxGridDataColumn FieldName="Name" Caption="Resource" />
+                    <DxGridDataColumn FieldName="Department" />
+                    <DxGridDataColumn FieldName="Workcenter" />
+                </Columns>
+                <ToolbarTemplate Context="toolbarContext">
+                    <DxToolbar Title="Hidden Resources" />
+                </ToolbarTemplate>
+            </DxGrid>
+        </div>
+    </BodyTemplate>
+</DxPopup>
+
+<DxPopup @bind-Visible="m_isConfirmDialogVisible" ShowCloseButton="false" Width="300px" CssClass="m-3">
+    <HeaderTemplate><h5 class="text-danger p-1">Discard Changes?</h5></HeaderTemplate>
+    <BodyTemplate>
+        <div class="p-3">
+            <p class="mb-4">You have unsaved changes. Are you sure you want to discard them?</p>
+            <div class="d-flex justify-content-end">
+                <DxButton Text="Yes, Discard" Click="@ConfirmDiscard" RenderStyle="ButtonRenderStyle.Danger" CssClass="me-2" />
+                <DxButton Text="No, Cancel" Click="@CancelDialog" RenderStyle="ButtonRenderStyle.Secondary" />
+            </div>
+        </div>
+    </BodyTemplate>
+</DxPopup>
+
+@code {
+    [Parameter] public EventCallback<HashSet<string>> OnUpdate { get; set; }
+    [Parameter] public bool ShowPopup { get; set; }
+    [Parameter] public EventCallback<bool> ShowPopupChanged { get; set; }
+
+    [Parameter]
+    public List<BryntumResource> Resources
+    {
+        get => m_resources;
+        set
+        {
+            // TODO: This is being called every time Scheduler.ShowLoadingState is, which is many, many times over the loading of the gantt.
+            //TODO: Investigate why, and how many other controls are doing needless work. (This may be a source of slow loading)
+            m_resources = value;
+            if (m_resources != null)
+            {
+                RefreshLists();
+                m_originalState = CommonUtils.DeepClone(m_resources);
+                m_isModified = false;
+            }
+        }
+    }
+
+    private DxGrid m_visibleGrid;
+    private DxGrid m_hiddenGrid;
+
+    private List<BryntumResource> m_resources;
+    private List<BryntumResource> m_originalState;
+    private ObservableCollection<BryntumResource> m_visibleResources;
+    private ObservableCollection<BryntumResource> m_hiddenResources;
+
+    private bool m_isModified = false;
+    private bool m_isConfirmDialogVisible = false;
+    private Action m_pendingDiscardAction;
+
+    private void OnSortByName(GridColumnSortOrder order)  =>
+        ApplyColumnSort(order, r => r.Name);
+
+    private void OnSortByDepartment(GridColumnSortOrder order) =>
+        ApplyColumnSort(order, r => r.Department);
+
+    private void OnSortByWorkcenter(GridColumnSortOrder order) =>
+        ApplyColumnSort(order, r => r.Workcenter);
+
+    private void ApplyColumnSort<T>(GridColumnSortOrder order, Func<BryntumResource, T> keySelector)
+    {
+        m_resources = order switch
+        {
+            GridColumnSortOrder.Ascending => m_resources.OrderBy(keySelector).ToList(),
+            GridColumnSortOrder.Descending => m_resources.OrderByDescending(keySelector).ToList(),
+            _ => m_resources.OrderBy(r => r.Order).ToList()
+        };
+
+        for (int i = 0; i < m_resources.Count; i++)
+            m_resources[i].Order = i;
+
+        RefreshLists();
+        m_isModified = true;
+        StateHasChanged();
+    }
+
+    private void RefreshLists()
+    {
+        m_visibleResources = new ObservableCollection<BryntumResource>(Resources.Where(r => r.Visible).OrderBy(r => r.Order));
+        m_hiddenResources = new ObservableCollection<BryntumResource>(Resources.Where(r => !r.Visible).OrderBy(r => r.Order));
+    }
+
+    private async Task OnItemsDropped(GridItemsDroppedEventArgs args)
+    {
+        List<BryntumResource> dropped = args.DroppedItems.OfType<BryntumResource>().ToList();
+        if (!dropped.Any() || 
+            (args.SourceComponent != m_visibleGrid && args.Grid != m_visibleGrid)) 
+            return;
+
+        ObservableCollection<BryntumResource> sourceCollection = GetCollectionForGrid(args.SourceComponent);
+        ObservableCollection<BryntumResource> targetCollection = GetCollectionForGrid(args.Grid);
+
+        foreach (var item in dropped)
+            sourceCollection.Remove(item);
+        
+        int insertIndex = await args.GetTargetDataSourceIndexAsync();
+
+        foreach (var item in dropped.Reverse<BryntumResource>())
+            targetCollection.Insert(insertIndex, item);
+
+        SyncResourcesFromCollections();
+        m_isModified = true;
+        StateHasChanged();
+    }
+
+    private ObservableCollection<BryntumResource> GetCollectionForGrid(object a_grid)
+    {
+        return a_grid == m_visibleGrid ? 
+            m_visibleResources :
+            m_hiddenResources;
+    }
+
+    private void SyncResourcesFromCollections()
+    {
+        foreach (var item in m_visibleResources)
+        {
+            var res = Resources.First(r => r.Id == item.Id);
+            res.Visible = true;
+            res.Order = m_visibleResources.IndexOf(item);
+        }
+
+        foreach (var item in m_hiddenResources)
+            Resources.First(r => r.Id == item.Id).Visible = false;
+    }
+
+    public async Task SaveResourceOrder()
+    {
+        ShowPopup = false;
+        if (m_isModified)
+        {
+            GanttService.ResourceVisibilityAndOrder = GetResourceHashSet();
+            GanttService.GanttConfigModified = true;
+            await UpdateParentAsync();
+        }
+
+        await ShowPopupChanged.InvokeAsync(ShowPopup);
+    }
+
+    public HashSet<string> GetResourceHashSet()
+    {
+        return Enumerable.ToHashSet(
+            Resources
+                .Where(r => r.Visible)
+                .OrderBy(r => r.Order)
+                .Select(r => r.Id.ToString()));
+    }
+
+    public async Task UpdateParentAsync()
+    {
+        await OnUpdate.InvokeAsync(GetResourceHashSet());
+    }
+
+    private void TryRevert() => PromptDiscard(() =>
+    {
+        m_resources = CommonUtils.DeepClone(m_originalState);
+        RefreshLists();
+        m_isModified = false;
+    });
+
+    private void TryCancel() => PromptDiscard(async () =>
+    {
+        m_isModified = false;
+        await SaveResourceOrder();
+    });
+
+    private void PromptDiscard(Action action)
+    {
+        if (m_isModified)
+        {
+            m_pendingDiscardAction = action;
+            m_isConfirmDialogVisible = true;
+        }
+        else
+        {
+            action.Invoke();
+        }
+    }
+
+    private void ConfirmDiscard()
+    {
+        m_isConfirmDialogVisible = false;
+        m_pendingDiscardAction?.Invoke();
+        m_pendingDiscardAction = null;
+        StateHasChanged();
+    }
+
+    private void CancelDialog()
+    {
+        m_isConfirmDialogVisible = false;
+    }
+}

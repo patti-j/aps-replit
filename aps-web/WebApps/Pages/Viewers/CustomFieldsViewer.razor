@@ -1,0 +1,508 @@
+﻿@page "/customFields"
+@using ExcelDataReader
+@using System.Data
+
+@if (viewPermission)
+{
+    <h3>Custom Fields</h3>
+    <DxTabs ActiveTabIndexChanged="(int index) => ChangePage(index)">
+        <DxTab Text="All Custom Fields"></DxTab>
+        <DxTab Text="Assign Fields"></DxTab>
+        <DxTab Text="Copy Fields"></DxTab>
+        <DxTab Text="Import Fields"></DxTab>
+    </DxTabs>
+    <DxFormLayout CssClass="bulk-tab-form">
+        @switch (CurrentPage)
+        {
+            case 0:
+                <DxFormLayoutItem ColSpanXl="12">
+                    <CustomFieldGrid @ref="cfGrid"></CustomFieldGrid>
+                </DxFormLayoutItem>
+                break;
+            case 1:
+                <DxFormLayoutItem ColSpanXl="6" Caption="Custom Fields to apply" CaptionPosition="CaptionPosition.Vertical">
+                    <CFGroupSelector OnChange="SetCFSource" SelectedData="SourceCFs" @ref="cfGroupSelector"></CFGroupSelector>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanXl="1" CssClass="tranfer-arrow">
+                    <i class="fa fa-arrow-responsive"></i>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanXl="5" Caption="Destination Planning Areas" CaptionPosition="CaptionPosition.Vertical">
+                    <PAMultiSelectBox Data="PAs" OnChange="SetPADestinations" SelectedData="Destinations"></PAMultiSelectBox>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanXl="7" />
+
+                <DxFormLayoutItem ColSpanXl="5">
+                    <DxButton Text="Add Fields" Click="() => SaveCFsToPAs(SourceCFs, Destinations, false)"></DxButton>
+                    <DxButton Text="Overwrite Fields" Click="() => SaveCFsToPAs(SourceCFs, Destinations, true)"></DxButton>
+                    <DxButton Text="Remove Fields" Click="() => RemoveCFsFromPAs(SourceCFs, Destinations)"></DxButton>
+                </DxFormLayoutItem>
+                break;
+            case 2:
+                <DxFormLayoutItem ColSpanXl="5" Caption="Planning Area to copy from" CaptionPosition="CaptionPosition.Vertical">
+                    <PASingleSelectBox Data="PAs" OnChange="SetPASource" SelectedItem="SourcePA"></PASingleSelectBox>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanXl="1" CssClass="tranfer-arrow">
+                    <i class="fa fa-arrow-responsive"></i>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanXl="5" Caption="Destination Planning Areas" CaptionPosition="CaptionPosition.Vertical">
+                    <PAMultiSelectBox Data="PAs" OnChange="SetPADestinations" SelectedData="Destinations"></PAMultiSelectBox>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanXl="6" />
+                <DxFormLayoutItem ColSpanXl="5">
+                    <DxButton Text="Add Copied Fields" Click="() => SaveCFsToPAs(SourcePA?.CFGroup, Destinations, false)"></DxButton>
+                    <DxButton Text="Overwrite with Copied Fields" Click="() => SaveCFsToPAs(SourcePA?.CFGroup, Destinations, true)"></DxButton>
+                </DxFormLayoutItem>
+                break;
+            case 3:
+                <DxFormLayoutItem ColSpanXl="6" Caption="File to Import from" CaptionPosition="CaptionPosition.Vertical">
+                    <div class="col-md-12 import-grid">
+                        <div id="overviewDemoDropZone" class="card custom-drop-zone rounded-3 w-100 m-0">
+                            <span class="drop-file-icon mb-3"></span>
+                            <span>Drag and Drop File Here</span><span class="m-1">or</span>
+                            <button id="overviewDemoSelectButton" class="btn border-primary btn-primary m-1">Select File</button>
+                        </div>
+                        <DxFileInput @ref="FileInput"
+                                     MaxFileSize="629145600"
+                                     MaxFileCount="1"
+                                     ExternalSelectButtonCssSelector="#overviewDemoSelectButton"
+                                     ExternalDropZoneCssSelector="#overviewDemoDropZone"
+                                     ExternalDropZoneDragOverCssClass="border-secondary"
+                                     CssClass="w-100 hide-bar"
+                                     AllowedFileExtensions="@(new List<string> { ".xlsx", ".zip" })"
+                                     AllowMultiFileUpload="true"
+                                     ShowFileList="false"
+                                     FilesUploading="OnFilesUploading">
+                        </DxFileInput>
+                        <CFGroupSelector OnChange="SetImportCFSource" Data="ImportCFs"></CFGroupSelector>
+                    </div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanXl="1" CssClass="tranfer-arrow">
+                    <i class="fa fa-arrow-responsive"></i>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanXl="5" Caption="Destination Planning Areas" CaptionPosition="CaptionPosition.Vertical">
+                    <PAMultiSelectBox Data="PAs" OnChange="SetPADestinations" SelectedData="Destinations"></PAMultiSelectBox>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanXl="7" />
+                <DxFormLayoutItem ColSpanXl="5">
+                    <DxButton Text="Import Without Assigning" Click="() => UploadAndApplyImportedCFs(SelectedImportCFs, null, false)"></DxButton>
+                    <DxButton Text="Import and Assign" Click="() => UploadAndApplyImportedCFs(SelectedImportCFs, Destinations, false)"></DxButton>
+                    <DxButton Text="Import and Overwrite" Click="() => UploadAndApplyImportedCFs(SelectedImportCFs, Destinations, true)"></DxButton>
+                </DxFormLayoutItem>
+                break;
+        }
+
+    </DxFormLayout>
+}
+<ConfirmationDialog @ref="Dialog" DefaultConfirmButtonStyle="ButtonRenderStyle.Danger"></ConfirmationDialog>
+
+
+@code {
+    [Inject]
+    IPlanningAreaDataService paDataService { get; set; }
+    [Inject]
+    ICustomFieldService cfService { get; set; }
+    [Inject]
+    IUserService m_userService { get; set; }
+    [Inject]
+    IToastNotificationService toastService { get; set; }
+
+    DxFileInput FileInput { get; set; }
+    private User User { get; set; }
+    private ConfirmationDialog Dialog { get; set; }
+    private bool viewPermission = false;
+    private CustomFieldGrid cfGrid;
+    private CFGroupSelector cfGroupSelector;
+    private int CurrentPage { get; set; } = 0;
+    private List<PADetails> PAs { get; set; } = new();
+    private List<CustomField>? ImportCFs { get; set; } = new();
+    private List<CustomField>? SelectedImportCFs { get; set; } = new();
+
+    private PADetails SourcePA { get; set; }
+    private List<CustomField> SourceCFs { get; set; } = new();
+    private List<PADetails> Destinations { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateHasChanged();
+        User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+        if (Shared.Utils.BlockUsersByAuthStatus(User, null, NavigationManager)) return;
+        PAs = await paDataService.GetPlanningAreasByCompanyIdAsync(User.CompanyId);
+        
+        viewPermission = true;
+
+        StateHasChanged();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        HTUtils.Utils.UpdateGridStyling(cfGrid?.MyGrid);
+        HTUtils.Utils.UpdateGridStyling(cfGroupSelector?.Grid);
+        base.OnAfterRender(firstRender);
+    }
+
+    private async Task ChangePage(int index)
+    {
+        CurrentPage = index;
+        StateHasChanged();
+    }
+
+    private async Task SetPASource(PADetails pa)
+    {
+        SourcePA = pa;
+    }
+
+    private async Task SetPADestinations(List<PADetails> pas)
+    {
+        Destinations = pas;
+    }
+
+    private async Task SetCFSource(List<CustomField> cfs)
+    {
+        SourceCFs = cfs;
+    }
+
+    private async Task SetImportCFSource(List<CustomField> cfs)
+    {
+        SelectedImportCFs = cfs;
+    }
+
+    private enum ColumnHeader
+    {
+        Name, ExternalId, Type, Object, ShowInUI, Unknown
+    }
+
+    private ColumnHeader StringToColumnHeader(string? header)
+    {
+        if (header == null) return ColumnHeader.Unknown;
+        if (header.Equals("name", StringComparison.OrdinalIgnoreCase))
+        {
+            return ColumnHeader.Name;
+        }
+        if (header.Equals("external id", StringComparison.OrdinalIgnoreCase) || header.Equals("externalid", StringComparison.OrdinalIgnoreCase))
+        {
+            return ColumnHeader.ExternalId;
+        }
+        if (header.Equals("type", StringComparison.OrdinalIgnoreCase))
+        {
+            return ColumnHeader.Type;
+        }
+        if (header.Equals("object", StringComparison.OrdinalIgnoreCase))
+        {
+            return ColumnHeader.Object;
+        }
+        if (header.Equals("show in ui", StringComparison.OrdinalIgnoreCase) || header.Equals("showinui", StringComparison.OrdinalIgnoreCase))
+        {
+            return ColumnHeader.ShowInUI;
+        }
+        return ColumnHeader.Unknown;
+    }
+
+    private List<ColumnHeader> ParseHeaders(string[] headers)
+    {
+        var list = new List<ColumnHeader>();
+        foreach (var header in headers)
+        {
+            list.Add(StringToColumnHeader(header));
+        }
+        return list;
+    }
+
+    private CustomField ParseCFFromRow(object?[] row, List<ColumnHeader> map)
+    {
+        if (row == null) throw new DataException("Row is empty");
+        try
+        {
+            var cf = new CustomField
+                {
+                    Id = 0,
+                    CompanyId = User.CompanyId,
+                    Name = (row[map.IndexOf(ColumnHeader.Name)] as string) ?? throw new DataException("Name not found"),
+                    ExternalId = (row[map.IndexOf(ColumnHeader.ExternalId)] as string) ?? throw new DataException("ExternalId not found"),
+                    Type = Enum.Parse(typeof(CustomFieldType), (row[map.IndexOf(ColumnHeader.Type)]).ToString(), true) as CustomFieldType? ?? throw new DataException("Type not found"),
+                    Object = Enum.Parse(typeof(CustomFieldObject), (row[map.IndexOf(ColumnHeader.Object)]).ToString(), true) as CustomFieldObject? ?? throw new DataException("Type not found"),
+                };
+
+            if (map.Contains(ColumnHeader.ShowInUI))
+            {
+                // Default ShowInGrids to true if not found
+                cf.ShowInGrids = (row[map.IndexOf(ColumnHeader.ShowInUI)] as bool?) ?? true;
+            }
+            else
+            {
+                // Default all ShowInGrids to true if the column doesn't exist
+                cf.ShowInGrids = true;
+            }
+
+            return cf;
+        }
+        catch (Exception e)
+        {
+            throw new DataException("Could not parse data row");
+        }
+    }
+
+    protected async Task OnFilesUploading(FilesUploadingEventArgs args)
+    {
+        var selectedFile = args.Files.FirstOrDefault();
+        ImportCFs = new();
+        if (selectedFile != null)
+        {
+            try
+            {
+                using var stream = new MemoryStream();
+                await selectedFile.OpenReadStream(selectedFile.Size).CopyToAsync(stream);
+                using var reader = ExcelReaderFactory.CreateReader(stream);
+                var set = reader.AsDataSet();
+                foreach (DataTable sheet in set.Tables)
+                {
+                    var rows = sheet.Rows;
+                    var headerRow = rows[0];
+                    List<ColumnHeader> columnMap = new();
+                    var startIndex = 0;
+
+                    // If the first row does not contain known header values, assume default header order
+                    if (ParseHeaders(headerRow.ItemArray.Cast<string>().ToArray()).All(x => x == ColumnHeader.Unknown))
+                    {
+                        if (headerRow.ItemArray.Length == 4)
+                        {
+                            columnMap = new() {
+                                ColumnHeader.Name,
+                                ColumnHeader.ExternalId,
+                                ColumnHeader.Type,
+                                ColumnHeader.Object
+                            };
+                        }
+                        else if (headerRow.ItemArray.Length == 5)
+                        {
+                            columnMap = new() {
+                                ColumnHeader.Name,
+                                ColumnHeader.ExternalId,
+                                ColumnHeader.Type,
+                                ColumnHeader.Object,
+                                ColumnHeader.ShowInUI
+                            };
+                        }
+                        else
+                        {
+                            throw new DataException("The top row did not contian Header Information, and the default headers could not be applied to the data set");
+                        }
+                    }
+                    else
+                    {
+                        // Skip the first row when importing, since it contains header data
+                        startIndex = 1;
+                        columnMap = ParseHeaders(headerRow.ItemArray.Cast<string>().ToArray());
+                        if (!(columnMap.Contains(ColumnHeader.Name) || columnMap.Contains(ColumnHeader.ExternalId) || columnMap.Contains(ColumnHeader.Type) || columnMap.Contains(ColumnHeader.Object)))
+                        {
+                            throw new DataException("The top row contained incomplete Header Information. Ensure it has columns marked 'Name', 'External Id', 'Type', and 'Object'.");
+                        }
+                    }
+
+                    for (var i = startIndex; i < sheet.Rows.Count; i++)
+                    {
+                        try
+                        {
+                            var cf = ParseCFFromRow(sheet?.Rows[i]?.ItemArray, columnMap);
+
+                            ImportCFs.Add(cf);
+                        }
+                        catch (DataException e)
+                        {
+                            throw new Exception($"Failed to import sheet {sheet.TableName} row {i + 1} (index {i})\n{e.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                var ea = e;
+            }
+            finally
+            {
+                FileInput.CancelAllFilesUpload();
+                FileInput.RemoveAllFiles();
+            }
+        }
+    }
+
+    private async Task UploadAndApplyImportedCFs(List<CustomField> cfs, List<PADetails> dest, bool removeExisting)
+    {
+        FileInput.RemoveAllFiles();
+        var allCfs = await cfService.GetCFsForCompanyAsync(User.CompanyId);
+        var overwriteCount = allCfs.Where(x => cfs.Any(y => x.ExternalId == y.ExternalId)).Count();
+        if (!cfs.Any() || (dest != null && !dest.Any()))
+        {
+            toastService.ShowToast("Failure", $"No Custom Fields were imported, as the selection was not valid. Please select at least one Planning Area and at least one Field to import", ToastRenderStyle.Info);
+            return;
+        }
+
+        if (!await Dialog.ConfirmOperation("Warning", $"You are about to import {cfs.Count()} Custom Fields{(overwriteCount >= 1 ? $", which will update {overwriteCount} existing Fields." : ".")} {(dest != null ? $"The imported Fields will then be applied to {dest.Count()} Planning Area(s)." : "")} This operation cannot be undone. Do you want to continue?"))
+        {
+            return;
+        }
+
+        // Create or Update CFs in the DB
+        for (var i = 0; i < cfs.Count(); i++)
+        {
+            var existingCF = allCfs.FirstOrDefault(x => x.ExternalId == cfs[i].ExternalId);
+            if (existingCF == null)
+            {
+                cfs[i] = await cfService.AddOrUpdateCFAsync(cfs[i]);
+                allCfs.Add(cfs[i]);
+            }
+            else if (existingCF.Name != cfs[i].Name || existingCF.Type != cfs[i].Type || existingCF.Object != cfs[i].Object || existingCF.ShowInGrids != cfs[i].ShowInGrids)
+            {
+                cfs[i].Id = existingCF.Id;
+                cfs[i] = await cfService.AddOrUpdateCFAsync(cfs[i]);
+                allCfs.Replace(cfs[i]);
+            }
+            else
+            {
+                cfs[i] = existingCF;
+            }
+        }
+
+        // Assign selected CFs to PAs
+        foreach (var pa in dest ?? new())
+        {
+            await ApplyCFsToPA(cfs, pa, removeExisting, false);
+        }
+
+        toastService.ShowToast("Success", $"{cfs.Count()} Custom Field{(cfs.Count() == 1 ? " was" : "s were")}  successfully imported{(dest != null && dest.Count >= 1 ? $" and assigned to {dest.Count} Planning Areas." : ".")}", ToastRenderStyle.Success);
+        await Refresh();
+    }
+
+    private async Task RemoveCFsFromPAs(List<CustomField> cfs, List<PADetails> dest)
+    {
+        if (!cfs.Any() || !dest.Any())
+        {
+            toastService.ShowToast("Failure", $"No Custom Fields were removed, as the selection was not valid. Please select at least one Planning Area and at least one Field to remove.", ToastRenderStyle.Info);
+            return;
+        }
+        if (!await Dialog.ConfirmOperation("Are you sure?", $"Are you sure you want to remove {cfs.Count()} Fields from {dest.Count()} Planning Area(s)? This operation cannot be undone."))
+        {
+            return;
+        }
+        foreach (var pa in dest)
+        {
+            await ApplyCFsToPA(cfs, pa, false, true);
+        }
+
+        toastService.ShowToast("Success", $"{cfs.Count()} Custom Field{(cfs.Count() == 1 ? " was" : "s were")}  successfully removed from {dest.Count()} Planning Area{(dest.Count == 1 ? "" : "s")}.", ToastRenderStyle.Success);
+        await Refresh();
+    }
+
+    private async Task SaveCFsToPAs(List<CustomField> cfs, List<PADetails> dest, bool removeExisting)
+    {
+        if (!cfs.Any() || !dest.Any())
+        {
+            toastService.ShowToast("Failure", $"No Custom Fields were applied, as the selection was not valid. Please select at least one Planning Area destination and at least one Field.", ToastRenderStyle.Info);
+            return;
+        }
+        if (!await Dialog.ConfirmOperation("Are you sure?", $"Are you sure you want to{(removeExisting ? $" replace ALL EXISTING Custom Fields(s) with" : " add")} {cfs.Count()} new Custom Field(s) on {dest.Count()} Planning Area(s)? This operation cannot be undone."))
+        {
+            return;
+        }
+
+        var failed = 0;
+        foreach (var pa in dest)
+        {
+            if (!await ApplyCFsToPA(cfs, pa, removeExisting, false))
+            {
+                failed++;
+            }
+        }
+        if (failed == 0)
+        {
+            toastService.ShowToast("Success", $"{cfs.Count()} Custom Field{(cfs.Count() == 1 ? " was" : "s were")}  successfully applied to {dest.Count()} Planning Area{(dest.Count == 1 ? "" : "s")}.", ToastRenderStyle.Success);
+        } else if (failed < dest.Count())
+        {
+            toastService.ShowToast("Partial Failure", $"{cfs.Count()} Custom Field{(cfs.Count() == 1 ? " was" : "s were")}  successfully applied to {dest.Count() - failed} Planning Area{(dest.Count == 1 ? "" : "s")}, but {failed} failed due to the above errors.", ToastRenderStyle.Warning);
+        } else
+        {
+            toastService.ShowToast("Failure", $"No Custom Fields were applied due to the above errors.", ToastRenderStyle.Danger);
+        }
+
+
+        await Refresh();
+    }
+
+    private async Task<bool> ApplyCFsToPA(List<CustomField> cfs, PADetails pa, bool removeExisting, bool removeCFs)
+    {
+        try
+        {
+            var cfGroup = pa.CFGroup ?? new CFGroup() { Name = $"System Group: {pa.Name}-{pa.Version}", CompanyId = pa.CompanyId };
+
+            if (cfGroup.CustomFields == null)
+            {
+                cfGroup.CustomFields = new();
+            }
+
+            if (removeExisting)
+            {
+                cfGroup.CustomFields.Clear();
+            }
+            if (removeCFs)
+            {
+                cfGroup.CustomFields.RemoveAll(x => cfs.Any(y => x.Id == y.Id));
+            }
+            else
+            {
+                cfGroup.CustomFields = cfGroup.CustomFields.Union(cfs).ToList();
+            }
+
+            var newGroup = await cfService.CreateOrUpdateCFGroupAsync(cfGroup);
+
+            if (pa.CFGroupId == 0 || pa.CFGroupId != newGroup.Id)
+            {
+                pa.CFGroupId = newGroup.Id;
+                await paDataService.SaveAsync(pa);
+            }
+        }
+        catch (Exception e)
+        {
+            toastService.ShowToast("Failure", $"Failed to {(removeCFs ? "remove" : "apply")} Custom Fields to the Planning Area {pa.Name}-{pa.Version}.\n{e.Message}.", ToastRenderStyle.Danger);
+            return false;
+        }
+        return true;
+    }
+
+    private async Task SaveCFsToPAs(CFGroup? cfg, List<PADetails> dest, bool removeExisting)
+    {
+        if (cfg == null)
+        {
+            toastService.ShowToast("Failure", $"No Custom Fields were applied because no source was selected.", ToastRenderStyle.Info);
+            return;
+        }
+        if (cfg.CustomFields == null || !cfg.CustomFields.Any())
+        {
+            toastService.ShowToast("Failure", $"No Custom Fields were applied, as the source you selected has no Fields to copy.", ToastRenderStyle.Info);
+            return;
+        }
+        // Remove the source PA from the destination so it doesn't copy to itself
+        foreach (var pa in dest)
+        {
+            if (pa.CFGroupId == cfg.Id)
+            {
+                dest.Remove(pa);
+                if (!dest.Any())
+                {
+                    toastService.ShowToast("Failure", $"You cannot copy Fields from a Planning Area to itself.", ToastRenderStyle.Info);
+                    return;
+                }
+                break;
+            }
+        }
+        await SaveCFsToPAs(cfg.CustomFields, dest, removeExisting);
+    }
+
+    private async Task Refresh()
+    {
+        SourcePA = null;
+        SourceCFs = new();
+        Destinations = new();
+        PAs = await paDataService.GetPlanningAreasByCompanyIdAsync(User.CompanyId);
+
+        StateHasChanged();
+    }
+}
