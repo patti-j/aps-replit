@@ -7,6 +7,7 @@ export ASPNETCORE_URLS="http://0.0.0.0:5000"
 cd /home/runner/workspace/aps-web/WebAPI
 
 pkill -9 OmniSharp 2>/dev/null || true
+fuser -k 5000/tcp 2>/dev/null || true
 sleep 1
 
 echo "Restoring packages..."
