@@ -1,7 +1,7 @@
 window.AIAnalytics = (function () {
     var _listener = null;
 
-    function initEmbedAuth(iframeElement, embedToken, targetOrigin) {
+    function initEmbedAuth(iframeElement, embedToken, targetOrigin, theme) {
         dispose();
 
         _listener = function (event) {
@@ -17,7 +17,10 @@ window.AIAnalytics = (function () {
                 type: "PT.EMBED.AUTH",
                 version: 1,
                 payload: {
-                    embedToken: embedToken
+                    embedToken: embedToken,
+                    ui: {
+                        theme: theme || "light"
+                    }
                 }
             }, targetOrigin);
 

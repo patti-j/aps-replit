@@ -8,6 +8,7 @@
 @inject IJSRuntime js
 @inject IEmbedTokenService EmbedTokenService
 @inject IAppInsightsLogger logger
+@inject IDarkModeService DarkModeService
 
 @using ReportsWebApp.Common
 @using ReportsWebApp.DB.Models
@@ -103,7 +104,8 @@ else
     {
         if (firstRender && hasAccess && !string.IsNullOrEmpty(embedToken))
         {
-            await js.InvokeVoidAsync("AIAnalytics.initEmbedAuth", iframeRef, embedToken, IframeOrigin);
+            var theme = DarkModeService.IsDarkMode ? "dark" : "light";
+            await js.InvokeVoidAsync("AIAnalytics.initEmbedAuth", iframeRef, embedToken, IframeOrigin, theme);
         }
     }
 
