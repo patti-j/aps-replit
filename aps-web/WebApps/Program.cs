@@ -165,6 +165,7 @@ builder.Services.AddScoped<Cookie>();
 builder.Services.AddScoped<ScopeService>();
 builder.Services.AddScoped<TeamService>();
 builder.Services.AddScoped<AuditService>();
+builder.Services.AddSingleton<ReportsWebApp.Services.IEmbedTokenService, ReportsWebApp.Services.EmbedTokenService>();
 
 
 // Power BI Settings

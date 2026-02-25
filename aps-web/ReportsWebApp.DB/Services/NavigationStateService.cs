@@ -36,6 +36,11 @@ namespace ReportsWebApp.DB.Services
 
             items.Add(CreateChatbotMenuItem());
 
+            if (User.Roles.Any(r => r.Name == "AI_Analytics" && r.CompanyId == User.CompanyId))
+            {
+                items.Add(CreateAIAnalyticsMenuItem());
+            }
+
             return items;
         }
 
@@ -148,6 +153,16 @@ namespace ReportsWebApp.DB.Services
                 Text = "KB AI Chatbot",
                 NavigateUrl = "kbchat",
                 IconCssClass = "fa fa-book"
+            };
+        }
+
+        private NavigationItem CreateAIAnalyticsMenuItem()
+        {
+            return new NavigationItem
+            {
+                Text = "AI Analytics",
+                NavigateUrl = "ai_analytics",
+                IconCssClass = "fa fa-chart-line"
             };
         }
 

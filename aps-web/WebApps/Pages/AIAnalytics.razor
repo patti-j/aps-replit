@@ -1,24 +1,101 @@
-﻿@page "/aianalytics"
+@page "/ai_analytics"
+@attribute [Authorize]
+@implements IAsyncDisposable
 
-<div>
-    <iframe src="https://query-insight-hvdvbpaugearfba2.westus2-01.azurewebsites.net" width="100%" height="700" style="visibility: hidden; border: none;" onload="this.style.visibility='visible';" allow="autoplay; clipboard-read; clipboard-write"></iframe>
-</div>
+@inject IUserService m_userService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime js
+@inject IEmbedTokenService EmbedTokenService
+@inject IAppInsightsLogger logger
 
+@using ReportsWebApp.Common
+@using ReportsWebApp.DB.Models
+@using ReportsWebApp.DB.Services.Interfaces
+@using ReportsWebApp.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+@if (!hasLoaded)
+{
+    <div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (!hasAccess)
+{
+    <div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
+        <div class="text-center">
+            <i class="fa fa-lock fa-3x text-muted mb-3"></i>
+            <h4>Access Denied</h4>
+            <p class="text-muted">You do not have access to AI Analytics. Please contact your administrator to request the AI Analytics role.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div style="width: 100%; height: calc(100vh - 60px);">
+        <iframe @ref="iframeRef"
+                src="@IframeUrl"
+                style="width: 100%; height: 100%; border: none;"
+                allow="clipboard-read; clipboard-write">
+        </iframe>
+    </div>
+}
 
 @code {
+    private const string IframeOrigin = "https://query-insight-hvdvbpaugearfba2.westus2-01.azurewebsites.net";
+    private const string IframeUrl = "https://query-insight-hvdvbpaugearfba2.westus2-01.azurewebsites.net/";
+
     private User User { get; set; }
     private bool hasLoaded;
-    private string Picture = string.Empty;
-
-    [Inject]
-    private IUserService m_userService { get; set; }
-    [Inject]
-    IAppInsightsLogger logger { get; set; }
-    [Inject]
-    IJSRuntime js { get; set; }
+    private bool hasAccess;
+    private string embedToken;
+    private ElementReference iframeRef;
 
     protected override async Task OnInitializedAsync()
     {
         User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
+
+        if (Shared.Utils.BlockUsersByAuthStatus(User, null, NavigationManager))
+            return;
+
+        hasAccess = User.Roles.Any(r => r.Name == "AI_Analytics" && r.CompanyId == User.CompanyId);
+
+        if (hasAccess)
+        {
+            var email = AuthUtils.GetEmailFromClaim((await AuthenticationStateProvider.GetAuthenticationStateAsync()).User);
+            var isCompanyAdmin = User.Roles.Any(r => r.Name == "Company Admin" && r.CompanyId == User.CompanyId);
+
+            embedToken = EmbedTokenService.GenerateEmbedToken(
+                email,
+                User.CompanyId,
+                hasAccess,
+                isCompanyAdmin
+            );
+        }
+
+        hasLoaded = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && hasAccess && !string.IsNullOrEmpty(embedToken))
+        {
+            await js.InvokeVoidAsync("AIAnalytics.initEmbedAuth", iframeRef, embedToken, IframeOrigin);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await js.InvokeVoidAsync("AIAnalytics.dispose");
+        }
+        catch (JSDisconnectedException)
+        {
+        }
     }
 }

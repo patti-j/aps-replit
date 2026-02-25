@@ -29,6 +29,15 @@
 - `aps-web/global.json` - SDK version pinned to 8.0.416
 - `aps-web/NuGet.Config` - Package sources (nuget.org only, Azure DevOps feeds removed)
 
+## AI Analytics Feature
+- Page: `aps-web/WebApps/Pages/AIAnalytics.razor` (route: `/ai_analytics`)
+- Embeds iframe to `https://query-insight-hvdvbpaugearfba2.westus2-01.azurewebsites.net/`
+- Gated by DB role `AI_Analytics` (company-scoped)
+- Embed token service: `aps-web/WebApps/Services/EmbedTokenService.cs` (HMAC-SHA256, 5-min expiry)
+- JS interop: `aps-web/WebApps/wwwroot/js/aianalytics.js` (postMessage handshake with PT.EMBED.READY/PT.EMBED.AUTH)
+- Menu item added in `NavigationStateService.GetNavigationItems()` after KB AI Chatbot
+- Requires `EMBED_TOKEN_SECRET` environment variable for JWT signing
+
 ## Build Notes
 - OmniSharp language server can consume excessive memory; run.sh kills it before building
 - Build produces ~1240 warnings (nullability, deprecation) but 0 errors

@@ -32,3 +32,8 @@ waitForPort = 5000
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[userenv]
+
+[userenv.shared]
+EMBED_TOKEN_SECRET = "aOVdRPs56RnozN9TlcRo4WUl5ndqaPzOKdWj6hR3Sw4="
