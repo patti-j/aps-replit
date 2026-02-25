@@ -1,0 +1,117 @@
+Here are clear answers you can send back to Replit (aligned with the POC doc + where we converged: **separate embed token JWT**, not the raw Auth0 token).
+
+---
+
+## 1) AI_Analytics permission/role — AuthUtils vs DB role?
+
+Use the **existing company-scoped Roles model** (tables `Roles` + `UserRole`) and treat **`AI_Analytics` as a Role.Name**, exactly like “Company Admin”.
+
+* **Do not** add a new “Permission entry” in `AuthUtils.cs` unless the WebApp UI framework *requires* a permission object for menu rendering. If it does require one, then that “permission” should simply be a thin wrapper that checks for the DB role `Role.Name == "AI_Analytics"` for the user’s current company.
+* In the DB, we need a role row for Acme:
+
+  * `Roles.Name = "AI_Analytics"`
+  * `Roles.CompanyId = <AcmeCompanyId>`
+
+**Display name / description (if you must create a UI permission entry):**
+
+* Display name: **AI Analytics**
+* Description: **Access the AI Analytics Chatbot feature (embedded application).**
+
+But again: primary source of truth = **DB role**.
+
+---
+
+## 2) “Company Admin” check — follow existing pattern?
+
+Yes. Use the same pattern already used elsewhere:
+
+```csharp
+IsCompanyAdmin = user.Roles.Any(r => r.Name == "Company Admin" && r.CompanyId == user.CompanyId);
+```
+
+Also determine:
+
+```csharp
+HasAIAnalyticsRole = user.Roles.Any(r => r.Name == "AI_Analytics" && r.CompanyId == user.CompanyId);
+```
+
+This keeps it consistent with the current codebase and avoids introducing new auth concepts.
+
+---
+
+## 3) JWT token access — use raw Auth0 token or separate embed token?
+
+Use a **separate embed-specific token** (embed JWT) issued by WebApp.
+
+✅ **Do NOT send the raw Auth0 `jwtToken` to the iframe.**
+
+Reasoning:
+
+* We don’t want the iframe app to depend on Auth0 tokens or Auth0 validation.
+* DevOps will expect a clearly defined trust boundary: *WebApp authenticates; iframe trusts WebApp via embed token.*
+* It keeps Auth0 unchanged while avoiding leaking Auth0 tokens to embedded apps.
+
+**What to implement in WebApp:**
+
+* Create an endpoint like `GET /api/aianalytics/embed-token` (or equivalent) that:
+
+  * validates the user is authenticated
+  * checks `HasAIAnalyticsRole`
+  * generates a short-lived JWT containing:
+
+    * `email`
+    * `companyId`
+    * `hasAIAnalyticsRole`
+    * `isCompanyAdmin`
+    * `iat`, `exp`, `iss`, `aud`
+* The iframe receives only:
+
+  * `{ embedToken: "<jwt>" }` via `postMessage`
+
+---
+
+## 4) Menu placement — where should “AI Analytics” go?
+
+Make it a **top-level item**, similar to “KB AI Chatbot”.
+
+Suggested order (simple and discoverable):
+
+* Place **AI Analytics** immediately **near** “KB AI Chatbot”
+* Preferably: **AI Analytics after KB AI Chatbot** (or directly before—either is fine)
+
+Key requirement:
+
+* Only visible if `HasAIAnalyticsRole == true`.
+
+---
+
+## 5) Which project to modify + how it runs in Replit?
+
+Yes—make changes in the **Blazor Server app project**:
+
+* `aps-web/WebApps/`
+
+That’s where:
+
+* the menu lives
+* new page `/ai_analytics` lives
+* role checks / UI gating live
+
+The run.sh currently starting WebAPI is a workflow detail—this POC work is explicitly for the **WebApps** project. If WebAPI serves as the host/proxy in your environment, keep changes still in WebApps; you may just need to adjust how Replit starts it.
+
+**Action for Replit:**
+
+* Confirm whether WebApps is launched independently (its own `dotnet run`) or hosted behind WebAPI in this repo structure.
+* If Replit’s run script currently only starts WebAPI, add/adjust a Replit run config to start WebApps for development.
+
+---
+
+## Summary of what I want Replit to do
+
+1. Implement `AI_Analytics` as a **DB role name** (company-scoped)
+2. Add menu item + page gated by that role
+3. Generate a **WebApp-signed embed JWT** and send it to iframe via `postMessage`
+4. Do not use Auth0 `jwtToken` outside WebApp; iframe trusts WebApp embed token
+5. Make changes in `aps-web/WebApps/`
+
+If you want, I can draft the exact embed token claim set + the exact validation rules (issuer/audience/expiration) so Replit implements the same contract on both sides.
