@@ -24,7 +24,7 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build and publish
-        run: dotnet publish aps-web/WebApps/ReportsWebApp.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish aps-web/WebApps/ReportsWebApp.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -50,4 +50,5 @@ jobs:
           slot-name: 'Production'
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_24365D1E738D48F897F0FACE5143955A }}
+
 
