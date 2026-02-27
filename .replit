@@ -1,4 +1,4 @@
-modules = ["dotnet-8.0"]
+modules = ["dotnet-8.0", "nodejs-20"]
 [agent]
 expertMode = true
 
