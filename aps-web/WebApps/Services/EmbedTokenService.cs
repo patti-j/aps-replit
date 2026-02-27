@@ -1,6 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ReportsWebApp.Services
@@ -12,9 +14,45 @@ namespace ReportsWebApp.Services
         public EmbedTokenService(IConfiguration configuration)
         {
             var secret = configuration["EMBED_TOKEN_SECRET"]
-                         ?? Environment.GetEnvironmentVariable("EMBED_TOKEN_SECRET")
-                         ?? throw new InvalidOperationException("EMBED_TOKEN_SECRET is not configured.");
+                         ?? Environment.GetEnvironmentVariable("EMBED_TOKEN_SECRET");
+
+            if (string.IsNullOrEmpty(secret))
+            {
+                secret = GetSecretFromKeyVault(configuration, "EMBED-TOKEN-SECRET");
+            }
+
+            if (string.IsNullOrEmpty(secret))
+            {
+                throw new InvalidOperationException("EMBED_TOKEN_SECRET is not configured. Set it as an environment variable or add it to Azure Key Vault as EMBED-TOKEN-SECRET.");
+            }
+
             _signingKey = Encoding.UTF8.GetBytes(secret);
+        }
+
+        private static string? GetSecretFromKeyVault(IConfiguration configuration, string secretName)
+        {
+            try
+            {
+                string kvUrl = configuration["KeyValultUrl"];
+                string tenantId = configuration["TenantId"];
+                string clientId = configuration["ClientId"];
+                string clientSecret = configuration["ClientSecret"];
+
+                if (string.IsNullOrEmpty(kvUrl) || string.IsNullOrEmpty(tenantId) ||
+                    string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+                {
+                    return null;
+                }
+
+                var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+                var client = new SecretClient(new Uri(kvUrl), credential);
+                KeyVaultSecret secret = client.GetSecret(secretName);
+                return secret.Value;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public string GenerateEmbedToken(string email, int companyId, bool hasAIAnalyticsRole, bool isCompanyAdmin)
