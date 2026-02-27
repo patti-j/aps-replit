@@ -128,12 +128,14 @@ The WebApp listens for the READY signal, validates the message origin, then resp
 
 ## 5. Iframe App URL
 
-The iframe app is hosted at:
+The iframe app URL is configured via the `AIAnalyticsUrl` setting in `appsettings.json` (or as an Azure App Setting / environment variable). This allows the URL to differ between dev and production without code changes.
+
+Current dev value:
 ```
-https://query-insight-hvdvbpaugearfba2.westus2-01.azurewebsites.net/
+https://aianalytics-ccbba9feguhgbxa2.westus2-01.azurewebsites.net
 ```
 
-This URL is hardcoded as both `IframeUrl` (the iframe `src`) and `IframeOrigin` (for postMessage origin validation) in `AIAnalytics.razor`.
+`AIAnalytics.razor` reads this at runtime and uses it as both `IframeUrl` (the iframe `src`) and `IframeOrigin` (for postMessage origin validation).
 
 ---
 

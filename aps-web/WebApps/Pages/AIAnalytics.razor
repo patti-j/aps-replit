@@ -9,6 +9,7 @@
 @inject IEmbedTokenService EmbedTokenService
 @inject IAppInsightsLogger logger
 @inject IDarkModeService DarkModeService
+@inject IConfiguration Configuration
 
 @using ReportsWebApp.Common
 @using ReportsWebApp.DB.Models
@@ -61,8 +62,8 @@ else
 }
 
 @code {
-    private const string IframeOrigin = "https://query-insight-hvdvbpaugearfba2.westus2-01.azurewebsites.net";
-    private const string IframeUrl = "https://query-insight-hvdvbpaugearfba2.westus2-01.azurewebsites.net/";
+    private string IframeOrigin;
+    private string IframeUrl;
 
     private User User { get; set; }
     private bool hasLoaded;
@@ -72,6 +73,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        IframeOrigin = Configuration["AIAnalyticsUrl"]?.TrimEnd('/') ?? throw new InvalidOperationException("AIAnalyticsUrl is not configured.");
+        IframeUrl = IframeOrigin + "/";
+
         User = await m_userService.GetCurrentUserAsync(AuthenticationStateProvider);
 
         if (Shared.Utils.BlockUsersByAuthStatus(User, null, NavigationManager))
