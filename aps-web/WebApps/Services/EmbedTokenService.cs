@@ -13,17 +13,12 @@ namespace ReportsWebApp.Services
 
         public EmbedTokenService(IConfiguration configuration)
         {
-            var secret = configuration["EMBED_TOKEN_SECRET"]
+            var secret = GetSecretFromKeyVault(configuration, "EMBED-TOKEN-SECRET")
                          ?? Environment.GetEnvironmentVariable("EMBED_TOKEN_SECRET");
 
             if (string.IsNullOrEmpty(secret))
             {
-                secret = GetSecretFromKeyVault(configuration, "EMBED-TOKEN-SECRET");
-            }
-
-            if (string.IsNullOrEmpty(secret))
-            {
-                throw new InvalidOperationException("EMBED_TOKEN_SECRET is not configured. Set it as an environment variable or add it to Azure Key Vault as EMBED-TOKEN-SECRET.");
+                throw new InvalidOperationException("EMBED_TOKEN_SECRET could not be retrieved from Azure Key Vault. Ensure the secret EMBED-TOKEN-SECRET exists in the Key Vault.");
             }
 
             _signingKey = Encoding.UTF8.GetBytes(secret);
