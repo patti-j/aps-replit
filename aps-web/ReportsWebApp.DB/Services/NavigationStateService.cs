@@ -21,7 +21,12 @@ namespace ReportsWebApp.DB.Services
             {
                 CreateHomeMenuItem(User)
             };
-            
+
+            if (User.Roles.Any(r => r.Name == "AI_Analytics" && r.CompanyId == User.CompanyId))
+            {
+                items.Add(CreateAIAnalyticsMenuItem());
+            }
+
             items.Add(CreateSchedulingMenu(User));
 
             if (!blockMenu && User.IsAuthorizedFor(Permission.ViewReports) && UserCompanyActive && categories.Any())
@@ -35,11 +40,6 @@ namespace ReportsWebApp.DB.Services
             }
 
             items.Add(CreateChatbotMenuItem());
-
-            if (User.Roles.Any(r => r.Name == "AI_Analytics" && r.CompanyId == User.CompanyId))
-            {
-                items.Add(CreateAIAnalyticsMenuItem());
-            }
 
             return items;
         }
